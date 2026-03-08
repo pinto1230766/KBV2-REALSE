@@ -105,7 +105,7 @@ function App() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="px-4 sm:px-8 py-3 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-card shadow-sm transition-colors gap-3 sm:gap-8 border-b border-border/50">
+        <header className="px-4 sm:px-8 py-3 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-card shadow-sm transition-colors gap-3 sm:gap-8 border-b border-border">
           <div className="flex items-center gap-3 sm:gap-8 w-full sm:w-auto">
             {/* Logo */}
             <div className="flex items-center gap-3">
@@ -113,7 +113,7 @@ function App() {
                 <span className="text-lg font-black text-primary-foreground">K</span>
               </div>
               <div>
-                <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.35em] text-primary-500">
+                <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.35em] text-primary">
                   Coordination
                 </p>
                 <h1 className="text-lg sm:text-xl font-black text-foreground">KBV LYON</h1>
@@ -154,7 +154,7 @@ function App() {
               onChange={(e) => setSearchTerm(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)}
-              className="w-full pl-10 pr-4 py-2.5 bg-muted rounded-full border border-border/50 text-[10px] font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase tracking-widest text-foreground"
+              className="w-full pl-10 pr-4 py-2.5 bg-muted rounded-full border border-border text-[10px] font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase tracking-widest text-foreground placeholder:text-muted-foreground"
             />
             {isSearchFocused && trimmedTerm && (
               <div className="absolute z-20 mt-2 w-full rounded-2xl bg-card border border-border shadow-xl">
@@ -169,7 +169,7 @@ function App() {
                           onClick={() => handleResultClick(result)}
                           className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-muted/50 transition-colors"
                         >
-                          <span className="p-2 rounded-xl bg-primary-50 dark:bg-primary-900/20 text-primary">
+                          <span className="p-2 rounded-xl bg-primary/10 text-primary">
                             {result.type === "visit" ? (
                               <MapPin className="w-4 h-4" />
                             ) : result.type === "speaker" ? (
@@ -212,7 +212,7 @@ function App() {
       </div>
 
       {/* Sidebar Calendar */}
-      <aside className="w-[360px] bg-card border-l border-border/50 hidden xl:block">
+      <aside className="w-[360px] bg-card border-l border-border hidden xl:block">
         <CalendarSidebar
           visits={visits}
           onVisitClick={(visit) => {
