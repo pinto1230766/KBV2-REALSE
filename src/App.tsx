@@ -105,47 +105,42 @@ function App() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="px-4 sm:px-8 py-3 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-card shadow-sm transition-colors gap-3 sm:gap-8 border-b border-border">
-          <div className="flex items-center gap-3 sm:gap-8 w-full sm:w-auto">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-primary flex items-center justify-center shadow-lg">
-                <span className="text-lg font-black text-primary-foreground">K</span>
-              </div>
-              <div>
-                <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.35em] text-primary">
-                  Coordination
-                </p>
-                <h1 className="text-lg sm:text-xl font-black text-foreground">KBV LYON</h1>
-              </div>
+        <header className="px-4 md:px-8 py-3 md:py-4 flex items-center justify-between bg-card shadow-sm transition-colors gap-4 border-b border-border safe-top">
+          {/* Logo */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="w-10 h-10 md:w-11 md:h-11 rounded-2xl bg-primary flex items-center justify-center shadow-lg">
+              <span className="text-lg font-black text-primary-foreground">K</span>
             </div>
-
-            {/* Nav */}
-            <nav className="flex items-center gap-1 sm:gap-4 overflow-x-auto scrollbar-hide">
-              {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`relative py-2 px-2 sm:px-1 text-[9px] sm:text-[10px] uppercase tracking-widest font-black transition-all whitespace-nowrap flex-shrink-0 ${
-                    activeTab === item.id
-                      ? "text-primary"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <span className="hidden sm:inline">{item.label}</span>
-                  <span className="sm:hidden">
-                    <item.icon className="w-4 h-4" />
-                  </span>
-                  {activeTab === item.id && (
-                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-1 bg-primary rounded-full" />
-                  )}
-                </button>
-              ))}
-            </nav>
+            <div className="hidden sm:block">
+              <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.35em] text-primary">
+                Coordination
+              </p>
+              <h1 className="text-lg md:text-xl font-black text-foreground">KBV LYON</h1>
+            </div>
           </div>
 
+          {/* Desktop Nav — hidden on phone, shown on tablet+ */}
+          <nav className="hidden md:flex items-center gap-4 overflow-x-auto scrollbar-hide">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`relative py-2 px-1 text-[10px] uppercase tracking-widest font-black transition-all whitespace-nowrap ${
+                  activeTab === item.id
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {item.label}
+                {activeTab === item.id && (
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-1 bg-primary rounded-full" />
+                )}
+              </button>
+            ))}
+          </nav>
+
           {/* Search */}
-          <div className="relative w-full sm:w-64">
+          <div className="relative flex-1 max-w-xs md:max-w-sm">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
@@ -195,8 +190,8 @@ function App() {
           </div>
         </header>
 
-        {/* Content */}
-        <main className="flex-1 px-4 sm:px-8 pb-8 overflow-y-auto">
+        {/* Content — add bottom padding on mobile for bottom nav */}
+        <main className="flex-1 px-4 md:px-8 pb-24 md:pb-8 overflow-y-auto">
           {activeTab === "dashboard" ? (
             <DashboardView />
           ) : activeTab === "planning" ? (
@@ -211,8 +206,8 @@ function App() {
         </main>
       </div>
 
-      {/* Sidebar Calendar */}
-      <aside className="w-[360px] bg-card border-l border-border hidden xl:block">
+      {/* Sidebar Calendar — shown on large tablets & desktop */}
+      <aside className="w-[360px] bg-card border-l border-border hidden lg:block">
         <CalendarSidebar
           visits={visits}
           onVisitClick={(visit) => {
@@ -221,6 +216,27 @@ function App() {
           }}
         />
       </aside>
+
+      {/* Mobile Bottom Navigation — phone only */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-card border-t border-border safe-bottom">
+        <div className="flex items-center justify-around px-2 py-1">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl min-w-[56px] transition-colors ${
+                activeTab === item.id
+                  ? "text-primary"
+                  : "text-muted-foreground"
+              }`}
+            >
+              <item.icon className={`w-5 h-5 ${activeTab === item.id ? "text-primary" : ""}`} />
+              <span className="text-[9px] font-bold uppercase tracking-wider">{item.label}</span>
+            </button>
+          ))}
+        </div>
+      </nav>
+
       <Toaster position="top-right" richColors closeButton />
     </div>
   );
