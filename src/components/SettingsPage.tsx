@@ -838,14 +838,35 @@ export function SettingsPage() {
             )}
 
             <div className="flex items-center justify-between pt-2">
-              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                {selectedDuplicates.length > 0 ? `${selectedDuplicates.length} ${t("selected")}` : t("no_selection")}
-              </p>
+              <div className="flex items-center gap-4">
+                {duplicates.length > 0 && (
+                  <button
+                    onClick={() => {
+                      const allExtraIds = duplicates.flatMap((dup) => dup.ids.slice(1));
+                      const allSelected = allExtraIds.every((id) => selectedDuplicates.includes(id));
+                      if (allSelected) {
+                        setSelectedDuplicates([]);
+                      } else {
+                        setSelectedDuplicates(allExtraIds);
+                      }
+                    }}
+                    className="text-xs font-bold uppercase tracking-widest text-primary hover:underline transition-colors"
+                  >
+                    {duplicates.flatMap((d) => d.ids.slice(1)).every((id) => selectedDuplicates.includes(id))
+                      ? t("deselect_all")
+                      : t("select_all")}
+                  </button>
+                )}
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                  {selectedDuplicates.length > 0 ? `${selectedDuplicates.length} ${t("selected")}` : t("no_selection")}
+                </p>
+              </div>
               <button
                 onClick={deleteSelectedDuplicates}
                 disabled={selectedDuplicates.length === 0}
-                className="text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-destructive disabled:opacity-40 transition-colors"
+                className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-destructive disabled:opacity-40 transition-colors"
               >
+                <Trash2 className="w-3.5 h-3.5" />
                 {t("delete_selection")}
               </button>
             </div>
