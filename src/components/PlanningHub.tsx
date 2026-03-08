@@ -776,10 +776,16 @@ export function PlanningHub() {
                             </div>
 
                             {Object.entries(messageTemplates).map(([key, templates]) => {
-                              const tmpl = templates[templateLang as keyof typeof templates] || templates.fr;
+                              const lang = templateLang as "fr" | "cv" | "pt";
+                              const tmpl = templates[lang] || templates.fr;
+                              if (typeof tmpl === "string") return null;
+                              const categoryLabel = templates.category === "speaker" ? "🎤 Orateur"
+                                : templates.category === "repas" ? "🍽️ Hôte – Repas"
+                                : templates.category === "transport" ? "🚗 Hôte – Transport"
+                                : "👥 Groupe";
                               return (
                                 <div key={key} className="premium-card p-4 space-y-3">
-                                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{key === "contact" ? t("contact_step") : key === "preparation" ? t("preparation_step") : t("feedback_step")}</p>
+                                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{categoryLabel}</p>
                                   <div className="bg-muted/30 rounded-xl p-4 space-y-2">
                                     <p className="text-sm font-bold text-foreground">{tmpl.title}</p>
                                     <p className="text-[10px] text-muted-foreground">{tmpl.desc}</p>
