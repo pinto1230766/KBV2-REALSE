@@ -91,12 +91,13 @@
 
 /* Premium Card */
 .premium-card {
-  background: hsl(var(--card-bg));
+  background: hsl(var(--card));
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-soft);
-  border: 1px solid hsl(var(--border) / 0.5);
+  border: 1px solid hsl(var(--border));
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
+  color: hsl(var(--card-foreground));
 }
 
 .premium-card:active {
