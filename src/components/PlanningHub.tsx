@@ -202,6 +202,7 @@ export function PlanningHub() {
   // Expenses
   const [newExpenseLabel, setNewExpenseLabel] = useState("");
   const [newExpenseAmount, setNewExpenseAmount] = useState("");
+  const [newExpenseCategory, setNewExpenseCategory] = useState("carburant");
   // Host assignment
   const [showAssignHost, setShowAssignHost] = useState(false);
   const [assignHostId, setAssignHostId] = useState("");
