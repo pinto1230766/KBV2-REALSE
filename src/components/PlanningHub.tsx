@@ -42,7 +42,7 @@ export function PlanningHub() {
   const [form, setForm] = useState({
     nom: "", congregation: "", visitDate: "", talkNoOrType: "", talkTheme: "",
     locationType: "kingdom_hall" as Visit["locationType"],
-    speakerPhone: "", notes: "", status: "scheduled" as VisitStatus, heure_visite: congregation.time || "11:30",
+    speakerPhone: "", notes: "", status: "scheduled" as VisitStatus, heure_visite: congregation?.time || "11:30",
   });
 
   const resetForm = () => {
