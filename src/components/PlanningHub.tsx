@@ -512,6 +512,8 @@ export function PlanningHub() {
       "{ta_tache}": "Responsable hospitalité",
       // Channel
       "{visit_channel_label}": channelLabel || "___",
+      // Formulaire H-8
+      "{lien_formulaire_h8}": `${window.location.origin}/documents/H-8_remboursement.pdf`,
     };
 
     let result = text;
