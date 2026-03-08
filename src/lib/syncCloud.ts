@@ -10,6 +10,24 @@ export function normalizeName(name: string): string {
   return name.replace(/\n/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
 }
 
+// ─── UUID check ───
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function isUUID(s: string) { return UUID_RE.test(s); }
+
+// ─── Dedup helper: keep first entry per key ───
+function dedup<T>(items: T[], keyFn: (item: T) => string): T[] {
+  const seen = new Set<string>();
+  const result: T[] = [];
+  for (const item of items) {
+    const key = keyFn(item);
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(item);
+    }
+  }
+  return result;
+}
+
 // ─── Helpers: convert between app model and actual DB columns ───
 
 function visitToRow(v: Visit) {
@@ -105,7 +123,6 @@ function hostToRow(h: Host) {
     email: h.email || null,
     adresse: h.adresse || null,
     notes: h.notes || null,
-    role: h.role || null,
     photo_url: h.photoUrl || null,
     tags: h.tags || [],
     capacity: h.capacity || null,
@@ -127,7 +144,7 @@ function rowToHost(r: any): Host {
   };
 }
 
-// ─── Sync: push local → remote, then pull remote → local ───
+// ─── Sync: push local → remote, then pull remote → local (REPLACE, not merge) ───
 
 export interface SyncResult {
   pushed: { visits: number; speakers: number; hosts: number };
@@ -145,12 +162,14 @@ export async function syncCloud(): Promise<SyncResult> {
   const localHosts = useHostStore.getState().hosts;
 
   // ── PUSH: upsert local data to Supabase ──
-  if (localVisits.length > 0) {
+  // Filter visits with valid UUIDs only (sheet-imported visits have non-UUID ids)
+  const pushableVisits = localVisits.filter((v) => isUUID(v.visitId));
+  if (pushableVisits.length > 0) {
     const { error } = await supabase
       .from("visits")
-      .upsert(localVisits.map(visitToRow), { onConflict: "visit_id" });
+      .upsert(pushableVisits.map(visitToRow), { onConflict: "visit_id" });
     if (error) console.error("Push visits error:", error);
-    else result.pushed.visits = localVisits.length;
+    else result.pushed.visits = pushableVisits.length;
   }
 
   if (localSpeakers.length > 0) {
@@ -169,53 +188,60 @@ export async function syncCloud(): Promise<SyncResult> {
     else result.pushed.hosts = localHosts.length;
   }
 
-  // ── PULL: fetch remote data and merge into local (by normalized name to avoid duplicates) ──
+  // ── PULL: fetch remote data, merge with local, deduplicate, then REPLACE local store ──
   const { data: remoteVisits } = await supabase.from("visits").select("*");
   if (remoteVisits) {
-    const localVisitIds = new Set(localVisits.map((v) => v.visitId));
-    // Also build a set of normalized names+dates for extra dedup
-    const localVisitKeys = new Set(
-      localVisits.map((v) => `${normalizeName(v.nom)}|${v.visitDate}`)
-    );
-    remoteVisits.forEach((r) => {
-      const visit = rowToVisit(r);
-      const key = `${normalizeName(visit.nom)}|${visit.visitDate}`;
-      if (!localVisitIds.has(visit.visitId) && !localVisitKeys.has(key)) {
-        useVisitStore.getState().addVisit(visit);
-        result.pulled.visits++;
-        localVisitKeys.add(key);
+    // Merge remote into local: remote wins for same visitId
+    const remoteConverted = remoteVisits.map(rowToVisit);
+    const remoteById = new Map(remoteConverted.map((v) => [v.visitId, v]));
+    
+    // Start with remote data, then add local-only entries
+    const merged: Visit[] = [...remoteConverted];
+    for (const lv of localVisits) {
+      if (!remoteById.has(lv.visitId)) {
+        merged.push(lv);
       }
-    });
+    }
+    
+    // Deduplicate by normalized name + date
+    const dedupedVisits = dedup(merged, (v) => `${normalizeName(v.nom)}|${v.visitDate}`);
+    useVisitStore.getState().setVisits(dedupedVisits);
+    result.pulled.visits = remoteConverted.length;
   }
 
   const { data: remoteSpeakers } = await supabase.from("speakers").select("*");
   if (remoteSpeakers) {
-    const localIds = new Set(localSpeakers.map((s) => s.id));
-    const localNames = new Set(localSpeakers.map((s) => normalizeName(s.nom)));
-    remoteSpeakers.forEach((r) => {
-      const speaker = rowToSpeaker(r);
-      const nameKey = normalizeName(speaker.nom);
-      if (!localIds.has(speaker.id) && !localNames.has(nameKey)) {
-        useSpeakerStore.getState().addSpeaker(speaker);
-        result.pulled.speakers++;
-        localNames.add(nameKey);
+    const remoteConverted = remoteSpeakers.map(rowToSpeaker);
+    const remoteById = new Map(remoteConverted.map((s) => [s.id, s]));
+    
+    const merged: Speaker[] = [...remoteConverted];
+    for (const ls of localSpeakers) {
+      if (!remoteById.has(ls.id)) {
+        merged.push(ls);
       }
-    });
+    }
+    
+    // Deduplicate by normalized name
+    const dedupedSpeakers = dedup(merged, (s) => normalizeName(s.nom));
+    useSpeakerStore.getState().setSpeakers(dedupedSpeakers);
+    result.pulled.speakers = remoteConverted.length;
   }
 
   const { data: remoteHosts } = await supabase.from("hosts").select("*");
   if (remoteHosts) {
-    const localIds = new Set(localHosts.map((h) => h.id));
-    const localNames = new Set(localHosts.map((h) => normalizeName(h.nom)));
-    remoteHosts.forEach((r) => {
-      const host = rowToHost(r);
-      const nameKey = normalizeName(host.nom);
-      if (!localIds.has(host.id) && !localNames.has(nameKey)) {
-        useHostStore.getState().addHost(host);
-        result.pulled.hosts++;
-        localNames.add(nameKey);
+    const remoteConverted = remoteHosts.map(rowToHost);
+    const remoteById = new Map(remoteConverted.map((h) => [h.id, h]));
+    
+    const merged: Host[] = [...remoteConverted];
+    for (const lh of localHosts) {
+      if (!remoteById.has(lh.id)) {
+        merged.push(lh);
       }
-    });
+    }
+    
+    const dedupedHosts = dedup(merged, (h) => normalizeName(h.nom));
+    useHostStore.getState().setHosts(dedupedHosts);
+    result.pulled.hosts = remoteConverted.length;
   }
 
   useSettingsStore.getState().updateCongregation({
