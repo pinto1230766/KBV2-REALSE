@@ -156,7 +156,7 @@ export function SettingsPage() {
   const [duplicates, setDuplicates] = useState<Array<{ type: string; name: string; ids: string[] }>>([]);
   const [selectedDuplicates, setSelectedDuplicates] = useState<string[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [sheetUrlInput, setSheetUrlInput] = useState(congregation.googleSheetUrl || "");
+  const [sheetUrlInput, setSheetUrlInput] = useState(congregation.googleSheetUrl || "https://docs.google.com/spreadsheets/d/1drIzPPi6AohCroSyUkF1UmMFxuEtMACBF4XATDjBOcg/edit?gid=1530698388#gid=1530698388");
   const [showSheetConfig, setShowSheetConfig] = useState(false);
 
   const themeMode: ThemeMode = settings.darkMode ? "dark" : "light";
@@ -187,35 +187,24 @@ export function SettingsPage() {
 
     setIsSyncing(true);
     try {
-      const csvUrl = `https://docs.google.com/spreadsheets/d/${info.id}/export?format=csv&gid=${info.gid}`;
+      // Use Google Visualization API endpoint (CORS-friendly for public sheets)
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${info.id}/gviz/tq?tqx=out:csv&gid=${info.gid}`;
       const response = await fetch(csvUrl);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok) {
+        // Fallback: try export endpoint
+        const fallbackUrl = `https://docs.google.com/spreadsheets/d/${info.id}/export?format=csv&gid=${info.gid}`;
+        const fallbackResp = await fetch(fallbackUrl);
+        if (!fallbackResp.ok) throw new Error(`HTTP ${fallbackResp.status}`);
+        const text = await fallbackResp.text();
+        const rows = parseCSV(text);
+        const { visits: newVisits, speakers: newSpeakers } = parseRowsToVisitsAndSpeakers(rows);
+        await importData(newVisits, newSpeakers);
+        return;
+      }
       const text = await response.text();
       const rows = parseCSV(text);
       const { visits: newVisits, speakers: newSpeakers } = parseRowsToVisitsAndSpeakers(rows);
-
-      let addedVisits = 0;
-      let addedSpeakers = 0;
-      const existingVisitIds = new Set(useVisitStore.getState().visits.map((v) => v.visitId));
-      const existingSpeakerNames = new Set(useSpeakerStore.getState().speakers.map((s) => s.nom.toLowerCase().replace(/\s+/g, " ")));
-
-      newVisits.forEach((v) => {
-        if (!existingVisitIds.has(v.visitId)) {
-          useVisitStore.getState().addVisit(v);
-          addedVisits++;
-        }
-      });
-
-      newSpeakers.forEach((s) => {
-        const key = s.nom.toLowerCase().replace(/\s+/g, " ");
-        if (!existingSpeakerNames.has(key)) {
-          useSpeakerStore.getState().addSpeaker(s);
-          addedSpeakers++;
-        }
-      });
-
-      updateCongregation({ lastSyncAt: new Date().toISOString() });
-      toast.success(`${t("sync_success")}: +${addedVisits} visites, +${addedSpeakers} orateurs`);
+      await importData(newVisits, newSpeakers);
     } catch (err) {
       console.error("Sync error:", err);
       toast.error(t("sync_error"));
@@ -224,7 +213,32 @@ export function SettingsPage() {
     }
   };
 
-  const handleSaveSheetUrl = () => {
+  const importData = async (newVisits: Visit[], newSpeakers: Speaker[]) => {
+    let addedVisits = 0;
+    let addedSpeakers = 0;
+    const existingVisitIds = new Set(useVisitStore.getState().visits.map((v) => v.visitId));
+    const existingSpeakerNames = new Set(useSpeakerStore.getState().speakers.map((s) => s.nom.toLowerCase().replace(/\s+/g, " ")));
+
+    newVisits.forEach((v) => {
+      if (!existingVisitIds.has(v.visitId)) {
+        useVisitStore.getState().addVisit(v);
+        addedVisits++;
+      }
+    });
+
+    newSpeakers.forEach((s) => {
+      const key = s.nom.toLowerCase().replace(/\s+/g, " ");
+      if (!existingSpeakerNames.has(key)) {
+        useSpeakerStore.getState().addSpeaker(s);
+        addedSpeakers++;
+      }
+    });
+
+    updateCongregation({ lastSyncAt: new Date().toISOString() });
+    toast.success(`${t("sync_success")}: +${addedVisits} visites, +${addedSpeakers} orateurs`);
+  };
+
+  const handleSaveSheetUrl = async () => {
     if (!sheetUrlInput) return;
     const info = extractSheetInfo(sheetUrlInput);
     if (!info) {
@@ -234,6 +248,8 @@ export function SettingsPage() {
     updateCongregation({ googleSheetUrl: sheetUrlInput });
     setShowSheetConfig(false);
     toast.success(t("sheet_url_saved"));
+    // Auto-trigger sync after saving
+    setTimeout(() => handleSyncGoogleSheet(), 300);
   };
 
   const handleExport = () => {
