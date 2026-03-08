@@ -12,6 +12,7 @@ import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useTranslation } from "../hooks/useTranslation";
 import { toast } from "sonner";
 import type { Language, Visit, Speaker } from "../store/visitTypes";
+import { syncCloud } from "../lib/syncCloud";
 
 type SettingsTab = "general" | "appearance" | "notifications" | "data";
 type ThemeMode = "light" | "dark" | "system";
@@ -156,6 +157,8 @@ export function SettingsPage() {
   const [duplicates, setDuplicates] = useState<Array<{ type: string; name: string; ids: string[] }>>([]);
   const [selectedDuplicates, setSelectedDuplicates] = useState<string[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isCloudSyncing, setIsCloudSyncing] = useState(false);
+  const [cloudStatus, setCloudStatus] = useState<"idle" | "syncing" | "done" | "error">("idle");
   const [sheetUrlInput, setSheetUrlInput] = useState(congregation.googleSheetUrl || "https://docs.google.com/spreadsheets/d/1drIzPPi6AohCroSyUkF1UmMFxuEtMACBF4XATDjBOcg/edit?gid=1530698388#gid=1530698388");
   const [showSheetConfig, setShowSheetConfig] = useState(false);
 
