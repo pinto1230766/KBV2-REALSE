@@ -347,20 +347,21 @@ export function PlanningHub() {
     toast.success(t("copied"));
   };
 
+  const WHATSAPP_GROUP_ID = "Di5J5Jl4VjU4e9QURFHsrf";
+
   // Get recipients for messages
   const getRecipients = () => {
     const recipients: Array<{ label: string; phone: string; type: string; hostName?: string }> = [];
     if (detailForm.speakerPhone) {
-      recipients.push({ label: t("speaker_label"), phone: detailForm.speakerPhone, type: "orateur" });
+      recipients.push({ label: `🎤 ${viewVisit?.nom || t("speaker_label")}`, phone: detailForm.speakerPhone, type: "orateur" });
     }
-    (detailForm.hostAssignments || []).forEach((ha) => {
+    (detailForm.hostAssignments || []).forEach((ha, i) => {
       if (ha.hostPhone) {
-        recipients.push({ label: `${ha.hostName || ""} (${t(ha.role)})`, phone: ha.hostPhone, type: ha.role, hostName: ha.hostName });
+        const roleEmoji = ha.role === "hebergement" ? "🏠" : ha.role === "transport" ? "🚗" : "🍽️";
+        recipients.push({ label: `${roleEmoji} ${ha.hostName || ""} (${t(ha.role)})`, phone: ha.hostPhone, type: `host_${i}`, hostName: ha.hostName });
       }
     });
-    if (congregation.whatsappGroup) {
-      recipients.push({ label: "👥 " + t("group"), phone: congregation.whatsappGroup, type: "groupe" });
-    }
+    recipients.push({ label: "👥 Groupe WhatsApp", phone: WHATSAPP_GROUP_ID, type: "groupe" });
     return recipients;
   };
 
