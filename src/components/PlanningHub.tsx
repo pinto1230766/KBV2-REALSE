@@ -951,10 +951,17 @@ export function PlanningHub() {
                                     const resolved = resolveVariables(tmpl.body);
                                     setMessageText(resolved);
                                     // Auto-select recipient based on template category
-                                    if (templates.category === "speaker") setSelectedRecipient("orateur");
-                                    else if (templates.category === "repas") setSelectedRecipient("repas");
-                                    else if (templates.category === "transport") setSelectedRecipient("transport");
-                                    else if (templates.category === "groupe") setSelectedRecipient("groupe");
+                                    if (templates.category === "speaker") {
+                                      setSelectedRecipient("orateur");
+                                    } else if (templates.category === "repas") {
+                                      const idx = (detailForm.hostAssignments || []).findIndex((ha) => ha.role === "repas");
+                                      setSelectedRecipient(idx >= 0 ? `host_${idx}` : "orateur");
+                                    } else if (templates.category === "transport") {
+                                      const idx = (detailForm.hostAssignments || []).findIndex((ha) => ha.role === "transport");
+                                      setSelectedRecipient(idx >= 0 ? `host_${idx}` : "orateur");
+                                    } else if (templates.category === "groupe") {
+                                      setSelectedRecipient("groupe");
+                                    }
                                     setTimeout(() => { const ta = document.querySelector('textarea[placeholder]'); if (ta) ta.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
                                   }} className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider">
                                     {t("insert_message")}
