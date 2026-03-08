@@ -6,10 +6,7 @@ import {
   type ReminderType,
   type AppNotification,
 } from "../store/useNotificationStore";
-
-function generateId() {
-  return crypto.randomUUID?.() || Math.random().toString(36).slice(2, 11);
-}
+import { generateId } from "../lib/sheetUtils";
 
 function diffDays(dateStr: string): number {
   const now = new Date();

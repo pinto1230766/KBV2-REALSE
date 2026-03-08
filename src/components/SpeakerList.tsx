@@ -5,10 +5,7 @@ import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useTranslation } from "../hooks/useTranslation";
 import { toast } from "sonner";
 import type { Speaker, HouseholdType } from "../store/visitTypes";
-
-function generateId() {
-  return crypto.randomUUID?.() || Math.random().toString(36).slice(2, 11);
-}
+import { generateId } from "../lib/sheetUtils";
 
 /* Mini photo uploader for the fiche */
 function AvatarUpload({ photoUrl, onPhotoChange, label }: { photoUrl?: string; onPhotoChange: (url: string | undefined) => void; label: string }) {

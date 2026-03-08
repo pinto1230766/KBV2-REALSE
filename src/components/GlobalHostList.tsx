@@ -6,10 +6,7 @@ import { useHostStore } from "../store/useHostStore";
 import { useTranslation } from "../hooks/useTranslation";
 import { toast } from "sonner";
 import type { Host } from "../store/visitTypes";
-
-function generateId() {
-  return crypto.randomUUID?.() || Math.random().toString(36).slice(2, 11);
-}
+import { generateId } from "../lib/sheetUtils";
 
 export function GlobalHostList() {
   const hosts = useHostStore((s) => s.hosts);
