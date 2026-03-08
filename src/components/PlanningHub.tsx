@@ -556,6 +556,18 @@ export function PlanningHub() {
                                       <option value="restaurant">Restaurant</option>
                                     </select>
                                   </div>
+                                  {(ha.origin === "restaurant") && (
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <div>
+                                        <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Nom restaurant</label>
+                                        <input type="text" className="input-soft text-sm" placeholder="Ex: La Brasserie" value={ha.hostName || ""} onChange={(e) => updateHostAssignment(idx, "hostName", e.target.value)} />
+                                      </div>
+                                      <div>
+                                        <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Adresse</label>
+                                        <input type="text" className="input-soft text-sm" placeholder="Adresse du restaurant" value={ha.hostAddress || ""} onChange={(e) => updateHostAssignment(idx, "hostAddress", e.target.value)} />
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               )}
                               {!isEditing && ha.hostAddress && <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Home className="w-3.5 h-3.5 flex-shrink-0" /> {ha.hostAddress}</p>}
