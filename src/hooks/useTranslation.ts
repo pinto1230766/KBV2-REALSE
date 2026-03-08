@@ -152,6 +152,46 @@ const dictionary: Record<string, TranslationEntry> = {
   whatsapp_invite_id: { fr: "Invite ID (Groupe WhatsApp)", cv: "Invite ID (Grupu WhatsApp)", pt: "Invite ID (Grupo WhatsApp)" },
   developer: { fr: "Développeur", cv: "Dezenvolvedor", pt: "Desenvolvedor" },
   last_update: { fr: "Dernière mise à jour", cv: "Última atualizason", pt: "Última atualização" },
+  app_description: { fr: "Application de gestion des orateurs visiteurs pour la congrégation.", cv: "Aplikason di jeston di irmons vizitantes pa kongregason.", pt: "Aplicação de gestão de oradores visitantes para a congregação." },
+
+  // Appearance
+  theme: { fr: "Thème", cv: "Tema", pt: "Tema" },
+  light: { fr: "Clair", cv: "Klaru", pt: "Claro" },
+  light_desc: { fr: "Interface lumineuse", cv: "Interfasi klaru", pt: "Interface luminosa" },
+  dark: { fr: "Sombre", cv: "Skuru", pt: "Escuro" },
+  dark_desc: { fr: "Mode nuit", cv: "Modu noiti", pt: "Modo noite" },
+  system: { fr: "Système", cv: "Sistema", pt: "Sistema" },
+  system_desc: { fr: "Synchronisé OS", cv: "Sinkronizadu OS", pt: "Sincronizado OS" },
+  display_language: { fr: "Langue d'affichage", cv: "Lingua di afixason", pt: "Idioma de exibição" },
+
+  // Notifications
+  notifications_and_reminders: { fr: "Notifications & Rappels", cv: "Notifikasons & Lembranças", pt: "Notificações & Lembretes" },
+  notifications_desc: { fr: "Autoriser l'application à envoyer des rappels système.", cv: "Autorizâ aplikason pa manda lembranças sistema.", pt: "Autorizar a aplicação a enviar lembretes do sistema." },
+  remind_j7_title: { fr: "Rappel J-7 : contacter l'orateur / obtenir confirmation", cv: "Lembra J-7 : kontaktâ orador / obtê konfirmason", pt: "Lembrete D-7 : contactar o orador / obter confirmação" },
+  remind_j7_desc: { fr: "Notification une semaine avant la visite pour vérifier que l'orateur a été contacté et confirmé.", cv: "Notifikason un simana antis di vizita pa verifikâ ki orador foi kontaktadu i konfirmadu.", pt: "Notificação uma semana antes da visita para verificar que o orador foi contactado e confirmado." },
+  remind_j2_title: { fr: "Rappel J-2 : infos hôtes (après confirmation)", cv: "Lembra J-2 : infus anfitrions (dipôs konfirmason)", pt: "Lembrete D-2 : infos anfitriões (após confirmação)" },
+  remind_j2_desc: { fr: "Une fois la visite confirmée, rappeler de collecter toutes les infos des hôtes (hébergement, transport, repas).", cv: "Un bes ki vizita konfirmadu, lembra pa koletâ tudu infus di anfitrions.", pt: "Uma vez a visita confirmada, lembrar de recolher todas as infos dos anfitriões." },
+  sounds: { fr: "Sons", cv: "Sons", pt: "Sons" },
+  vibration: { fr: "Vibreur", cv: "Vibrador", pt: "Vibração" },
+
+  // Data / Import-Export
+  import_export: { fr: "Import / Export", cv: "Inportâ / Esportâ", pt: "Importar / Exportar" },
+  import_json: { fr: "Importer JSON", cv: "Inportâ JSON", pt: "Importar JSON" },
+  full_backup: { fr: "Sauvegarde complète", cv: "Backup kompletu", pt: "Backup completo" },
+  repertoire_speakers_hosts: { fr: "Répertoire Orateurs/Hôtes", cv: "Repertóriu Irmons/Anfitrions", pt: "Repertório Oradores/Anfitriões" },
+  last_sync: { fr: "Dernière synchro", cv: "Última sinkro", pt: "Última sincro" },
+  export_hint: { fr: "Exportez d'abord le répertoire propre, chargez-le sur les nouvelles installations, puis utilisez Google Sheet uniquement pour les visites.", cv: "Esportâ primeru repertóriu limpu, kargâ na novas instalasons, dipôs uzâ Google Sheet sô pa vizitas.", pt: "Exporte primeiro o repertório limpo, carregue nas novas instalações, depois use Google Sheet apenas para as visitas." },
+  quick_access: { fr: "Accès rapide", cv: "Asesu rapidu", pt: "Acesso rápido" },
+  quick_access_desc: { fr: "Rouvre instantanément les ressources partagées avec la congrégation.", cv: "Rabri instantaneamenti rekursus partilhadu ku kongregason.", pt: "Reabra instantaneamente os recursos partilhados com a congregação." },
+  duplicate_detection: { fr: "Détection des doublons", cv: "Deteson di doblons", pt: "Deteção de duplicados" },
+  duplicate_desc: { fr: "Identifie les orateurs et hôtes avec les mêmes coordonnées pour nettoyer la base.", cv: "Identifikâ irmons i anfitrions ku mesmu koordenadas pa linpâ bazi.", pt: "Identifica os oradores e anfitriões com as mesmas coordenadas para limpar a base." },
+  search_duplicates: { fr: "Rechercher les doublons", cv: "Buska doblons", pt: "Pesquisar duplicados" },
+  no_duplicates: { fr: "Aucun doublon trouvé", cv: "Ninhun doblon atxadu", pt: "Nenhum duplicado encontrado" },
+  duplicates_found: { fr: "doublons trouvés", cv: "doblons atxadu", pt: "duplicados encontrados" },
+  duplicates_deleted: { fr: "Doublons supprimés", cv: "Doblons apagadu", pt: "Duplicados eliminados" },
+  no_selection: { fr: "Aucune sélection", cv: "Ninhun seleson", pt: "Nenhuma seleção" },
+  selected: { fr: "sélectionné(s)", cv: "selesonadu", pt: "selecionado(s)" },
+  delete_selection: { fr: "Supprimer la sélection", cv: "Apagâ seleson", pt: "Eliminar seleção" },
 
   // Sidebar
   program_today: { fr: "Programme du jour", cv: "Programa di oji", pt: "Programa do dia" },
