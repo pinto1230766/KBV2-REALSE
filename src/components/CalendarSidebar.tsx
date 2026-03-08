@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Mail, Bell, User, Send, RefreshCw } from "lucide-react";
+import { useMemo, useState, useRef } from "react";
+import { ChevronLeft, ChevronRight, Mail, Bell, User, Send, RefreshCw, Camera } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Visit } from "../store/visitTypes";
 import { useTranslation } from "../hooks/useTranslation";
@@ -18,7 +18,9 @@ export function CalendarSidebar({ visits, onVisitClick, onSyncNow }: CalendarSid
   const { t, language } = useTranslation();
   const [showMessages, setShowMessages] = useState(true);
   const [showReminders, setShowReminders] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const congregation = useSettingsStore((s) => s.settings.congregation);
+  const updateCongregation = useSettingsStore((s) => s.updateCongregation);
   const lastSyncAt = congregation.lastSyncAt;
   const allNotifications = useNotificationStore((s) => s.notifications);
   const pendingNotifications = useMemo(() => allNotifications.filter((n) => n.status === "pending"), [allNotifications]);
@@ -118,6 +120,23 @@ export function CalendarSidebar({ visits, onVisitClick, onSyncNow }: CalendarSid
     }
   };
 
+  // Handle photo upload
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Photo trop volumineuse (max 2Mo)");
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = () => {
+      updateCongregation({ responsablePhoto: reader.result as string });
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div className="p-5 h-full flex flex-col overflow-y-auto">
       {/* ─── Admin Header ─── */}
@@ -168,8 +187,31 @@ export function CalendarSidebar({ visits, onVisitClick, onSyncNow }: CalendarSid
               {lastSyncLabel ? `Sync ${lastSyncLabel}` : "Administrateur"}
             </p>
           </div>
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center overflow-hidden shadow-md">
-            <User className="w-5 h-5 text-primary-foreground" />
+          <div className="relative">
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center overflow-hidden shadow-md hover:shadow-lg transition-shadow group"
+            >
+              {congregation.responsablePhoto ? (
+                <img 
+                  src={congregation.responsablePhoto} 
+                  alt="Photo admin" 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="w-5 h-5 text-primary-foreground" />
+              )}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-full flex items-center justify-center">
+                <Camera className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoUpload}
+              className="hidden"
+            />
           </div>
         </div>
       </div>
