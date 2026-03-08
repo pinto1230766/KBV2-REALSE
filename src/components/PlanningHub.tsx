@@ -936,9 +936,18 @@ export function PlanningHub() {
                                   <div className="bg-muted/30 rounded-xl p-4 space-y-2">
                                     <p className="text-sm font-bold text-foreground">{tmpl.title}</p>
                                     <p className="text-[10px] text-muted-foreground">{tmpl.desc}</p>
-                                    <p className="text-xs text-foreground whitespace-pre-line line-clamp-6">{tmpl.body}</p>
+                                    <p className="text-xs text-foreground whitespace-pre-line line-clamp-6">{resolveVariables(tmpl.body)}</p>
                                   </div>
-                                  <button onClick={() => { setMessageText(tmpl.body); setTimeout(() => { const ta = document.querySelector('textarea[placeholder]'); if (ta) ta.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100); }} className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider">
+                                  <button onClick={() => {
+                                    const resolved = resolveVariables(tmpl.body);
+                                    setMessageText(resolved);
+                                    // Auto-select recipient based on template category
+                                    if (templates.category === "speaker") setSelectedRecipient("orateur");
+                                    else if (templates.category === "repas") setSelectedRecipient("repas");
+                                    else if (templates.category === "transport") setSelectedRecipient("transport");
+                                    else if (templates.category === "groupe") setSelectedRecipient("groupe");
+                                    setTimeout(() => { const ta = document.querySelector('textarea[placeholder]'); if (ta) ta.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+                                  }} className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider">
                                     {t("insert_message")}
                                   </button>
                                 </div>
