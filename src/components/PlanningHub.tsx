@@ -202,6 +202,7 @@ export function PlanningHub() {
   // Expenses
   const [newExpenseLabel, setNewExpenseLabel] = useState("");
   const [newExpenseAmount, setNewExpenseAmount] = useState("");
+  const [newExpenseCategory, setNewExpenseCategory] = useState("carburant");
   // Host assignment
   const [showAssignHost, setShowAssignHost] = useState(false);
   const [assignHostId, setAssignHostId] = useState("");
@@ -296,7 +297,7 @@ export function PlanningHub() {
   // Add expense
   const addExpense = () => {
     if (!newExpenseLabel || !newExpenseAmount) return;
-    const expenses = [...(detailForm.expenses || []), { id: generateId(), label: newExpenseLabel, amount: parseFloat(newExpenseAmount) || 0 }];
+    const expenses = [...(detailForm.expenses || []), { id: generateId(), label: newExpenseLabel, amount: parseFloat(newExpenseAmount) || 0, category: newExpenseCategory }];
     setDetailForm({ ...detailForm, expenses });
     setNewExpenseLabel("");
     setNewExpenseAmount("");
@@ -990,22 +991,59 @@ export function PlanningHub() {
                             <p className="text-3xl font-black mt-1">{totalExpenses.toFixed(2)} €</p>
                           </div>
 
-                          {/* Expense list */}
-                          {(detailForm.expenses || []).map((exp) => (
-                            <div key={exp.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
-                              <span className="text-sm font-bold text-foreground">{exp.label}</span>
-                              <div className="flex items-center gap-3">
-                                <span className="text-sm font-black text-foreground">{exp.amount.toFixed(2)} €</span>
-                                <button onClick={() => removeExpense(exp.id)} className="p-1 hover:text-destructive transition-colors"><X className="w-4 h-4" /></button>
-                              </div>
-                            </div>
-                          ))}
+                          {/* Expense list by category */}
+                          {(() => {
+                            const categories = ["carburant", "peage", "parking", "transport_commun", "restaurant", "hebergement", "autre"];
+                            const categoryLabels: Record<string, string> = {
+                              carburant: "⛽ Carburant", peage: "🛣️ Péage", parking: "🅿️ Parking",
+                              transport_commun: "🚆 Transport en commun", restaurant: "🍽️ Restaurant",
+                              hebergement: "🏠 Hébergement", autre: "📋 Autres frais"
+                            };
+                            const expenses = detailForm.expenses || [];
+                            const grouped = categories.map((cat) => ({
+                              cat, label: categoryLabels[cat],
+                              items: expenses.filter((e) => e.category === cat),
+                            })).filter((g) => g.items.length > 0);
+                            // Uncategorized
+                            const uncategorized = expenses.filter((e) => !e.category || !categories.includes(e.category));
+                            if (uncategorized.length > 0) grouped.push({ cat: "non_classe", label: "📋 Non classé", items: uncategorized });
 
-                          {/* Add expense */}
+                            return grouped.map((g) => (
+                              <div key={g.cat} className="space-y-2">
+                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{g.label}</p>
+                                {g.items.map((exp) => (
+                                  <div key={exp.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
+                                    <span className="text-sm font-bold text-foreground">{exp.label}</span>
+                                    <div className="flex items-center gap-3">
+                                      <span className="text-sm font-black text-foreground">{exp.amount.toFixed(2)} €</span>
+                                      <button onClick={() => removeExpense(exp.id)} className="p-1 hover:text-destructive transition-colors"><X className="w-4 h-4" /></button>
+                                    </div>
+                                  </div>
+                                ))}
+                                <p className="text-xs text-right text-muted-foreground font-bold">Sous-total : {g.items.reduce((s, e) => s + e.amount, 0).toFixed(2)} €</p>
+                              </div>
+                            ));
+                          })()}
+
+                          {(detailForm.expenses || []).length === 0 && (
+                            <p className="text-sm text-center text-muted-foreground py-4">Aucune dépense enregistrée</p>
+                          )}
+
+                          {/* Add expense with category */}
                           <div className="border-2 border-dashed border-border rounded-2xl p-4 space-y-3">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Nouvelle dépense (H-8)</p>
+                            <select className="input-soft text-sm" value={newExpenseCategory} onChange={(e) => setNewExpenseCategory(e.target.value)}>
+                              <option value="carburant">⛽ Carburant</option>
+                              <option value="peage">🛣️ Péage</option>
+                              <option value="parking">🅿️ Parking</option>
+                              <option value="transport_commun">🚆 Transport en commun</option>
+                              <option value="restaurant">🍽️ Restaurant</option>
+                              <option value="hebergement">🏠 Hébergement</option>
+                              <option value="autre">📋 Autres frais</option>
+                            </select>
                             <div className="grid grid-cols-3 gap-2">
                               <input className="input-soft text-sm col-span-2" placeholder={t("expense_label")} value={newExpenseLabel} onChange={(e) => setNewExpenseLabel(e.target.value)} />
-                              <input className="input-soft text-sm" type="number" step="0.01" placeholder="0.00" value={newExpenseAmount} onChange={(e) => setNewExpenseAmount(e.target.value)} />
+                              <input className="input-soft text-sm" type="number" step="0.01" placeholder="0.00 €" value={newExpenseAmount} onChange={(e) => setNewExpenseAmount(e.target.value)} />
                             </div>
                             <button onClick={addExpense} className="w-full py-2.5 rounded-xl border-2 border-dashed border-border text-xs font-bold text-muted-foreground uppercase tracking-widest hover:border-primary hover:text-primary transition-colors">
                               + {t("add_expense")}
