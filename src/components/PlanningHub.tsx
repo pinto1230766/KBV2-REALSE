@@ -503,9 +503,10 @@ export function PlanningHub() {
                             // Find original index for editing
                             const origIdx = (detailForm.hostAssignments || []).indexOf(ha);
                             const resolvedPhoto = ha.hostPhotoUrl || (ha.hostId ? allHosts.find((h) => h.id === ha.hostId)?.photoUrl : undefined);
-                            const isEditing = editingHostIdx === idx;
+                            const isEditing = editingHostIdx === origIdx;
+                            const formattedDay = ha.day ? new Date(ha.day + "T00:00:00").toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" }) : "";
                             return (
-                            <div key={idx} className="premium-card p-4 space-y-3">
+                            <div key={origIdx} className="premium-card p-4 space-y-3">
                               <div className="flex items-center gap-3">
                                 {resolvedPhoto ? (
                                   <img src={resolvedPhoto} alt={ha.hostName || ""} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
@@ -517,13 +518,13 @@ export function PlanningHub() {
                                   {!isEditing && (
                                     <>
                                       <p className={`text-[10px] font-bold uppercase tracking-widest ${roleColor(ha.role)}`}>{t(ha.role)}</p>
-                                      {ha.day && <p className="text-[10px] text-muted-foreground">{ha.day} {ha.time && `· ${t("time")}: ${ha.time}`}</p>}
+                                      {formattedDay && <p className="text-[10px] text-muted-foreground capitalize">{formattedDay} {ha.time && `· ${ha.time}`}</p>}
                                       {ha.hostPhone && <p className="text-[10px] text-muted-foreground flex items-center gap-1"><Phone className="w-3 h-3" /> {ha.hostPhone}</p>}
                                     </>
                                   )}
                                 </div>
                                 <div className="flex items-center gap-1">
-                                  <button onClick={() => setEditingHostIdx(isEditing ? null : idx)} className={`p-1.5 rounded-lg transition-colors ${isEditing ? "bg-primary/10 text-primary" : "hover:bg-muted"}`}>
+                                  <button onClick={() => setEditingHostIdx(isEditing ? null : origIdx)} className={`p-1.5 rounded-lg transition-colors ${isEditing ? "bg-primary/10 text-primary" : "hover:bg-muted"}`}>
                                     {isEditing ? <Check className="w-4 h-4" /> : <Pencil className="w-4 h-4 text-muted-foreground" />}
                                   </button>
                                   {!isEditing && ha.hostPhone && (
@@ -532,7 +533,7 @@ export function PlanningHub() {
                                       <a href={`tel:${ha.hostPhone}`} className="p-1.5 rounded-lg hover:bg-primary/10 transition-colors"><Phone className="w-4 h-4 text-primary" /></a>
                                     </>
                                   )}
-                                  <button onClick={() => removeHostAssignment(idx)} className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors"><X className="w-4 h-4 text-muted-foreground" /></button>
+                                  <button onClick={() => removeHostAssignment(origIdx)} className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors"><X className="w-4 h-4 text-muted-foreground" /></button>
                                 </div>
                               </div>
                               {isEditing && (
@@ -540,7 +541,7 @@ export function PlanningHub() {
                                   <div className="grid grid-cols-3 gap-2">
                                     <div>
                                       <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t("role")}</label>
-                                      <select className="input-soft text-sm" value={ha.role} onChange={(e) => updateHostAssignment(idx, "role", e.target.value)}>
+                                      <select className="input-soft text-sm" value={ha.role} onChange={(e) => updateHostAssignment(origIdx, "role", e.target.value)}>
                                         <option value="hebergement">{t("hebergement")}</option>
                                         <option value="transport">{t("transport")}</option>
                                         <option value="repas">{t("repas")}</option>
@@ -548,16 +549,16 @@ export function PlanningHub() {
                                     </div>
                                     <div>
                                       <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t("date")}</label>
-                                      <input type="date" className="input-soft text-sm" value={ha.day || ""} onChange={(e) => updateHostAssignment(idx, "day", e.target.value)} />
+                                      <input type="date" className="input-soft text-sm" value={ha.day || ""} onChange={(e) => updateHostAssignment(origIdx, "day", e.target.value)} />
                                     </div>
                                     <div>
                                       <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t("time")}</label>
-                                      <input type="time" className="input-soft text-sm" value={ha.time || ""} onChange={(e) => updateHostAssignment(idx, "time", e.target.value)} />
+                                      <input type="time" className="input-soft text-sm" value={ha.time || ""} onChange={(e) => updateHostAssignment(origIdx, "time", e.target.value)} />
                                     </div>
                                   </div>
                                   <div>
                                     <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Origine</label>
-                                    <select className="input-soft text-sm" value={ha.origin || "host"} onChange={(e) => updateHostAssignment(idx, "origin", e.target.value)}>
+                                    <select className="input-soft text-sm" value={ha.origin || "host"} onChange={(e) => updateHostAssignment(origIdx, "origin", e.target.value)}>
                                       <option value="host">{t("hosts")}</option>
                                       <option value="kingdom_hall">Salle du Royaume</option>
                                       <option value="restaurant">Restaurant</option>
@@ -567,11 +568,11 @@ export function PlanningHub() {
                                     <div className="grid grid-cols-2 gap-2">
                                       <div>
                                         <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Nom restaurant</label>
-                                        <input type="text" className="input-soft text-sm" placeholder="Ex: La Brasserie" value={ha.hostName || ""} onChange={(e) => updateHostAssignment(idx, "hostName", e.target.value)} />
+                                        <input type="text" className="input-soft text-sm" placeholder="Ex: La Brasserie" value={ha.hostName || ""} onChange={(e) => updateHostAssignment(origIdx, "hostName", e.target.value)} />
                                       </div>
                                       <div>
                                         <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Adresse</label>
-                                        <input type="text" className="input-soft text-sm" placeholder="Adresse du restaurant" value={ha.hostAddress || ""} onChange={(e) => updateHostAssignment(idx, "hostAddress", e.target.value)} />
+                                        <input type="text" className="input-soft text-sm" placeholder="Adresse du restaurant" value={ha.hostAddress || ""} onChange={(e) => updateHostAssignment(origIdx, "hostAddress", e.target.value)} />
                                       </div>
                                     </div>
                                   )}
