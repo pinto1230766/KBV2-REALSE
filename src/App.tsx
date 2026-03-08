@@ -212,7 +212,7 @@ function App() {
       </div>
 
       {/* Sidebar Calendar */}
-      <aside className="w-[360px] bg-card border-l border-border/50 hidden xl:block">
+      <aside className="w-[360px] bg-card border-l border-border hidden xl:block">
         <CalendarSidebar
           visits={visits}
           onVisitClick={(visit) => {
