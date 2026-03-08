@@ -247,6 +247,43 @@ const dictionary: Record<string, TranslationEntry> = {
   rating: { fr: "Note", cv: "Nota", pt: "Nota" },
   feedback_comment: { fr: "Commentaire", cv: "Komentariu", pt: "Comentário" },
   feedback_placeholder: { fr: "Ajouter un retour...", cv: "Ajuntâ un retornu...", pt: "Adicionar um retorno..." },
+
+  // Hosts tab
+  reception_logistics: { fr: "Accueil & Logistique", cv: "Akolimentu & Lojistika", pt: "Acolhimento & Logística" },
+  assign: { fr: "Assigner", cv: "Atribuí", pt: "Atribuir" },
+  assign_host: { fr: "Assigner un hôte", cv: "Atribuí un anfitrion", pt: "Atribuir um anfitrião" },
+  select_host: { fr: "Choisir un hôte...", cv: "Skodje un anfitrion...", pt: "Escolher um anfitrião..." },
+  group_meal: { fr: "Repas de groupe", cv: "Kumida di grupu", pt: "Refeição de grupo" },
+  group_meal_desc: { fr: "Ajoutez une mention Salle du Royaume ou Restaurant.", cv: "Ajuntâ menson Sala di Reinu o Restauranti.", pt: "Adicione uma menção Salão do Reino ou Restaurante." },
+  meal_kingdom_hall_desc: { fr: "Repas prévu directement à la Salle du Royaume.", cv: "Kumida prevista diretamenti na Sala di Reinu.", pt: "Refeição prevista diretamente no Salão do Reino." },
+  meal_restaurant: { fr: "Repas Restaurant", cv: "Kumida Restauranti", pt: "Refeição Restaurante" },
+  meal_restaurant_desc: { fr: "Repas collectif au restaurant avec le groupe.", cv: "Kumida koletivu na restauranti ku grupu.", pt: "Refeição coletiva no restaurante com o grupo." },
+
+  // Messages tab
+  call: { fr: "Appel", cv: "Txamada", pt: "Chamada" },
+  no_message_sent: { fr: "Aucun message envoyé pour l'instant.", cv: "Ninhun mensajen manadu pa agora.", pt: "Nenhuma mensagem enviada por enquanto." },
+  compose: { fr: "Composer", cv: "Konponhi", pt: "Compor" },
+  recipients: { fr: "Destinataires", cv: "Destinatarius", pt: "Destinatários" },
+  write_message: { fr: "Écrire un message...", cv: "Skrebe un mensajen...", pt: "Escrever uma mensagem..." },
+  copy: { fr: "Copier", cv: "Kopia", pt: "Copiar" },
+  copied: { fr: "Copié !", cv: "Kopiadu!", pt: "Copiado!" },
+  send_whatsapp: { fr: "Envoyer via WhatsApp", cv: "Manda via WhatsApp", pt: "Enviar via WhatsApp" },
+  templates_by_step: { fr: "Modèles par étape", cv: "Modelus pa etapa", pt: "Modelos por etapa" },
+  contact_step: { fr: "Contact", cv: "Kontaktu", pt: "Contacto" },
+  preparation_step: { fr: "Préparation", cv: "Preparason", pt: "Preparação" },
+  feedback_step: { fr: "Feedback", cv: "Feedback", pt: "Feedback" },
+  insert_message: { fr: "Insérer dans le message", cv: "Inseri na mensajen", pt: "Inserir na mensagem" },
+
+  // Expenses tab
+  total_expenses: { fr: "Total dépenses", cv: "Total despezas", pt: "Total despesas" },
+  expense_label: { fr: "Libellé de la dépense", cv: "Label di despeza", pt: "Rótulo da despesa" },
+  add_expense: { fr: "Ajouter une dépense", cv: "Ajuntâ un despeza", pt: "Adicionar uma despesa" },
+
+  // Feedback tab
+  talk_quality: { fr: "Qualité du discours", cv: "Qualidadi di diskursu", pt: "Qualidade do discurso" },
+  comments_followup: { fr: "Commentaires / Suivi", cv: "Komentarius / Seguimentu", pt: "Comentários / Seguimento" },
+  feedback_visit_placeholder: { fr: "Comment s'est passée la visite ?", cv: "Komu vizita korreu?", pt: "Como correu a visita?" },
+  save_feedback: { fr: "Enregistrer le feedback", cv: "Gravâ feedback", pt: "Guardar feedback" },
 };
 
 export function useTranslation() {
