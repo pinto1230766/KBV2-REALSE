@@ -297,7 +297,7 @@ export function PlanningHub() {
   // Add expense
   const addExpense = () => {
     if (!newExpenseLabel || !newExpenseAmount) return;
-    const expenses = [...(detailForm.expenses || []), { id: generateId(), label: newExpenseLabel, amount: parseFloat(newExpenseAmount) || 0 }];
+    const expenses = [...(detailForm.expenses || []), { id: generateId(), label: newExpenseLabel, amount: parseFloat(newExpenseAmount) || 0, category: newExpenseCategory }];
     setDetailForm({ ...detailForm, expenses });
     setNewExpenseLabel("");
     setNewExpenseAmount("");
