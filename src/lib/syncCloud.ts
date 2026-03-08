@@ -1,11 +1,16 @@
 import { supabase } from "../lib/supabase";
-import type { Visit, Speaker, Host, AppSettings } from "../store/visitTypes";
+import type { Visit, Speaker, Host } from "../store/visitTypes";
 import { useVisitStore } from "../store/useVisitStore";
 import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useHostStore } from "../store/useHostStore";
 import { useSettingsStore } from "../store/useSettingsStore";
 
-// ─── Helpers: convert between camelCase (app) and snake_case (DB) ───
+// ─── Normalize name: remove newlines, extra spaces, lowercase ───
+export function normalizeName(name: string): string {
+  return name.replace(/\n/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+// ─── Helpers: convert between app model and actual DB columns ───
 
 function visitToRow(v: Visit) {
   return {
@@ -26,14 +31,10 @@ function visitToRow(v: Visit) {
     feedback_rating: v.feedbackRating || null,
     host_assignments: v.hostAssignments || [],
     companions: v.companions || [],
-    expenses: v.expenses || [],
     date_arrivee: v.date_arrivee || null,
     heure_arrivee: v.heure_arrivee || null,
     date_depart: v.date_depart || null,
     heure_depart: v.heure_depart || null,
-    speaker_dietary: v.speakerDietary || null,
-    spouse_dietary: v.spouseDietary || null,
-    group_meal_type: v.groupMealType || null,
     updated_at: v.updatedAt || new Date().toISOString(),
   };
 }
@@ -57,14 +58,10 @@ function rowToVisit(r: any): Visit {
     feedbackRating: r.feedback_rating,
     hostAssignments: r.host_assignments,
     companions: r.companions,
-    expenses: r.expenses,
     date_arrivee: r.date_arrivee,
     heure_arrivee: r.heure_arrivee,
     date_depart: r.date_depart,
     heure_depart: r.heure_depart,
-    speakerDietary: r.speaker_dietary,
-    spouseDietary: r.spouse_dietary,
-    groupMealType: r.group_meal_type,
     updatedAt: r.updated_at,
   };
 }
@@ -77,11 +74,10 @@ function speakerToRow(s: Speaker) {
     telephone: s.telephone || null,
     email: s.email || null,
     photo_url: s.photoUrl || null,
-    spouse_photo_url: s.spousePhotoUrl || null,
+    wife_photo_url: s.spousePhotoUrl || null,
     household_type: s.householdType || "single",
-    spouse_name: s.spouseName || null,
+    wife_name: s.spouseName || null,
     notes: s.notes || null,
-    talks: s.talks || [],
   };
 }
 
@@ -93,11 +89,11 @@ function rowToSpeaker(r: any): Speaker {
     telephone: r.telephone,
     email: r.email,
     photoUrl: r.photo_url,
-    spousePhotoUrl: r.spouse_photo_url,
+    spousePhotoUrl: r.wife_photo_url,
     householdType: r.household_type,
-    spouseName: r.spouse_name,
+    spouseName: r.wife_name,
     notes: r.notes,
-    talks: r.talks,
+    talks: r.talk_history || [],
   };
 }
 
@@ -108,7 +104,6 @@ function hostToRow(h: Host) {
     telephone: h.telephone || null,
     email: h.email || null,
     adresse: h.adresse || null,
-    address: h.address || null,
     notes: h.notes || null,
     role: h.role || null,
     photo_url: h.photoUrl || null,
@@ -124,7 +119,6 @@ function rowToHost(r: any): Host {
     telephone: r.telephone,
     email: r.email,
     adresse: r.adresse,
-    address: r.address,
     notes: r.notes,
     role: r.role,
     photoUrl: r.photo_url,
@@ -146,12 +140,11 @@ export async function syncCloud(): Promise<SyncResult> {
     pulled: { visits: 0, speakers: 0, hosts: 0 },
   };
 
-  // ── PUSH: upsert local data to Supabase ──
   const localVisits = useVisitStore.getState().visits;
   const localSpeakers = useSpeakerStore.getState().speakers;
   const localHosts = useHostStore.getState().hosts;
-  const localSettings = useSettingsStore.getState().settings;
 
+  // ── PUSH: upsert local data to Supabase ──
   if (localVisits.length > 0) {
     const { error } = await supabase
       .from("visits")
@@ -176,24 +169,21 @@ export async function syncCloud(): Promise<SyncResult> {
     else result.pushed.hosts = localHosts.length;
   }
 
-  // Push settings
-  await supabase.from("app_settings").upsert({
-    id: "main",
-    language: localSettings.language,
-    dark_mode: localSettings.darkMode,
-    notifications: localSettings.notifications,
-    congregation: localSettings.congregation,
-  }, { onConflict: "id" });
-
-  // ── PULL: fetch remote data and merge into local ──
+  // ── PULL: fetch remote data and merge into local (by normalized name to avoid duplicates) ──
   const { data: remoteVisits } = await supabase.from("visits").select("*");
   if (remoteVisits) {
-    const localIds = new Set(localVisits.map((v) => v.visitId));
+    const localVisitIds = new Set(localVisits.map((v) => v.visitId));
+    // Also build a set of normalized names+dates for extra dedup
+    const localVisitKeys = new Set(
+      localVisits.map((v) => `${normalizeName(v.nom)}|${v.visitDate}`)
+    );
     remoteVisits.forEach((r) => {
       const visit = rowToVisit(r);
-      if (!localIds.has(visit.visitId)) {
+      const key = `${normalizeName(visit.nom)}|${visit.visitDate}`;
+      if (!localVisitIds.has(visit.visitId) && !localVisitKeys.has(key)) {
         useVisitStore.getState().addVisit(visit);
         result.pulled.visits++;
+        localVisitKeys.add(key);
       }
     });
   }
@@ -201,11 +191,14 @@ export async function syncCloud(): Promise<SyncResult> {
   const { data: remoteSpeakers } = await supabase.from("speakers").select("*");
   if (remoteSpeakers) {
     const localIds = new Set(localSpeakers.map((s) => s.id));
+    const localNames = new Set(localSpeakers.map((s) => normalizeName(s.nom)));
     remoteSpeakers.forEach((r) => {
       const speaker = rowToSpeaker(r);
-      if (!localIds.has(speaker.id)) {
+      const nameKey = normalizeName(speaker.nom);
+      if (!localIds.has(speaker.id) && !localNames.has(nameKey)) {
         useSpeakerStore.getState().addSpeaker(speaker);
         result.pulled.speakers++;
+        localNames.add(nameKey);
       }
     });
   }
@@ -213,16 +206,18 @@ export async function syncCloud(): Promise<SyncResult> {
   const { data: remoteHosts } = await supabase.from("hosts").select("*");
   if (remoteHosts) {
     const localIds = new Set(localHosts.map((h) => h.id));
+    const localNames = new Set(localHosts.map((h) => normalizeName(h.nom)));
     remoteHosts.forEach((r) => {
       const host = rowToHost(r);
-      if (!localIds.has(host.id)) {
+      const nameKey = normalizeName(host.nom);
+      if (!localIds.has(host.id) && !localNames.has(nameKey)) {
         useHostStore.getState().addHost(host);
         result.pulled.hosts++;
+        localNames.add(nameKey);
       }
     });
   }
 
-  // Update last sync timestamp
   useSettingsStore.getState().updateCongregation({
     lastSyncAt: new Date().toISOString(),
   });

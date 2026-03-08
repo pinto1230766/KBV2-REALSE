@@ -12,7 +12,7 @@ import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useTranslation } from "../hooks/useTranslation";
 import { toast } from "sonner";
 import type { Language, Visit, Speaker } from "../store/visitTypes";
-import { syncCloud } from "../lib/syncCloud";
+import { syncCloud, normalizeName } from "../lib/syncCloud";
 
 type SettingsTab = "general" | "appearance" | "notifications" | "data";
 type ThemeMode = "light" | "dark" | "system";
@@ -239,21 +239,31 @@ export function SettingsPage() {
   const importData = async (newVisits: Visit[], newSpeakers: Speaker[]) => {
     let addedVisits = 0;
     let addedSpeakers = 0;
+    // Dedup visits by visit_id AND by normalized name+date
     const existingVisitIds = new Set(useVisitStore.getState().visits.map((v) => v.visitId));
-    const existingSpeakerNames = new Set(useSpeakerStore.getState().speakers.map((s) => s.nom.toLowerCase().replace(/\s+/g, " ")));
+    const existingVisitKeys = new Set(
+      useVisitStore.getState().visits.map((v) => `${normalizeName(v.nom)}|${v.visitDate}`)
+    );
+    // Dedup speakers by normalized name
+    const existingSpeakerNames = new Set(
+      useSpeakerStore.getState().speakers.map((s) => normalizeName(s.nom))
+    );
 
     newVisits.forEach((v) => {
-      if (!existingVisitIds.has(v.visitId)) {
+      const key = `${normalizeName(v.nom)}|${v.visitDate}`;
+      if (!existingVisitIds.has(v.visitId) && !existingVisitKeys.has(key)) {
         useVisitStore.getState().addVisit(v);
         addedVisits++;
+        existingVisitKeys.add(key);
       }
     });
 
     newSpeakers.forEach((s) => {
-      const key = s.nom.toLowerCase().replace(/\s+/g, " ");
+      const key = normalizeName(s.nom);
       if (!existingSpeakerNames.has(key)) {
         useSpeakerStore.getState().addSpeaker(s);
         addedSpeakers++;
+        existingSpeakerNames.add(key);
       }
     });
 
