@@ -175,6 +175,26 @@ export function SettingsPage() {
     }
   };
 
+  const handleCloudSync = async () => {
+    setIsCloudSyncing(true);
+    setCloudStatus("syncing");
+    try {
+      const result = await syncCloud();
+      setCloudStatus("done");
+      const totalPushed = result.pushed.visits + result.pushed.speakers + result.pushed.hosts;
+      const totalPulled = result.pulled.visits + result.pulled.speakers + result.pulled.hosts;
+      toast.success(`Cloud sync OK — ↑${totalPushed} envoyés, ↓${totalPulled} récupérés`);
+      setTimeout(() => setCloudStatus("idle"), 5000);
+    } catch (err) {
+      console.error("Cloud sync error:", err);
+      setCloudStatus("error");
+      toast.error("Erreur de synchronisation cloud");
+      setTimeout(() => setCloudStatus("idle"), 5000);
+    } finally {
+      setIsCloudSyncing(false);
+    }
+  };
+
   const handleSyncGoogleSheet = async () => {
     const url = congregation.googleSheetUrl || sheetUrlInput;
     if (!url) {
