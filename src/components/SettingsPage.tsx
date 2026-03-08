@@ -752,8 +752,7 @@ export function SettingsPage() {
             <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground">{t("quick_access")}</h3>
             <p className="text-sm text-muted-foreground">{t("quick_access_desc")}</p>
             <div className="grid grid-cols-2 gap-3">
-              <a href={congregation.googleSheetUrl || "#"} target="_blank" rel="noopener noreferrer"
-                onClick={(e) => { if (!congregation.googleSheetUrl) { e.preventDefault(); setShowSheetConfig(true); } }}
+              <a href={congregation.googleSheetUrl || "https://docs.google.com/spreadsheets/d/1drIzPPi6AohCroSyUkF1UmMFxuEtMACBF4XATDjBOcg/edit?gid=1530698388#gid=1530698388"} target="_blank" rel="noopener noreferrer"
                 className="flex items-center justify-between p-4 rounded-2xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors">
                 <span className="text-sm font-bold text-primary">Google Sheet</span>
                 <ExternalLink className="w-4 h-4 text-primary" />
