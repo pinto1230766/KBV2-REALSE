@@ -36,6 +36,7 @@ function App() {
   const setPendingVisit = useUIStore((s) => s.setPendingVisit);
   const setIsOnline = useUIStore((s) => s.setIsOnline);
   const { t } = useTranslation();
+  const { pendingCount } = useReminderEngine();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
