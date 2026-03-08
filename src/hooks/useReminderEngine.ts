@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useRef } from "react";
 import { useVisitStore } from "../store/useVisitStore";
 import { useSettingsStore } from "../store/useSettingsStore";
 import {
@@ -76,7 +76,6 @@ function sendBrowserNotification(title: string, body: string) {
 export function useReminderEngine() {
   const visits = useVisitStore((s) => s.visits);
   const settings = useSettingsStore((s) => s.settings);
-  const notifications = useNotificationStore((s) => s.notifications);
 
   const lang = settings.language;
   const responsableName = settings.congregation.responsableName || "Le responsable";
@@ -84,59 +83,11 @@ export function useReminderEngine() {
   const remindJ7 = settings.notifications.steps.remindJ7;
   const remindJ2 = settings.notifications.steps.remindJ2;
 
-  const checkReminders = useCallback(() => {
-    if (!notifEnabled) return;
-
-    // Read store state directly to avoid dependency loops
-    const { addNotification, hasNotification } = useNotificationStore.getState();
-
-    visits.forEach((visit) => {
-      if (visit.status === "cancelled" || visit.status === "completed") return;
-      const days = diffDays(visit.visitDate);
-
-      const createReminder = (type: ReminderType) => {
-        if (hasNotification(visit.visitId, type)) return;
-        const msg = buildWhatsAppMessage(
-          type,
-          visit.nom,
-          visit.visitDate,
-          visit.congregation,
-          responsableName,
-          lang
-        );
-        const n: AppNotification = {
-          id: generateId(),
-          visitId: visit.visitId,
-          speakerName: visit.nom,
-          visitDate: visit.visitDate,
-          type,
-          status: "pending",
-          createdAt: new Date().toISOString(),
-          whatsappMessage: msg,
-          whatsappPhone: visit.speakerPhone || "",
-        };
-        addNotification(n);
-
-        // Browser push
-        const typeLabel =
-          type === "j7" ? "J-7" : type === "j2" ? "J-2" : "Remerciement";
-        sendBrowserNotification(
-          `🔔 ${typeLabel} – ${visit.nom}`,
-          `Visite du ${new Date(visit.visitDate + "T00:00:00").toLocaleDateString("fr-FR")}`
-        );
-      };
-
-      if (remindJ7 && days <= 7 && days > 2) {
-        createReminder("j7");
-      }
-      if (remindJ2 && days <= 2 && days >= 0) {
-        createReminder("j2");
-      }
-      if (days <= -1 && days >= -3) {
-        createReminder("j1_thanks");
-      }
-    });
-  }, [visits, notifEnabled, remindJ7, remindJ2, lang, responsableName]);
+  // Stable ref for checkReminders to avoid re-creating on every render
+  const visitsRef = useRef(visits);
+  visitsRef.current = visits;
+  const configRef = useRef({ notifEnabled, remindJ7, remindJ2, lang, responsableName });
+  configRef.current = { notifEnabled, remindJ7, remindJ2, lang, responsableName };
 
   useEffect(() => {
     if (notifEnabled) {
@@ -144,14 +95,50 @@ export function useReminderEngine() {
     }
   }, [notifEnabled]);
 
-  // Check on mount and every 30 minutes
   useEffect(() => {
-    checkReminders();
-    const interval = setInterval(checkReminders, 30 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [checkReminders]);
+    const check = () => {
+      const { notifEnabled: enabled, remindJ7: j7, remindJ2: j2, lang: l, responsableName: rn } = configRef.current;
+      if (!enabled) return;
 
-  const pendingCount = notifications.filter((n) => n.status === "pending").length;
+      const { addNotification, hasNotification } = useNotificationStore.getState();
+      const currentVisits = visitsRef.current;
+
+      currentVisits.forEach((visit) => {
+        if (visit.status === "cancelled" || visit.status === "completed") return;
+        const days = diffDays(visit.visitDate);
+
+        const createReminder = (type: ReminderType) => {
+          if (hasNotification(visit.visitId, type)) return;
+          const msg = buildWhatsAppMessage(type, visit.nom, visit.visitDate, visit.congregation, rn, l);
+          addNotification({
+            id: generateId(),
+            visitId: visit.visitId,
+            speakerName: visit.nom,
+            visitDate: visit.visitDate,
+            type,
+            status: "pending",
+            createdAt: new Date().toISOString(),
+            whatsappMessage: msg,
+            whatsappPhone: visit.speakerPhone || "",
+          });
+          const typeLabel = type === "j7" ? "J-7" : type === "j2" ? "J-2" : "Remerciement";
+          sendBrowserNotification(`🔔 ${typeLabel} – ${visit.nom}`, `Visite du ${new Date(visit.visitDate + "T00:00:00").toLocaleDateString("fr-FR")}`);
+        };
+
+        if (j7 && days <= 7 && days > 2) createReminder("j7");
+        if (j2 && days <= 2 && days >= 0) createReminder("j2");
+        if (days <= -1 && days >= -3) createReminder("j1_thanks");
+      });
+    };
+
+    // Run once after mount, then every 30 min
+    const timeout = setTimeout(check, 1000);
+    const interval = setInterval(check, 30 * 60 * 1000);
+    return () => { clearTimeout(timeout); clearInterval(interval); };
+  }, []); // Empty deps - uses refs for current values
+
+  // Read pending count separately (safe, doesn't trigger the check loop)
+  const pendingCount = useNotificationStore((s) => s.notifications.filter((n) => n.status === "pending").length);
 
   return { pendingCount };
 }
