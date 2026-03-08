@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Home, Plus, Trash2, Edit3, Phone, Mail, MapPin, Users as UsersIcon, AlertTriangle } from "lucide-react";
+import { Home, Plus, Trash2, Edit3, Phone, MapPin, ChevronRight, AlertTriangle, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoUpload } from "./PhotoUpload";
 import { useHostStore } from "../store/useHostStore";
@@ -60,51 +60,94 @@ export function GlobalHostList() {
 
   const filtered = hosts.filter((h) => h.nom.toLowerCase().includes(search.toLowerCase()));
 
-  const roleLabel = (role?: string) => {
-    if (role === "hebergement") return t("hebergement");
-    if (role === "transport") return t("transport");
-    if (role === "repas") return t("repas");
-    return role || "";
-  };
-
-  const roleColor = (role?: string) => {
-    if (role === "hebergement") return "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300";
-    if (role === "transport") return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300";
-    if (role === "repas") return "bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300";
-    return "bg-muted text-muted-foreground";
-  };
-
   return (
     <div className="py-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2">
-          <Home className="w-5 h-5 text-blue-500" />
-          {t("hosts")} ({hosts.length})
-        </h2>
-        <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity"
-        >
-          <Plus className="w-4 h-4" />
-          {t("add_host")}
+      {/* Header */}
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="mr-auto">
+          <h2 className="text-xl font-black text-foreground">{t("hosts")}</h2>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            {t("global_repertoire")} <span className="text-primary">{hosts.length}/{hosts.length}</span>
+          </p>
+        </div>
+        <motion.button whileTap={{ scale: 0.97 }} onClick={() => { resetForm(); setShowForm(true); }}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 transition-colors">
+          <Plus className="w-4 h-4" /> {t("add")}
         </motion.button>
       </div>
 
-      <input className="input-soft text-sm" placeholder={t("search")} value={search} onChange={(e) => setSearch(e.target.value)} />
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <input className="input-soft text-sm pl-10" placeholder={t("search_host")} value={search} onChange={(e) => setSearch(e.target.value)} />
+      </div>
+
+      {/* Grid */}
+      {filtered.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <Home className="w-12 h-12 mx-auto mb-3 opacity-30" />
+          <p className="text-sm">{t("no_results")}</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          <AnimatePresence>
+            {filtered.map((h, i) => (
+              <motion.div
+                key={h.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ delay: i * 0.02 }}
+                className="premium-card p-4"
+              >
+                <div className="flex items-center gap-3">
+                  {h.photoUrl ? (
+                    <img src={h.photoUrl} alt={h.nom} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Home className="w-4 h-4 text-primary" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-black text-foreground truncate uppercase">{h.nom}</p>
+                    {(h.adresse || h.address) && (
+                      <p className="text-[10px] text-muted-foreground flex items-center gap-1 truncate">
+                        <MapPin className="w-3 h-3 flex-shrink-0" /> {h.adresse || h.address}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {h.telephone && (
+                  <div className="flex items-center gap-2 mt-3 text-[11px] text-muted-foreground">
+                    <Phone className="w-3.5 h-3.5" />
+                    <a href={`tel:${h.telephone}`} className="hover:text-primary transition-colors">{h.telephone}</a>
+                  </div>
+                )}
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+                  <div className="flex gap-1">
+                    <button onClick={() => openEdit(h)} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+                      <Edit3 className="w-3.5 h-3.5 text-muted-foreground" />
+                    </button>
+                    <button onClick={() => setConfirmDeleteId(h.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors">
+                      <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                    </button>
+                  </div>
+                  <button onClick={() => openEdit(h)} className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1 hover:underline">
+                    {t("view")} <ChevronRight className="w-3 h-3" />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      )}
 
       {/* Form Modal */}
       <AnimatePresence>
         {showForm && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={resetForm}>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="w-full max-w-md bg-card rounded-2xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="w-full max-w-md bg-card rounded-2xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <h3 className="text-sm font-black uppercase tracking-widest text-foreground">{editing ? t("edit") : t("add_host")}</h3>
               <PhotoUpload photoUrl={form.photoUrl} onPhotoChange={(url) => setForm({ ...form, photoUrl: url })} />
               <input className="input-soft text-sm" placeholder={t("name")} value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} />
@@ -139,7 +182,8 @@ export function GlobalHostList() {
       <AnimatePresence>
         {confirmDeleteId && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setConfirmDeleteId(null)}>
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-sm bg-card rounded-2xl p-6 space-y-4 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-sm bg-card rounded-2xl p-6 space-y-4 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
               <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
                 <AlertTriangle className="w-6 h-6 text-destructive" />
               </div>
@@ -152,76 +196,6 @@ export function GlobalHostList() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {filtered.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
-          <Home className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">{t("no_results")}</p>
-        </div>
-      ) : (
-        <div className="grid gap-2">
-          <AnimatePresence>
-            {filtered.map((h, i) => (
-              <motion.div
-                key={h.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, x: -50 }}
-                transition={{ delay: i * 0.03 }}
-                className="premium-card p-4 flex items-start gap-3"
-              >
-                {h.photoUrl ? (
-                  <img src={h.photoUrl} alt={h.nom} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
-                    <Home className="w-4 h-4 text-blue-500" />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-bold text-foreground truncate">{h.nom}</p>
-                    {h.role && (
-                      <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${roleColor(h.role)}`}>
-                        {roleLabel(h.role)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap gap-3 mt-1">
-                    {h.telephone && (
-                      <a href={`tel:${h.telephone}`} className="text-[10px] text-primary flex items-center gap-1">
-                        <Phone className="w-3 h-3" /> {h.telephone}
-                      </a>
-                    )}
-                    {h.email && (
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                        <Mail className="w-3 h-3" /> {h.email}
-                      </span>
-                    )}
-                    {(h.adresse || h.address) && (
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                        <MapPin className="w-3 h-3" /> {h.adresse || h.address}
-                      </span>
-                    )}
-                    {h.capacity && (
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                        <UsersIcon className="w-3 h-3" /> {h.capacity}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex gap-1">
-                  <button onClick={() => openEdit(h)} className="p-2 rounded-lg hover:bg-muted transition-colors">
-                    <Edit3 className="w-3.5 h-3.5 text-muted-foreground" />
-                  </button>
-                  <button onClick={() => setConfirmDeleteId(h.id)} className="p-2 rounded-lg hover:bg-destructive/10 transition-colors">
-                    <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      )}
     </div>
   );
 }

@@ -1,12 +1,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { AppSettings, Language } from "./visitTypes";
+import type { AppSettings, Language, CongregationProfile } from "./visitTypes";
 
 interface SettingsState {
   settings: AppSettings;
   setLanguage: (lang: Language) => void;
   setDarkMode: (dark: boolean) => void;
   updateNotifications: (notif: Partial<AppSettings["notifications"]>) => void;
+  updateCongregation: (data: Partial<CongregationProfile>) => void;
 }
 
 const defaultSettings: AppSettings = {
@@ -15,6 +16,16 @@ const defaultSettings: AppSettings = {
   notifications: {
     enabled: false,
     steps: { remindJ7: true, remindJ2: true },
+  },
+  congregation: {
+    name: "Lyon KBV",
+    city: "Lyon",
+    day: "Dimanche",
+    time: "11:30",
+    responsableName: "",
+    responsablePhone: "",
+    whatsappGroup: "",
+    whatsappInviteId: "",
   },
 };
 
@@ -37,6 +48,13 @@ export const useSettingsStore = create<SettingsState>()(
           settings: {
             ...s.settings,
             notifications: { ...s.settings.notifications, ...notif },
+          },
+        })),
+      updateCongregation: (data) =>
+        set((s) => ({
+          settings: {
+            ...s.settings,
+            congregation: { ...s.settings.congregation, ...data },
           },
         })),
     }),
