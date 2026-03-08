@@ -111,7 +111,7 @@ export function SettingsPage() {
           <div className={`w-11 h-6 rounded-full transition-colors relative ${settings.darkMode ? "bg-primary" : "bg-muted"}`}>
             <motion.div
               layout
-              className="w-5 h-5 rounded-full bg-card shadow absolute top-0.5"
+              className="w-5 h-5 rounded-full bg-background shadow-md border border-border absolute top-0.5"
               style={{ left: settings.darkMode ? "calc(100% - 22px)" : "2px" }}
             />
           </div>
@@ -132,7 +132,7 @@ export function SettingsPage() {
           <div className={`w-11 h-6 rounded-full transition-colors relative ${settings.notifications.enabled ? "bg-primary" : "bg-muted"}`}>
             <motion.div
               layout
-              className="w-5 h-5 rounded-full bg-card shadow absolute top-0.5"
+              className="w-5 h-5 rounded-full bg-background shadow-md border border-border absolute top-0.5"
               style={{ left: settings.notifications.enabled ? "calc(100% - 22px)" : "2px" }}
             />
           </div>
