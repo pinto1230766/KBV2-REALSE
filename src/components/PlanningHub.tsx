@@ -349,16 +349,158 @@ export function PlanningHub() {
 
   // Get recipients for messages
   const getRecipients = () => {
-    const recipients: Array<{ label: string; phone: string; type: string }> = [];
+    const recipients: Array<{ label: string; phone: string; type: string; hostName?: string }> = [];
     if (detailForm.speakerPhone) {
       recipients.push({ label: t("speaker_label"), phone: detailForm.speakerPhone, type: "orateur" });
     }
     (detailForm.hostAssignments || []).forEach((ha) => {
       if (ha.hostPhone) {
-        recipients.push({ label: `${t(ha.role)}`, phone: ha.hostPhone, type: ha.role });
+        recipients.push({ label: `${ha.hostName || ""} (${t(ha.role)})`, phone: ha.hostPhone, type: ha.role, hostName: ha.hostName });
       }
     });
+    if (congregation.whatsappGroup) {
+      recipients.push({ label: "👥 " + t("group"), phone: congregation.whatsappGroup, type: "groupe" });
+    }
     return recipients;
+  };
+
+  const getSelectedRecipient = () => getRecipients().find((r) => r.type === selectedRecipient);
+
+  // Format a date string to French full format
+  const formatDateFull = (dateStr?: string) => {
+    if (!dateStr) return "___";
+    try {
+      const d = new Date(dateStr + "T00:00:00");
+      return d.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    } catch { return dateStr; }
+  };
+  const formatDayOnly = (dateStr?: string) => {
+    if (!dateStr) return "___";
+    try {
+      return new Date(dateStr + "T00:00:00").toLocaleDateString(locale, { weekday: "long" });
+    } catch { return "___"; }
+  };
+
+  // Resolve all template variables with real data
+  const resolveVariables = (text: string): string => {
+    if (!viewVisit) return text;
+    const speaker = getSpeakerForVisit(viewVisit);
+    const nameParts = viewVisit.nom?.split(" ") || [];
+    const prenom = nameParts[0] || "";
+    const nom = nameParts.slice(1).join(" ") || "";
+
+    // Find hosts by role
+    const hostsByRole = (role: string) => (detailForm.hostAssignments || []).filter((ha) => ha.role === role);
+    const hebergementHosts = hostsByRole("hebergement");
+    const repasHosts = hostsByRole("repas");
+    const transportHosts = hostsByRole("transport");
+
+    // Build planning sections
+    const buildHostSection = (hosts: HostAssignment[]) => {
+      if (hosts.length === 0) return "Non défini";
+      return hosts.map((h) => {
+        const day = h.day ? formatDateFull(h.day) : "";
+        const time = h.time || "";
+        const address = h.hostAddress || "";
+        return `${h.hostName || ""}${day ? " – " + day : ""}${time ? " à " + time : ""}${address ? "\n📍 " + address : ""}`;
+      }).join("\n");
+    };
+
+    // Companions
+    const companions = detailForm.companions || [];
+    const nbAccompagnants = companions.length;
+    const nomsAccompagnants = companions.map((c) => c.nom).join(", ") || "Aucun";
+    const accompagnantsDetails = nbAccompagnants > 0
+      ? `👥 Accompagnants (${nbAccompagnants}) : ${nomsAccompagnants}`
+      : "";
+
+    // Allergies
+    const allergiesSpeaker = detailForm.speakerDietary || "Aucune";
+    const allergiesSpouse = detailForm.spouseDietary || "";
+    const detailsAllergies = allergiesSpouse ? `${allergiesSpeaker} / ${allergiesSpouse}` : allergiesSpeaker;
+
+    // Channel label
+    const channelLabel = detailForm.locationType === "zoom" ? "Zoom" : detailForm.locationType === "streaming" ? "Streaming" : "";
+
+    // First repas host info
+    const firstRepas = repasHosts[0];
+    const firstTransport = transportHosts[0];
+
+    const vars: Record<string, string> = {
+      // Orateur
+      "{prenom_orateur}": prenom,
+      "{nom_orateur}": nom,
+      "{congregation_orateur}": viewVisit.congregation || "",
+      "{tel_orateur}": detailForm.speakerPhone || "",
+      "{speakerName}": viewVisit.nom || "",
+      "{congregation}": viewVisit.congregation || "",
+      // Visite
+      "{date_visite}": formatDateFull(viewVisit.visitDate),
+      "{jour_semaine}": formatDayOnly(viewVisit.visitDate),
+      "{heure_visite}": detailForm.heure_visite || congregation.time || "11:30",
+      "{theme_discours}": detailForm.talkTheme || "",
+      "{numero_discours}": detailForm.talkNoOrType || "",
+      "{talkTitle}": detailForm.talkTheme || "",
+      "{visitDate}": formatDateFull(viewVisit.visitDate),
+      "{visitTime}": detailForm.heure_visite || "",
+      "{location}": detailForm.locationType === "kingdom_hall" ? "Salle du Royaume" : channelLabel || "Autre",
+      // Arrivée / Départ
+      "{date_arrivee}": formatDateFull(detailForm.date_arrivee),
+      "{jour_arrivee}": formatDayOnly(detailForm.date_arrivee),
+      "{heure_arrivee}": detailForm.heure_arrivee || "___",
+      "{date_depart}": formatDateFull(detailForm.date_depart),
+      "{jour_depart}": formatDayOnly(detailForm.date_depart),
+      "{heure_depart}": detailForm.heure_depart || "___",
+      "{jour_visite}": formatDayOnly(viewVisit.visitDate),
+      // Hébergement
+      "{hebergement_details}": buildHostSection(hebergementHosts),
+      "{hebergement_planning}": buildHostSection(hebergementHosts),
+      "{nom_hebergeur}": hebergementHosts[0]?.hostName || "___",
+      "{prenom_hotesse}": hebergementHosts[0]?.hostName?.split(" ")[0] || "___",
+      "{adresse_hebergeur}": hebergementHosts[0]?.hostAddress || "___",
+      "{tel_hebergeur}": hebergementHosts[0]?.hostPhone || "___",
+      // Repas
+      "{repas_details}": buildHostSection(repasHosts),
+      "{repas_planning}": buildHostSection(repasHosts),
+      "{nom_responsable_repas}": firstRepas?.hostName || "___",
+      "{prenom_responsable_repas}": firstRepas?.hostName?.split(" ")[0] || "___",
+      "{tel_responsable_repas}": firstRepas?.hostPhone || "___",
+      "{date_repas}": firstRepas?.day ? formatDateFull(firstRepas.day) : "___",
+      "{jour_repas}": firstRepas?.day ? formatDayOnly(firstRepas.day) : "___",
+      "{heure_repas}": firstRepas?.time || "___",
+      "{adresse_repas}": firstRepas?.hostAddress || "___",
+      // Transport
+      "{transport_details}": buildHostSection(transportHosts),
+      "{transport_planning}": buildHostSection(transportHosts),
+      "{nom_chauffeur}": firstTransport?.hostName || "___",
+      "{prenom_chauffeur}": firstTransport?.hostName?.split(" ")[0] || "___",
+      "{tel_chauffeur}": firstTransport?.hostPhone || "___",
+      "{date_transport}": firstTransport?.day ? formatDateFull(firstTransport.day) : "___",
+      "{heure_transport}": firstTransport?.time || "___",
+      "{lieu_depart}": "___",
+      "{lieu_arrivee}": "Salle du Royaume",
+      // Accompagnants
+      "{nb_accompagnants}": String(nbAccompagnants),
+      "{noms_accompagnants}": nomsAccompagnants,
+      "{nb_total_personnes}": String(nbAccompagnants + 1),
+      "{allergies_orateur}": allergiesSpeaker,
+      "{allergies_orateur_et_accompagnants}": detailsAllergies,
+      "{details_allergies}": detailsAllergies,
+      // Coordinateur
+      "{ton_nom}": congregation.responsableName || "___",
+      "{mon_tel}": congregation.responsablePhone || "___",
+      "{hospitalityOverseer}": congregation.responsableName || "___",
+      "{hospitalityOverseerPhone}": congregation.responsablePhone || "___",
+      "{ta_tache}": "Responsable hospitalité",
+      // Channel
+      "{visit_channel_label}": channelLabel || "___",
+    };
+
+    let result = text;
+    for (const [key, value] of Object.entries(vars)) {
+      result = result.split(key).join(value);
+    }
+    return result;
   };
 
   const detailTabs: Array<{ id: DetailTab; label: string; icon: any }> = [
@@ -749,15 +891,20 @@ export function PlanningHub() {
                                 </button>
                               ))}
                             </div>
-                            <p className="text-[10px] text-muted-foreground">
-                              {viewVisit.nom} · {detailForm.speakerPhone || ""}
-                            </p>
+                            {(() => {
+                              const recipient = getSelectedRecipient();
+                              return (
+                                <p className="text-[10px] text-muted-foreground">
+                                  {recipient ? `${recipient.label} · ${recipient.phone}` : viewVisit.nom}
+                                </p>
+                              );
+                            })()}
                             <textarea ref={(el) => { if (el) { el.style.height = "auto"; el.style.height = Math.max(80, el.scrollHeight) + "px"; } }} className="input-soft text-sm min-h-[80px] max-h-[60vh] resize-y w-full" placeholder={t("write_message")} value={messageText} onChange={(e) => setMessageText(e.target.value)} />
                             <div className="flex items-center justify-end gap-2">
                               <button onClick={() => copyText(messageText)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border text-xs font-bold text-foreground hover:bg-muted transition-colors">
                                 <Copy className="w-3.5 h-3.5" /> {t("copy")}
                               </button>
-                              <button onClick={() => { const phone = detailForm.speakerPhone || ""; if (phone) sendWhatsApp(phone, messageText); }}
+                              <button onClick={() => { const recipient = getSelectedRecipient(); const phone = recipient?.phone || detailForm.speakerPhone || ""; if (phone) sendWhatsApp(phone, messageText); }}
                                 className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider">
                                 <Send className="w-3.5 h-3.5" /> {t("send_whatsapp")}
                               </button>
@@ -789,9 +936,18 @@ export function PlanningHub() {
                                   <div className="bg-muted/30 rounded-xl p-4 space-y-2">
                                     <p className="text-sm font-bold text-foreground">{tmpl.title}</p>
                                     <p className="text-[10px] text-muted-foreground">{tmpl.desc}</p>
-                                    <p className="text-xs text-foreground whitespace-pre-line line-clamp-6">{tmpl.body}</p>
+                                    <p className="text-xs text-foreground whitespace-pre-line line-clamp-6">{resolveVariables(tmpl.body)}</p>
                                   </div>
-                                  <button onClick={() => { setMessageText(tmpl.body); setTimeout(() => { const ta = document.querySelector('textarea[placeholder]'); if (ta) ta.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100); }} className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider">
+                                  <button onClick={() => {
+                                    const resolved = resolveVariables(tmpl.body);
+                                    setMessageText(resolved);
+                                    // Auto-select recipient based on template category
+                                    if (templates.category === "speaker") setSelectedRecipient("orateur");
+                                    else if (templates.category === "repas") setSelectedRecipient("repas");
+                                    else if (templates.category === "transport") setSelectedRecipient("transport");
+                                    else if (templates.category === "groupe") setSelectedRecipient("groupe");
+                                    setTimeout(() => { const ta = document.querySelector('textarea[placeholder]'); if (ta) ta.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+                                  }} className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider">
                                     {t("insert_message")}
                                   </button>
                                 </div>
