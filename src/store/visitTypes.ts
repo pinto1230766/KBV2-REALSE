@@ -60,6 +60,7 @@ export interface Visit {
   date_depart?: string;
   heure_depart?: string;
   speakerDietary?: string;
+  spouseDietary?: string;
   updatedAt?: string;
 }
 
