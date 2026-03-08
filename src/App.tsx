@@ -154,7 +154,7 @@ function App() {
               onChange={(e) => setSearchTerm(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)}
-              className="w-full pl-10 pr-4 py-2.5 bg-muted rounded-full border border-border/50 text-[10px] font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase tracking-widest text-foreground"
+              className="w-full pl-10 pr-4 py-2.5 bg-muted rounded-full border border-border text-[10px] font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase tracking-widest text-foreground placeholder:text-muted-foreground"
             />
             {isSearchFocused && trimmedTerm && (
               <div className="absolute z-20 mt-2 w-full rounded-2xl bg-card border border-border shadow-xl">
