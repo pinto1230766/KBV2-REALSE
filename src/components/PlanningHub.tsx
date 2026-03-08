@@ -338,16 +338,24 @@ export function PlanningHub() {
   };
 
   const sendWhatsApp = (phone: string, text: string) => {
+    // Always copy message first
+    navigator.clipboard.writeText(text);
     if (phone === WHATSAPP_GROUP_ID || phone.length < 6) {
-      // Group: open WhatsApp group chat link
-      window.open(`https://chat.whatsapp.com/${WHATSAPP_GROUP_ID}`, "_blank");
-      // Also copy message to clipboard so user can paste it
-      navigator.clipboard.writeText(text);
-      toast.success(t("copied") + " – Collez le message dans le groupe");
+      // For group: open invite link, user pastes message
+      const link = `https://chat.whatsapp.com/${WHATSAPP_GROUP_ID}`;
+      const a = document.createElement("a");
+      a.href = link; a.target = "_blank"; a.rel = "noopener noreferrer";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      toast.success("✅ Message copié – Collez-le dans le groupe WhatsApp");
       return;
     }
     const cleaned = phone.replace(/\s/g, "");
-    window.open(`https://wa.me/${cleaned}?text=${encodeURIComponent(text)}`, "_blank");
+    // Use direct link with anchor click to bypass iframe restrictions
+    const url = `https://wa.me/${cleaned}?text=${encodeURIComponent(text)}`;
+    const a = document.createElement("a");
+    a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    toast.success("✅ Message copié + WhatsApp ouvert");
   };
 
   const copyText = (text: string) => {
