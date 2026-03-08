@@ -15,6 +15,9 @@ import type { Language, Visit, Speaker } from "../store/visitTypes";
 import { syncCloud, normalizeName } from "../lib/syncCloud";
 import { parseCSV, extractSheetInfo, parseRowsToData } from "../lib/sheetUtils";
 
+type SettingsTab = "general" | "appearance" | "notifications" | "data";
+type ThemeMode = "light" | "dark" | "system";
+
 export function SettingsPage() {
   const { settings, setLanguage, setDarkMode, updateNotifications, updateCongregation } = useSettingsStore();
   const congregation = settings.congregation || { name: "", city: "", day: "Dimanche", time: "11:30", responsableName: "", responsablePhone: "", whatsappGroup: "", whatsappInviteId: "", googleSheetUrl: "", lastSyncAt: "" };
