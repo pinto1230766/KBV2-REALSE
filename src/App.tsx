@@ -105,7 +105,7 @@ function App() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="px-4 sm:px-8 py-3 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-card shadow-sm transition-colors gap-3 sm:gap-8 border-b border-border/50">
+        <header className="px-4 sm:px-8 py-3 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-card shadow-sm transition-colors gap-3 sm:gap-8 border-b border-border">
           <div className="flex items-center gap-3 sm:gap-8 w-full sm:w-auto">
             {/* Logo */}
             <div className="flex items-center gap-3">
@@ -113,7 +113,7 @@ function App() {
                 <span className="text-lg font-black text-primary-foreground">K</span>
               </div>
               <div>
-                <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.35em] text-primary-500">
+                <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.35em] text-primary">
                   Coordination
                 </p>
                 <h1 className="text-lg sm:text-xl font-black text-foreground">KBV LYON</h1>
