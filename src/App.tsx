@@ -26,6 +26,7 @@ import type { AppTab } from "./store/useUIStore";
 import { useTranslation } from "./hooks/useTranslation";
 import { useReminderEngine } from "./hooks/useReminderEngine";
 import { NotificationCenter } from "./components/NotificationCenter";
+import { useAutoSync } from "./hooks/useAutoSync";
 
 function App() {
   const visits = useVisitStore((s) => s.visits);
