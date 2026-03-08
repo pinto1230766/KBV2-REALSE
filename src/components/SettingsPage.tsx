@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   Globe, Moon, Sun, Bell, Database, Download, Upload,
   Monitor, User, MessageSquare, CloudOff, Cloud, RefreshCw,
-  FileSpreadsheet, FolderArchive, ExternalLink, Search, Trash2, Check
+  FileSpreadsheet, FolderArchive, ExternalLink, Search, Trash2, Check, Link2, Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSettingsStore } from "../store/useSettingsStore";
@@ -11,14 +11,140 @@ import { useHostStore } from "../store/useHostStore";
 import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useTranslation } from "../hooks/useTranslation";
 import { toast } from "sonner";
-import type { Language } from "../store/visitTypes";
+import type { Language, Visit, Speaker } from "../store/visitTypes";
 
 type SettingsTab = "general" | "appearance" | "notifications" | "data";
 type ThemeMode = "light" | "dark" | "system";
 
+// Parse Google Sheets CSV
+function parseCSV(text: string): string[][] {
+  const rows: string[][] = [];
+  let current = "";
+  let inQuotes = false;
+  let row: string[] = [];
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (inQuotes) {
+      if (char === '"' && text[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else if (char === '"') {
+        inQuotes = false;
+      } else {
+        current += char;
+      }
+    } else {
+      if (char === '"') {
+        inQuotes = true;
+      } else if (char === ",") {
+        row.push(current.trim());
+        current = "";
+      } else if (char === "\n" || (char === "\r" && text[i + 1] === "\n")) {
+        row.push(current.trim());
+        current = "";
+        if (row.some((c) => c !== "")) rows.push(row);
+        row = [];
+        if (char === "\r") i++;
+      } else {
+        current += char;
+      }
+    }
+  }
+  row.push(current.trim());
+  if (row.some((c) => c !== "")) rows.push(row);
+  return rows;
+}
+
+function extractSheetInfo(url: string): { id: string; gid: string } | null {
+  const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+  if (!match) return null;
+  const id = match[1];
+  const gidMatch = url.match(/gid=(\d+)/);
+  const gid = gidMatch ? gidMatch[1] : "0";
+  return { id, gid };
+}
+
+function parseSheetDate(dateStr: string): string {
+  // Handles DD/MM/YYYY format
+  const parts = dateStr.split("/");
+  if (parts.length === 3) {
+    const [day, month, year] = parts;
+    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  }
+  return dateStr;
+}
+
+function parseRowsToVisitsAndSpeakers(rows: string[][]): { visits: Visit[]; speakers: Speaker[] } {
+  const visits: Visit[] = [];
+  const speakerMap = new Map<string, Speaker>();
+
+  for (const row of rows) {
+    // Find date column (column index 1 based on sheet structure)
+    const dateStr = row[1]?.trim();
+    if (!dateStr || !/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) continue;
+
+    const orador = row[2]?.trim() || "";
+    const congregation = row[3]?.trim() || "";
+    const talkNo = row[4]?.trim() || "";
+    const theme = row[5]?.trim() || "";
+
+    if (!orador) continue;
+
+    // Check if it's an event (no talk number, special text)
+    const isEvent = !talkNo && (
+      orador.toLowerCase().includes("assemblei") ||
+      orador.toLowerCase().includes("runion") ||
+      orador.toLowerCase().includes("visita") ||
+      orador.toLowerCase().includes("asenbleia") ||
+      orador.toLowerCase().includes("komemorason")
+    );
+
+    const visitDate = parseSheetDate(dateStr);
+    const visitId = `sheet-${visitDate}`;
+
+    if (isEvent) {
+      visits.push({
+        visitId,
+        nom: orador,
+        congregation: congregation || "",
+        visitDate,
+        locationType: "kingdom_hall",
+        status: "scheduled",
+        isEvent: true,
+        talkNoOrType: talkNo || "event",
+        talkTheme: theme,
+      });
+    } else {
+      // Create speaker if not already known
+      const speakerKey = orador.toLowerCase().replace(/\s+/g, " ");
+      if (!speakerMap.has(speakerKey)) {
+        speakerMap.set(speakerKey, {
+          id: `sheet-spk-${speakerKey.replace(/\s/g, "-")}`,
+          nom: orador,
+          congregation: congregation,
+        });
+      }
+
+      visits.push({
+        visitId,
+        nom: orador,
+        congregation: congregation,
+        visitDate,
+        locationType: "kingdom_hall",
+        status: new Date(visitDate) < new Date() ? "completed" : "scheduled",
+        talkNoOrType: talkNo,
+        talkTheme: theme,
+      });
+    }
+  }
+
+  return { visits, speakers: Array.from(speakerMap.values()) };
+}
+
 export function SettingsPage() {
   const { settings, setLanguage, setDarkMode, updateNotifications, updateCongregation } = useSettingsStore();
-  const congregation = settings.congregation || { name: "", city: "", day: "Dimanche", time: "11:30", responsableName: "", responsablePhone: "", whatsappGroup: "", whatsappInviteId: "" };
+  const congregation = settings.congregation || { name: "", city: "", day: "Dimanche", time: "11:30", responsableName: "", responsablePhone: "", whatsappGroup: "", whatsappInviteId: "", googleSheetUrl: "", lastSyncAt: "" };
   const notifications = settings.notifications || { enabled: false, steps: { remindJ7: true, remindJ2: true } };
   const visits = useVisitStore((s) => s.visits);
   const hosts = useHostStore((s) => s.hosts);
@@ -29,6 +155,9 @@ export function SettingsPage() {
   const [vibrationEnabled, setVibrationEnabled] = useState(true);
   const [duplicates, setDuplicates] = useState<Array<{ type: string; name: string; ids: string[] }>>([]);
   const [selectedDuplicates, setSelectedDuplicates] = useState<string[]>([]);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [sheetUrlInput, setSheetUrlInput] = useState(congregation.googleSheetUrl || "");
+  const [showSheetConfig, setShowSheetConfig] = useState(false);
 
   const themeMode: ThemeMode = settings.darkMode ? "dark" : "light";
 
@@ -38,10 +167,73 @@ export function SettingsPage() {
     } else if (mode === "light") {
       setDarkMode(false);
     } else {
-      // System mode: follow OS preference
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       setDarkMode(prefersDark);
     }
+  };
+
+  const handleSyncGoogleSheet = async () => {
+    const url = congregation.googleSheetUrl || sheetUrlInput;
+    if (!url) {
+      setShowSheetConfig(true);
+      return;
+    }
+
+    const info = extractSheetInfo(url);
+    if (!info) {
+      toast.error(t("invalid_sheet_url"));
+      return;
+    }
+
+    setIsSyncing(true);
+    try {
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${info.id}/export?format=csv&gid=${info.gid}`;
+      const response = await fetch(csvUrl);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const text = await response.text();
+      const rows = parseCSV(text);
+      const { visits: newVisits, speakers: newSpeakers } = parseRowsToVisitsAndSpeakers(rows);
+
+      let addedVisits = 0;
+      let addedSpeakers = 0;
+      const existingVisitIds = new Set(useVisitStore.getState().visits.map((v) => v.visitId));
+      const existingSpeakerNames = new Set(useSpeakerStore.getState().speakers.map((s) => s.nom.toLowerCase().replace(/\s+/g, " ")));
+
+      newVisits.forEach((v) => {
+        if (!existingVisitIds.has(v.visitId)) {
+          useVisitStore.getState().addVisit(v);
+          addedVisits++;
+        }
+      });
+
+      newSpeakers.forEach((s) => {
+        const key = s.nom.toLowerCase().replace(/\s+/g, " ");
+        if (!existingSpeakerNames.has(key)) {
+          useSpeakerStore.getState().addSpeaker(s);
+          addedSpeakers++;
+        }
+      });
+
+      updateCongregation({ lastSyncAt: new Date().toISOString() });
+      toast.success(`${t("sync_success")}: +${addedVisits} visites, +${addedSpeakers} orateurs`);
+    } catch (err) {
+      console.error("Sync error:", err);
+      toast.error(t("sync_error"));
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleSaveSheetUrl = () => {
+    if (!sheetUrlInput) return;
+    const info = extractSheetInfo(sheetUrlInput);
+    if (!info) {
+      toast.error(t("invalid_sheet_url"));
+      return;
+    }
+    updateCongregation({ googleSheetUrl: sheetUrlInput });
+    setShowSheetConfig(false);
+    toast.success(t("sheet_url_saved"));
   };
 
   const handleExport = () => {
