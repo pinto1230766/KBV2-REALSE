@@ -145,19 +145,19 @@ export function SettingsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("full_name")}</label>
-                <input className="input-soft text-sm mt-1" value={settings.congregation.responsableName} onChange={(e) => updateCongregation({ responsableName: e.target.value })} />
+                <input className="input-soft text-sm mt-1" value={congregation.responsableName} onChange={(e) => updateCongregation({ responsableName: e.target.value })} />
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("phone")}</label>
-                <input className="input-soft text-sm mt-1" value={settings.congregation.responsablePhone} onChange={(e) => updateCongregation({ responsablePhone: e.target.value })} />
+                <input className="input-soft text-sm mt-1" value={congregation.responsablePhone} onChange={(e) => updateCongregation({ responsablePhone: e.target.value })} />
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("whatsapp_group")}</label>
-                <input className="input-soft text-sm mt-1" placeholder="Numéro du groupe ou admin" value={settings.congregation.whatsappGroup} onChange={(e) => updateCongregation({ whatsappGroup: e.target.value })} />
+                <input className="input-soft text-sm mt-1" placeholder="Numéro du groupe ou admin" value={congregation.whatsappGroup} onChange={(e) => updateCongregation({ whatsappGroup: e.target.value })} />
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("whatsapp_invite_id")}</label>
-                <input className="input-soft text-sm mt-1" value={settings.congregation.whatsappInviteId} onChange={(e) => updateCongregation({ whatsappInviteId: e.target.value })} />
+                <input className="input-soft text-sm mt-1" value={congregation.whatsappInviteId} onChange={(e) => updateCongregation({ whatsappInviteId: e.target.value })} />
               </div>
             </div>
           </div>
