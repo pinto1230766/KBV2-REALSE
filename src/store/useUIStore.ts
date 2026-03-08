@@ -1,0 +1,25 @@
+import { create } from "zustand";
+
+export type AppTab = "dashboard" | "planning" | "speakers" | "hosts" | "settings";
+
+interface UIState {
+  activeTab: AppTab;
+  setActiveTab: (tab: AppTab) => void;
+  pendingVisitId: string | null;
+  setPendingVisit: (visitId: string | null) => void;
+  pendingSpeakerId: string | null;
+  setPendingSpeaker: (speakerId: string | null) => void;
+  isOnline: boolean;
+  setIsOnline: (isOnline: boolean) => void;
+}
+
+export const useUIStore = create<UIState>((set) => ({
+  activeTab: "dashboard",
+  setActiveTab: (tab) => set({ activeTab: tab }),
+  pendingVisitId: null,
+  setPendingVisit: (pendingVisitId) => set({ pendingVisitId }),
+  pendingSpeakerId: null,
+  setPendingSpeaker: (pendingSpeakerId) => set({ pendingSpeakerId }),
+  isOnline: navigator.onLine,
+  setIsOnline: (isOnline) => set({ isOnline }),
+}));
