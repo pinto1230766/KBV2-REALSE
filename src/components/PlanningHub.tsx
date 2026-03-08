@@ -468,12 +468,24 @@ export function PlanningHub() {
                             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-600">{t("group_meal")}</p>
                             <p className="text-sm text-muted-foreground">{t("group_meal_desc")}</p>
                             <div className="grid grid-cols-2 gap-3">
-                              <button onClick={() => setDetailForm({ ...detailForm, groupMealType: "salle_du_royaume" })}
+                              <button onClick={() => {
+                                const newAssignment: HostAssignment = {
+                                  hostName: "Repas Salle du Royaume", role: "repas",
+                                  day: detailForm.visitDate || "", time: "12:00", origin: "kingdom_hall",
+                                };
+                                setDetailForm({ ...detailForm, groupMealType: "salle_du_royaume", hostAssignments: [...(detailForm.hostAssignments || []), newAssignment] });
+                              }}
                                 className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${detailForm.groupMealType === "salle_du_royaume" ? "border-amber-500 bg-amber-50 dark:bg-amber-500/10" : "border-border"}`}>
                                 <Building2 className="w-5 h-5 text-amber-600 flex-shrink-0" />
                                 <div className="text-left"><p className="text-sm font-bold text-foreground">{t("kingdom_hall")}</p><p className="text-[10px] text-muted-foreground">{t("meal_kingdom_hall_desc")}</p></div>
                               </button>
-                              <button onClick={() => setDetailForm({ ...detailForm, groupMealType: "restaurant" })}
+                              <button onClick={() => {
+                                const newAssignment: HostAssignment = {
+                                  hostName: "Repas Restaurant", role: "repas",
+                                  day: detailForm.visitDate || "", time: "12:00", origin: "restaurant",
+                                };
+                                setDetailForm({ ...detailForm, groupMealType: "restaurant", hostAssignments: [...(detailForm.hostAssignments || []), newAssignment] });
+                              }}
                                 className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${detailForm.groupMealType === "restaurant" ? "border-amber-500 bg-amber-50 dark:bg-amber-500/10" : "border-border"}`}>
                                 <Utensils className="w-5 h-5 text-amber-600 flex-shrink-0" />
                                 <div className="text-left"><p className="text-sm font-bold text-foreground">{t("meal_restaurant")}</p><p className="text-[10px] text-muted-foreground">{t("meal_restaurant_desc")}</p></div>
