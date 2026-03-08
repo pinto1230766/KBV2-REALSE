@@ -95,13 +95,13 @@ export function SettingsPage() {
         if (!fallbackResp.ok) throw new Error(`HTTP ${fallbackResp.status}`);
         const text = await fallbackResp.text();
         const rows = parseCSV(text);
-        const { visits: newVisits, speakers: newSpeakers } = parseRowsToVisitsAndSpeakers(rows);
+        const { visits: newVisits, speakers: newSpeakers } = parseRowsToData(rows);
         await importData(newVisits, newSpeakers);
         return;
       }
       const text = await response.text();
       const rows = parseCSV(text);
-      const { visits: newVisits, speakers: newSpeakers } = parseRowsToVisitsAndSpeakers(rows);
+      const { visits: newVisits, speakers: newSpeakers } = parseRowsToData(rows);
       await importData(newVisits, newSpeakers);
     } catch (err) {
       console.error("Sync error:", err);
