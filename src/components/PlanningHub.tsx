@@ -791,7 +791,7 @@ export function PlanningHub() {
                                     <p className="text-[10px] text-muted-foreground">{tmpl.desc}</p>
                                     <p className="text-xs text-foreground whitespace-pre-line line-clamp-6">{tmpl.body}</p>
                                   </div>
-                                  <button onClick={() => setMessageText(tmpl.body)} className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider">
+                                  <button onClick={() => { setMessageText(tmpl.body); setTimeout(() => { const ta = document.querySelector('textarea[placeholder]'); if (ta) ta.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100); }} className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider">
                                     {t("insert_message")}
                                   </button>
                                 </div>
