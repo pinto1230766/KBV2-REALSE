@@ -752,7 +752,7 @@ export function PlanningHub() {
                             <p className="text-[10px] text-muted-foreground">
                               {viewVisit.nom} · {detailForm.speakerPhone || ""}
                             </p>
-                            <textarea className="input-soft text-sm min-h-[80px] resize-y w-full" placeholder={t("write_message")} value={messageText} onChange={(e) => setMessageText(e.target.value)} />
+                            <textarea ref={(el) => { if (el) { el.style.height = "auto"; el.style.height = Math.max(80, el.scrollHeight) + "px"; } }} className="input-soft text-sm min-h-[80px] max-h-[60vh] resize-y w-full" placeholder={t("write_message")} value={messageText} onChange={(e) => setMessageText(e.target.value)} />
                             <div className="flex items-center justify-end gap-2">
                               <button onClick={() => copyText(messageText)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border text-xs font-bold text-foreground hover:bg-muted transition-colors">
                                 <Copy className="w-3.5 h-3.5" /> {t("copy")}
