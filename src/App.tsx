@@ -1,27 +1,227 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Search,
+  LayoutGrid,
+  Users,
+  Settings,
+  Home,
+  Calendar,
+  MapPin,
+  User,
+  MessageSquare,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { DashboardView } from "./components/DashboardView";
+import { PlanningHub } from "./components/PlanningHub";
+import { SpeakerList } from "./components/SpeakerList";
+import { GlobalHostList } from "./components/GlobalHostList";
+import { SettingsPage } from "./components/SettingsPage";
+import { CalendarSidebar } from "./components/CalendarSidebar";
+import { useVisitStore } from "./store/useVisitStore";
+import { useHostStore } from "./store/useHostStore";
+import { useSpeakerStore } from "./store/useSpeakerStore";
+import { useUIStore } from "./store/useUIStore";
+import type { AppTab } from "./store/useUIStore";
+import { useTranslation } from "./hooks/useTranslation";
 
-const queryClient = new QueryClient();
+function App() {
+  const visits = useVisitStore((s) => s.visits);
+  const hosts = useHostStore((s) => s.hosts);
+  const speakers = useSpeakerStore((s) => s.speakers);
+  const activeTab = useUIStore((s) => s.activeTab);
+  const setActiveTab = useUIStore((s) => s.setActiveTab);
+  const setPendingVisit = useUIStore((s) => s.setPendingVisit);
+  const setIsOnline = useUIStore((s) => s.setIsOnline);
+  const { t } = useTranslation();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [setIsOnline]);
+
+  const trimmedTerm = searchTerm.trim().toLowerCase();
+
+  const searchResults = useMemo(() => {
+    if (trimmedTerm.length < 2) return [];
+
+    const visitMatches = visits
+      .filter(
+        (v) =>
+          v.nom.toLowerCase().includes(trimmedTerm) ||
+          v.congregation.toLowerCase().includes(trimmedTerm) ||
+          (v.talkTheme || "").toLowerCase().includes(trimmedTerm)
+      )
+      .slice(0, 3)
+      .map((v) => ({ id: v.visitId, label: v.nom, sublabel: v.congregation, type: "visit" as const, payload: v }));
+
+    const speakerMatches = speakers
+      .filter((s) => s.nom.toLowerCase().includes(trimmedTerm))
+      .slice(0, 3)
+      .map((s) => ({ id: s.id, label: s.nom, sublabel: s.congregation, type: "speaker" as const }));
+
+    const hostMatches = hosts
+      .filter((h) => h.nom.toLowerCase().includes(trimmedTerm))
+      .slice(0, 3)
+      .map((h) => ({ id: h.id, label: h.nom, sublabel: h.adresse || "Hôte", type: "host" as const }));
+
+    return [...visitMatches, ...speakerMatches, ...hostMatches];
+  }, [trimmedTerm, visits, speakers, hosts]);
+
+  const handleResultClick = (result: (typeof searchResults)[number]) => {
+    setIsSearchFocused(false);
+    setSearchTerm("");
+    if (result.type === "visit") {
+      setPendingVisit((result as any).payload.visitId);
+      setActiveTab("planning");
+      return;
+    }
+    if (result.type === "speaker") {
+      setActiveTab("speakers");
+      return;
+    }
+    setActiveTab("hosts");
+  };
+
+  const navItems: Array<{ id: AppTab; label: string; icon: LucideIcon }> = [
+    { id: "dashboard", label: t("dashboard"), icon: LayoutGrid },
+    { id: "planning", label: t("planning"), icon: Calendar },
+    { id: "speakers", label: t("speakers"), icon: Users },
+    { id: "hosts", label: t("hosts"), icon: Home },
+    { id: "settings", label: t("settings"), icon: Settings },
+  ];
+
+  return (
+    <div className="flex h-screen w-screen overflow-x-hidden">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header */}
+        <header className="px-4 sm:px-8 py-3 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-card shadow-sm transition-colors gap-3 sm:gap-8 border-b border-border/50">
+          <div className="flex items-center gap-3 sm:gap-8 w-full sm:w-auto">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-primary flex items-center justify-center shadow-lg">
+                <span className="text-lg font-black text-primary-foreground">K</span>
+              </div>
+              <div>
+                <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.35em] text-primary-500">
+                  Coordination
+                </p>
+                <h1 className="text-lg sm:text-xl font-black text-foreground">KBV LYON</h1>
+              </div>
+            </div>
+
+            {/* Nav */}
+            <nav className="flex items-center gap-1 sm:gap-4 overflow-x-auto scrollbar-hide">
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`relative py-2 px-2 sm:px-1 text-[9px] sm:text-[10px] uppercase tracking-widest font-black transition-all whitespace-nowrap flex-shrink-0 ${
+                    activeTab === item.id
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <span className="hidden sm:inline">{item.label}</span>
+                  <span className="sm:hidden">
+                    <item.icon className="w-4 h-4" />
+                  </span>
+                  {activeTab === item.id && (
+                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-1 bg-primary rounded-full" />
+                  )}
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          {/* Search */}
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder={t("search")}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)}
+              className="w-full pl-10 pr-4 py-2.5 bg-muted rounded-full border border-border/50 text-[10px] font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase tracking-widest text-foreground"
+            />
+            {isSearchFocused && trimmedTerm && (
+              <div className="absolute z-20 mt-2 w-full rounded-2xl bg-card border border-border shadow-xl">
+                {searchResults.length === 0 ? (
+                  <p className="text-xs text-muted-foreground p-4">{t("no_results")}</p>
+                ) : (
+                  <ul className="divide-y divide-border/50">
+                    {searchResults.map((result) => (
+                      <li key={`${result.type}-${result.id}`}>
+                        <button
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => handleResultClick(result)}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-muted/50 transition-colors"
+                        >
+                          <span className="p-2 rounded-xl bg-primary-50 dark:bg-primary-900/20 text-primary">
+                            {result.type === "visit" ? (
+                              <MapPin className="w-4 h-4" />
+                            ) : result.type === "speaker" ? (
+                              <User className="w-4 h-4" />
+                            ) : (
+                              <Home className="w-4 h-4" />
+                            )}
+                          </span>
+                          <div className="flex-1">
+                            <p className="text-sm font-bold text-foreground">{result.label}</p>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                              {result.sublabel}
+                            </p>
+                          </div>
+                          <MessageSquare className="w-4 h-4 text-muted-foreground/30" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
+        </header>
+
+        {/* Content */}
+        <main className="flex-1 px-4 sm:px-8 pb-8 overflow-y-auto">
+          {activeTab === "dashboard" ? (
+            <DashboardView />
+          ) : activeTab === "planning" ? (
+            <PlanningHub />
+          ) : activeTab === "speakers" ? (
+            <SpeakerList />
+          ) : activeTab === "hosts" ? (
+            <GlobalHostList />
+          ) : (
+            <SettingsPage />
+          )}
+        </main>
+      </div>
+
+      {/* Sidebar Calendar */}
+      <aside className="w-[360px] bg-card border-l border-border/50 hidden xl:block">
+        <CalendarSidebar
+          visits={visits}
+          onVisitClick={(visit) => {
+            setPendingVisit(visit.visitId);
+            setActiveTab("planning");
+          }}
+        />
+      </aside>
+    </div>
+  );
+}
 
 export default App;
