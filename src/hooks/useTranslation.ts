@@ -197,6 +197,20 @@ const dictionary: Record<string, TranslationEntry> = {
   program_today: { fr: "Programme du jour", cv: "Programa di oji", pt: "Programa do dia" },
   messages_today: { fr: "Messages du jour", cv: "Mensajens di oji", pt: "Mensagens do dia" },
   upcoming_reminders: { fr: "Rappels à venir", cv: "Lembranças ki sta pa bem", pt: "Lembretes a vir" },
+
+  // Speaker fiche
+  speaker_card: { fr: "Fiche Orateur", cv: "Fixa Orador", pt: "Ficha Orador" },
+  couple_photos: { fr: "Photos du couple", cv: "Fotus di kazal", pt: "Fotos do casal" },
+  speaker_label: { fr: "Orateur", cv: "Orador", pt: "Orador" },
+  spouse_label: { fr: "Épouse", cv: "Spoza", pt: "Esposa" },
+  household_type: { fr: "Type de foyer", cv: "Tipu di foyer", pt: "Tipo de lar" },
+  brother_alone: { fr: "Frère seul", cv: "Irmon so", pt: "Irmão sozinho" },
+  couple: { fr: "Couple", cv: "Kazal", pt: "Casal" },
+  spouse_name: { fr: "Nom de l'épouse", cv: "Nomi di spoza", pt: "Nome da esposa" },
+  spouse_name_placeholder: { fr: "Prénom et Nom", cv: "Nomi i Sobrenomi", pt: "Nome e Apelido" },
+  household_hint: { fr: "Ce paramètre garantit que l'attribution respecte les règles.", cv: "Es parametru garanti ki atribuison respeitâ regras.", pt: "Este parâmetro garante que a atribuição respeita as regras." },
+  no_notes: { fr: "Aucune note", cv: "Ninhun nota", pt: "Nenhuma nota" },
+  done: { fr: "Terminé", cv: "Terminadu", pt: "Concluído" },
 };
 
 export function useTranslation() {
