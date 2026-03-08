@@ -13,10 +13,7 @@ import { useHostStore } from "../store/useHostStore";
 import { useTranslation } from "../hooks/useTranslation";
 import { toast } from "sonner";
 import type { Visit, VisitStatus, HostAssignment, Expense, GroupMealType } from "../store/visitTypes";
-
-function generateId() {
-  return crypto.randomUUID?.() || Math.random().toString(36).slice(2, 11);
-}
+import { generateId } from "../lib/sheetUtils";
 
 type DetailTab = "infos" | "hosts" | "messages" | "expenses" | "feedback";
 
