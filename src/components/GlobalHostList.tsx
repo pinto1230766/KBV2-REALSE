@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Home, Plus, Trash2, Edit3, Phone, Mail, MapPin, Users as UsersIcon, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { PhotoUpload } from "./PhotoUpload";
 import { useHostStore } from "../store/useHostStore";
 import { useTranslation } from "../hooks/useTranslation";
 import { toast } from "sonner";
@@ -20,11 +21,11 @@ export function GlobalHostList() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Host | null>(null);
   const [search, setSearch] = useState("");
-  const [form, setForm] = useState({ nom: "", telephone: "", email: "", adresse: "", capacity: 2, notes: "", role: "hebergement" as Host["role"] });
+  const [form, setForm] = useState({ nom: "", telephone: "", email: "", adresse: "", capacity: 2, notes: "", role: "hebergement" as Host["role"], photoUrl: undefined as string | undefined });
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const resetForm = () => {
-    setForm({ nom: "", telephone: "", email: "", adresse: "", capacity: 2, notes: "", role: "hebergement" });
+    setForm({ nom: "", telephone: "", email: "", adresse: "", capacity: 2, notes: "", role: "hebergement", photoUrl: undefined });
     setEditing(null);
     setShowForm(false);
   };
@@ -51,7 +52,7 @@ export function GlobalHostList() {
     setForm({
       nom: h.nom, telephone: h.telephone, email: h.email || "",
       adresse: h.adresse || h.address || "", capacity: h.capacity || 2,
-      notes: h.notes || "", role: h.role || "hebergement",
+      notes: h.notes || "", role: h.role || "hebergement", photoUrl: h.photoUrl,
     });
     setEditing(h);
     setShowForm(true);
@@ -105,6 +106,7 @@ export function GlobalHostList() {
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-sm font-black uppercase tracking-widest text-foreground">{editing ? t("edit") : t("add_host")}</h3>
+              <PhotoUpload photoUrl={form.photoUrl} onPhotoChange={(url) => setForm({ ...form, photoUrl: url })} />
               <input className="input-soft text-sm" placeholder={t("name")} value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} />
               <input className="input-soft text-sm" placeholder={t("phone")} value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} />
               <input className="input-soft text-sm" placeholder={t("email")} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
@@ -168,9 +170,13 @@ export function GlobalHostList() {
                 transition={{ delay: i * 0.03 }}
                 className="premium-card p-4 flex items-start gap-3"
               >
-                <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
-                  <Home className="w-4 h-4 text-blue-500" />
-                </div>
+                {h.photoUrl ? (
+                  <img src={h.photoUrl} alt={h.nom} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
+                    <Home className="w-4 h-4 text-blue-500" />
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-bold text-foreground truncate">{h.nom}</p>
