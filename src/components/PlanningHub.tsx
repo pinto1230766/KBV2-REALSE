@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import {
   Plus, Trash2, Check, ChevronRight, Clock, MapPin, Archive, AlertTriangle,
   X, Info, Users, MessageSquare, CreditCard, Star, Phone, Mail, Send,
-  Copy, Home, Utensils, Car, Building2
+  Copy, Home, Utensils, Car, Building2, Pencil
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useVisitStore } from "../store/useVisitStore";
