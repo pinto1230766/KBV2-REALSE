@@ -141,7 +141,6 @@ const dictionary: Record<string, TranslationEntry> = {
   search_host: { fr: "Chercher un hôte...", cv: "Buska un anfitrion...", pt: "Pesquisar um anfitrião..." },
 
   // Settings tabs
-  general: { fr: "Général", cv: "Jeral", pt: "Geral" },
   congregation_profile: { fr: "Profil de la Congrégation", cv: "Perfil di Kongregason", pt: "Perfil da Congregação" },
   congregation_name: { fr: "Nom", cv: "Nomi", pt: "Nome" },
   city: { fr: "Ville", cv: "Sidadi", pt: "Cidade" },
