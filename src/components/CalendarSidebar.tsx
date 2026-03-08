@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Mail, Bell, User, Send, RefreshCw } from "lucide-react";
+import { useMemo, useState, useRef } from "react";
+import { ChevronLeft, ChevronRight, Mail, Bell, User, Send, RefreshCw, Camera } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Visit } from "../store/visitTypes";
 import { useTranslation } from "../hooks/useTranslation";

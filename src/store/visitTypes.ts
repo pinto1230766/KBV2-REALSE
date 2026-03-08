@@ -105,6 +105,7 @@ export interface CongregationProfile {
   time: string;
   responsableName: string;
   responsablePhone: string;
+  responsablePhoto?: string;
   whatsappGroup: string;
   whatsappInviteId: string;
   googleSheetUrl?: string;
