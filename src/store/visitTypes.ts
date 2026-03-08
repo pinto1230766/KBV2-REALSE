@@ -63,6 +63,8 @@ export interface Visit {
   updatedAt?: string;
 }
 
+export type HouseholdType = "single" | "couple";
+
 export interface Speaker {
   id: string;
   nom: string;
@@ -70,6 +72,9 @@ export interface Speaker {
   telephone?: string;
   email?: string;
   photoUrl?: string;
+  spousePhotoUrl?: string;
+  householdType?: HouseholdType;
+  spouseName?: string;
   notes?: string;
   talks?: string[];
 }
