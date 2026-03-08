@@ -192,6 +192,7 @@ function App() {
                 )}
               </div>
             )}
+            </div>
           </div>
         </header>
 
