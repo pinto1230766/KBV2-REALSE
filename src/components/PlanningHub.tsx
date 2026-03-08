@@ -493,8 +493,15 @@ export function PlanningHub() {
                             </div>
                           </div>
 
-                          {/* Host cards */}
-                          {(detailForm.hostAssignments || []).map((ha, idx) => {
+                          {/* Host cards — sorted by date */}
+                          {[...(detailForm.hostAssignments || [])].sort((a, b) => {
+                            const da = a.day ? new Date(a.day).getTime() : 0;
+                            const db = b.day ? new Date(b.day).getTime() : 0;
+                            if (da !== db) return da - db;
+                            return (a.time || "").localeCompare(b.time || "");
+                          }).map((ha, idx) => {
+                            // Find original index for editing
+                            const origIdx = (detailForm.hostAssignments || []).indexOf(ha);
                             const resolvedPhoto = ha.hostPhotoUrl || (ha.hostId ? allHosts.find((h) => h.id === ha.hostId)?.photoUrl : undefined);
                             const isEditing = editingHostIdx === idx;
                             return (
