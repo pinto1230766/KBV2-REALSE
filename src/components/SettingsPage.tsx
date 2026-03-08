@@ -12,7 +12,7 @@ import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useTranslation } from "../hooks/useTranslation";
 import { toast } from "sonner";
 import type { Language, Visit, Speaker } from "../store/visitTypes";
-import { syncCloud } from "../lib/syncCloud";
+import { syncCloud, normalizeName } from "../lib/syncCloud";
 
 type SettingsTab = "general" | "appearance" | "notifications" | "data";
 type ThemeMode = "light" | "dark" | "system";
