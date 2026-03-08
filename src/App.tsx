@@ -169,7 +169,7 @@ function App() {
                           onClick={() => handleResultClick(result)}
                           className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-muted/50 transition-colors"
                         >
-                          <span className="p-2 rounded-xl bg-primary-50 dark:bg-primary-900/20 text-primary">
+                          <span className="p-2 rounded-xl bg-primary/10 text-primary">
                             {result.type === "visit" ? (
                               <MapPin className="w-4 h-4" />
                             ) : result.type === "speaker" ? (
