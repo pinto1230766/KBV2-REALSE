@@ -1,21 +1,28 @@
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Mail, Bell, User } from "lucide-react";
+import { ChevronLeft, ChevronRight, Mail, Bell, User, Send, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Visit } from "../store/visitTypes";
 import { useTranslation } from "../hooks/useTranslation";
 import { useSettingsStore } from "../store/useSettingsStore";
+import { useNotificationStore } from "../store/useNotificationStore";
+import { useUIStore } from "../store/useUIStore";
 
 interface CalendarSidebarProps {
   visits: Visit[];
   onVisitClick: (visit: Visit) => void;
+  onSyncNow?: () => void;
 }
 
-export function CalendarSidebar({ visits, onVisitClick }: CalendarSidebarProps) {
+export function CalendarSidebar({ visits, onVisitClick, onSyncNow }: CalendarSidebarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const { t, language } = useTranslation();
   const [showMessages, setShowMessages] = useState(true);
   const [showReminders, setShowReminders] = useState(true);
   const congregation = useSettingsStore((s) => s.settings.congregation);
+  const lastSyncAt = congregation.lastSyncAt;
+  const pendingNotifications = useNotificationStore((s) => s.notifications.filter((n) => n.status === "pending"));
+  const setActiveTab = useUIStore((s) => s.setActiveTab);
+  const setPendingVisit = useUIStore((s) => s.setPendingVisit);
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
@@ -67,42 +74,98 @@ export function CalendarSidebar({ visits, onVisitClick }: CalendarSidebarProps) 
       .slice(0, 5);
   }, [visits]);
 
-  // Count pending messages (visits today needing messages)
   const pendingMessages = todayVisits.length;
-  // Count upcoming reminders as notification count
-  const reminderCount = upcomingReminders.length;
+  const reminderCount = pendingNotifications.length;
 
   const todayDateStr = today.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" }).toUpperCase();
+
+  // Format last sync time
+  const lastSyncLabel = lastSyncAt
+    ? new Date(lastSyncAt).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })
+    : null;
+
+  // Open today's first visit in messages tab
+  const handleMailClick = () => {
+    if (todayVisits.length > 0) {
+      setPendingVisit(todayVisits[0].visitId);
+      setActiveTab("planning");
+    }
+  };
+
+  // Open the first pending notification's visit
+  const handleBellClick = () => {
+    if (pendingNotifications.length > 0) {
+      const first = pendingNotifications[0];
+      setPendingVisit(first.visitId);
+      setActiveTab("planning");
+    }
+  };
+
+  // Send WhatsApp for a reminder
+  const sendQuickWhatsApp = (visit: Visit) => {
+    const phone = visit.speakerPhone?.replace(/\s/g, "") || "";
+    const prenom = visit.nom.split(" ")[0];
+    const dateFormatted = new Date(visit.visitDate + "T00:00:00").toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" });
+    const msg = `Bonjour ${prenom}, un petit rappel pour votre visite prévue le ${dateFormatted}. À bientôt ! 🙏`;
+    
+    navigator.clipboard.writeText(msg);
+    if (phone) {
+      const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+      const a = document.createElement("a");
+      a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+  };
 
   return (
     <div className="p-5 h-full flex flex-col overflow-y-auto">
       {/* ─── Admin Header ─── */}
       <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-3">
-          {/* Mail icon with badge */}
-          <button className="relative p-2 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
+        <div className="flex items-center gap-2">
+          {/* Mail: opens today's visit messages */}
+          <button
+            onClick={handleMailClick}
+            title={t("messages_today")}
+            className="relative p-2 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+          >
             <Mail className="w-5 h-5 text-muted-foreground" />
             {pendingMessages > 0 && (
-              <span className="absolute -top-1 -right-1 w-4.5 h-4.5 min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[9px] font-black flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[9px] font-black flex items-center justify-center px-1">
                 {pendingMessages}
               </span>
             )}
           </button>
-          {/* Bell icon with badge */}
-          <button className="relative p-2 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
-            <Bell className="w-5 h-5 text-amber-500" />
+          {/* Bell: opens first pending notification visit */}
+          <button
+            onClick={handleBellClick}
+            title={t("upcoming_reminders")}
+            className="relative p-2 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+          >
+            <Bell className={`w-5 h-5 ${reminderCount > 0 ? "text-amber-500" : "text-muted-foreground"}`} />
             {reminderCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-amber-500 text-white text-[9px] font-black flex items-center justify-center px-1">
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-amber-500 text-white text-[9px] font-black flex items-center justify-center px-1 animate-pulse">
                 {reminderCount}
               </span>
             )}
           </button>
+          {/* Sync button */}
+          {onSyncNow && (
+            <button
+              onClick={onSyncNow}
+              title="Synchroniser"
+              className="p-2 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+            >
+              <RefreshCw className="w-4 h-4 text-muted-foreground" />
+            </button>
+          )}
         </div>
         {/* Admin name + avatar */}
         <div className="flex items-center gap-3">
           <div className="text-right">
             <p className="text-xs font-bold text-foreground">{congregation.responsableName || "Administrateur"}</p>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Administrateur</p>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+              {lastSyncLabel ? `Sync ${lastSyncLabel}` : "Administrateur"}
+            </p>
           </div>
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center overflow-hidden shadow-md">
             <User className="w-5 h-5 text-primary-foreground" />
@@ -186,7 +249,7 @@ export function CalendarSidebar({ visits, onVisitClick }: CalendarSidebarProps) 
         )}
       </div>
 
-      {/* ─── Messages du jour ─── */}
+      {/* ─── Messages du jour (with quick WhatsApp) ─── */}
       {todayVisits.length > 0 && (
         <div className="mb-5 premium-card p-4">
           <div className="flex items-center justify-between mb-2">
@@ -208,6 +271,22 @@ export function CalendarSidebar({ visits, onVisitClick }: CalendarSidebarProps) 
                         <p className="text-xs font-bold text-foreground truncate">{v.nom}</p>
                         <p className="text-[10px] text-muted-foreground truncate">{v.congregation}</p>
                       </div>
+                      {/* Quick WhatsApp send */}
+                      <button
+                        onClick={() => sendQuickWhatsApp(v)}
+                        title="Envoyer rappel WhatsApp"
+                        className="p-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 transition-colors"
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                      </button>
+                      {/* Open detail */}
+                      <button
+                        onClick={() => onVisitClick(v)}
+                        title="Voir détails"
+                        className="p-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-colors"
+                      >
+                        <Mail className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -230,14 +309,21 @@ export function CalendarSidebar({ visits, onVisitClick }: CalendarSidebarProps) 
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
               <div className="space-y-3">
                 {upcomingReminders.length === 0 && (
-                  <p className="text-xs text-muted-foreground italic">{t("no_upcoming")}</p>
+                  <p className="text-xs text-muted-foreground italic">{t("no_visits")}</p>
                 )}
                 {upcomingReminders.map((v) => {
                   const d = new Date(v.visitDate);
+                  const daysUntil = Math.ceil((d.getTime() - today.getTime()) / 86400000);
                   const dateLabel = d.toLocaleDateString(locale, { weekday: "long", day: "2-digit", month: "2-digit" }).toUpperCase();
+                  const urgencyColor = daysUntil <= 2 ? "text-destructive" : daysUntil <= 7 ? "text-amber-600" : "text-muted-foreground";
                   return (
                     <button key={v.visitId} onClick={() => onVisitClick(v)} className="w-full text-left hover:bg-muted/30 rounded-xl p-2 transition-colors border-b border-border/50 last:border-0">
-                      <p className="text-xs font-bold text-foreground">{v.nom}</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-bold text-foreground">{v.nom}</p>
+                        <span className={`text-[9px] font-black ${urgencyColor}`}>
+                          J-{daysUntil}
+                        </span>
+                      </div>
                       <p className="text-[10px] text-muted-foreground">{dateLabel} · {v.congregation}</p>
                       {v.talkTheme && (
                         <p className="text-[10px] text-primary/70 italic truncate">{v.talkTheme}</p>

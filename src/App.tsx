@@ -26,6 +26,7 @@ import type { AppTab } from "./store/useUIStore";
 import { useTranslation } from "./hooks/useTranslation";
 import { useReminderEngine } from "./hooks/useReminderEngine";
 import { NotificationCenter } from "./components/NotificationCenter";
+import { useAutoSync } from "./hooks/useAutoSync";
 
 function App() {
   const visits = useVisitStore((s) => s.visits);
@@ -37,6 +38,7 @@ function App() {
   const setIsOnline = useUIStore((s) => s.setIsOnline);
   const { t } = useTranslation();
   const { pendingCount } = useReminderEngine();
+  const { runSync } = useAutoSync();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -220,6 +222,7 @@ function App() {
             setPendingVisit(visit.visitId);
             setActiveTab("planning");
           }}
+          onSyncNow={() => runSync(false)}
         />
       </aside>
 
