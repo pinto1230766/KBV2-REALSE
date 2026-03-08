@@ -297,7 +297,6 @@ const dictionary: Record<string, TranslationEntry> = {
   sheet_url_saved: { fr: "URL du Google Sheet enregistrée", cv: "URL di Google Sheet gravadu", pt: "URL do Google Sheet guardado" },
   connected: { fr: "connecté", cv: "konetadu", pt: "conectado" },
   modify: { fr: "Modifier", cv: "Modifikâ", pt: "Modificar" },
-  cancel: { fr: "Annuler", cv: "Kanselâ", pt: "Cancelar" },
 };
 
 export function useTranslation() {
