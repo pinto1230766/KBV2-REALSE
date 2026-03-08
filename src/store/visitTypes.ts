@@ -74,6 +74,8 @@ export interface Visit {
   heure_depart?: string;
   speakerDietary?: string;
   spouseDietary?: string;
+  expenses?: Expense[];
+  groupMealType?: GroupMealType;
   updatedAt?: string;
 }
 
