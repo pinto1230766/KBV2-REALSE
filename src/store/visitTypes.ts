@@ -38,6 +38,7 @@ export interface HostAssignment {
   role: VisitHostRole;
   day?: string;
   time?: string;
+  origin?: string;
 }
 
 export interface Expense {
