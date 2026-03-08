@@ -338,6 +338,14 @@ export function PlanningHub() {
   };
 
   const sendWhatsApp = (phone: string, text: string) => {
+    if (phone === WHATSAPP_GROUP_ID || phone.length < 6) {
+      // Group: open WhatsApp group chat link
+      window.open(`https://chat.whatsapp.com/${WHATSAPP_GROUP_ID}`, "_blank");
+      // Also copy message to clipboard so user can paste it
+      navigator.clipboard.writeText(text);
+      toast.success(t("copied") + " – Collez le message dans le groupe");
+      return;
+    }
     const cleaned = phone.replace(/\s/g, "");
     window.open(`https://wa.me/${cleaned}?text=${encodeURIComponent(text)}`, "_blank");
   };
@@ -347,20 +355,21 @@ export function PlanningHub() {
     toast.success(t("copied"));
   };
 
+  const WHATSAPP_GROUP_ID = "Di5J5Jl4VjU4e9QURFHsrf";
+
   // Get recipients for messages
   const getRecipients = () => {
     const recipients: Array<{ label: string; phone: string; type: string; hostName?: string }> = [];
     if (detailForm.speakerPhone) {
-      recipients.push({ label: t("speaker_label"), phone: detailForm.speakerPhone, type: "orateur" });
+      recipients.push({ label: `🎤 ${viewVisit?.nom || t("speaker_label")}`, phone: detailForm.speakerPhone, type: "orateur" });
     }
-    (detailForm.hostAssignments || []).forEach((ha) => {
+    (detailForm.hostAssignments || []).forEach((ha, i) => {
       if (ha.hostPhone) {
-        recipients.push({ label: `${ha.hostName || ""} (${t(ha.role)})`, phone: ha.hostPhone, type: ha.role, hostName: ha.hostName });
+        const roleEmoji = ha.role === "hebergement" ? "🏠" : ha.role === "transport" ? "🚗" : "🍽️";
+        recipients.push({ label: `${roleEmoji} ${ha.hostName || ""} (${t(ha.role)})`, phone: ha.hostPhone, type: `host_${i}`, hostName: ha.hostName });
       }
     });
-    if (congregation.whatsappGroup) {
-      recipients.push({ label: "👥 " + t("group"), phone: congregation.whatsappGroup, type: "groupe" });
-    }
+    recipients.push({ label: "👥 Groupe WhatsApp", phone: WHATSAPP_GROUP_ID, type: "groupe" });
     return recipients;
   };
 
@@ -942,10 +951,17 @@ export function PlanningHub() {
                                     const resolved = resolveVariables(tmpl.body);
                                     setMessageText(resolved);
                                     // Auto-select recipient based on template category
-                                    if (templates.category === "speaker") setSelectedRecipient("orateur");
-                                    else if (templates.category === "repas") setSelectedRecipient("repas");
-                                    else if (templates.category === "transport") setSelectedRecipient("transport");
-                                    else if (templates.category === "groupe") setSelectedRecipient("groupe");
+                                    if (templates.category === "speaker") {
+                                      setSelectedRecipient("orateur");
+                                    } else if (templates.category === "repas") {
+                                      const idx = (detailForm.hostAssignments || []).findIndex((ha) => ha.role === "repas");
+                                      setSelectedRecipient(idx >= 0 ? `host_${idx}` : "orateur");
+                                    } else if (templates.category === "transport") {
+                                      const idx = (detailForm.hostAssignments || []).findIndex((ha) => ha.role === "transport");
+                                      setSelectedRecipient(idx >= 0 ? `host_${idx}` : "orateur");
+                                    } else if (templates.category === "groupe") {
+                                      setSelectedRecipient("groupe");
+                                    }
                                     setTimeout(() => { const ta = document.querySelector('textarea[placeholder]'); if (ta) ta.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
                                   }} className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider">
                                     {t("insert_message")}
