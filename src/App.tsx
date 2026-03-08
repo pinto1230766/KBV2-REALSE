@@ -222,6 +222,7 @@ function App() {
             setPendingVisit(visit.visitId);
             setActiveTab("planning");
           }}
+          onSyncNow={() => runSync(false)}
         />
       </aside>
 
