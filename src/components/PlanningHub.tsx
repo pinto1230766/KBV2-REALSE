@@ -476,11 +476,14 @@ export function PlanningHub() {
                           </div>
 
                           {/* Host cards */}
-                          {(detailForm.hostAssignments || []).map((ha, idx) => (
+                          {(detailForm.hostAssignments || []).map((ha, idx) => {
+                            // Look up photo from hosts store if not in assignment
+                            const resolvedPhoto = ha.hostPhotoUrl || (ha.hostId ? allHosts.find((h) => h.id === ha.hostId)?.photoUrl : undefined);
+                            return (
                             <div key={idx} className="premium-card p-4 space-y-3">
                               <div className="flex items-center gap-3">
-                                {ha.hostPhotoUrl ? (
-                                  <img src={ha.hostPhotoUrl} alt={ha.hostName || ""} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+                                {resolvedPhoto ? (
+                                  <img src={resolvedPhoto} alt={ha.hostName || ""} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
                                 ) : (
                                   <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center flex-shrink-0"><Users className="w-5 h-5 text-muted-foreground" /></div>
                                 )}
