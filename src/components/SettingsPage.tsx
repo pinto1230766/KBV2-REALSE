@@ -13,6 +13,7 @@ type SettingsTab = "general" | "appearance" | "notifications" | "data";
 
 export function SettingsPage() {
   const { settings, setLanguage, setDarkMode, updateNotifications, updateCongregation } = useSettingsStore();
+  const congregation = settings.congregation || { name: "", city: "", day: "Dimanche", time: "11:30", responsableName: "", responsablePhone: "", whatsappGroup: "", whatsappInviteId: "" };
   const visits = useVisitStore((s) => s.visits);
   const hosts = useHostStore((s) => s.hosts);
   const speakers = useSpeakerStore((s) => s.speakers);
