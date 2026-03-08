@@ -506,7 +506,8 @@ export function PlanningHub() {
                               </div>
                               {ha.hostAddress && <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Home className="w-3.5 h-3.5 flex-shrink-0" /> {ha.hostAddress}</p>}
                             </div>
-                          ))}
+                          )})}
+
 
                           {hostCount === 0 && (
                             <div className="text-center py-6 text-muted-foreground"><Users className="w-10 h-10 mx-auto mb-2 opacity-30" /><p className="text-sm">{t("no_hosts_assigned")}</p></div>
