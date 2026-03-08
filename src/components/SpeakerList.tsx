@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Users, Plus, Trash2, Edit3, Phone, Mail, AlertTriangle } from "lucide-react";
+import { PhotoUpload } from "./PhotoUpload";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useTranslation } from "../hooks/useTranslation";
@@ -20,11 +21,11 @@ export function SpeakerList() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Speaker | null>(null);
   const [search, setSearch] = useState("");
-  const [form, setForm] = useState({ nom: "", congregation: "", telephone: "", email: "", notes: "" });
+  const [form, setForm] = useState({ nom: "", congregation: "", telephone: "", email: "", notes: "", photoUrl: "" as string | undefined });
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const resetForm = () => {
-    setForm({ nom: "", congregation: "", telephone: "", email: "", notes: "" });
+    setForm({ nom: "", congregation: "", telephone: "", email: "", notes: "", photoUrl: undefined });
     setEditing(null);
     setShowForm(false);
   };
@@ -48,7 +49,7 @@ export function SpeakerList() {
   };
 
   const openEdit = (sp: Speaker) => {
-    setForm({ nom: sp.nom, congregation: sp.congregation, telephone: sp.telephone || "", email: sp.email || "", notes: sp.notes || "" });
+    setForm({ nom: sp.nom, congregation: sp.congregation, telephone: sp.telephone || "", email: sp.email || "", notes: sp.notes || "", photoUrl: sp.photoUrl });
     setEditing(sp);
     setShowForm(true);
   };
@@ -93,6 +94,7 @@ export function SpeakerList() {
               <h3 className="text-sm font-black uppercase tracking-widest text-foreground">
                 {editing ? t("edit") : t("add_speaker")}
               </h3>
+              <PhotoUpload photoUrl={form.photoUrl} onPhotoChange={(url) => setForm({ ...form, photoUrl: url })} />
               <input className="input-soft text-sm" placeholder={t("speaker_name")} value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} />
               <input className="input-soft text-sm" placeholder={t("congregation")} value={form.congregation} onChange={(e) => setForm({ ...form, congregation: e.target.value })} />
               <input className="input-soft text-sm" placeholder={t("phone")} value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} />
@@ -142,9 +144,13 @@ export function SpeakerList() {
                 transition={{ delay: i * 0.03 }}
                 className="premium-card p-4 flex items-center gap-3"
               >
-                <div className="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center flex-shrink-0">
-                  <span className="text-sm font-black text-amber-600 dark:text-amber-400">{sp.nom.charAt(0)}</span>
-                </div>
+                {sp.photoUrl ? (
+                  <img src={sp.photoUrl} alt={sp.nom} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm font-black text-amber-600 dark:text-amber-400">{sp.nom.charAt(0)}</span>
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-foreground truncate">{sp.nom}</p>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{sp.congregation}</p>
