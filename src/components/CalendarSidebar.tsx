@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Mail, Bell, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Visit } from "../store/visitTypes";
 import { useTranslation } from "../hooks/useTranslation";
+import { useSettingsStore } from "../store/useSettingsStore";
 
 interface CalendarSidebarProps {
   visits: Visit[];
@@ -14,6 +15,7 @@ export function CalendarSidebar({ visits, onVisitClick }: CalendarSidebarProps) 
   const { t, language } = useTranslation();
   const [showMessages, setShowMessages] = useState(true);
   const [showReminders, setShowReminders] = useState(true);
+  const congregation = useSettingsStore((s) => s.settings.congregation);
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
@@ -51,27 +53,66 @@ export function CalendarSidebar({ visits, onVisitClick }: CalendarSidebarProps) 
   const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   const todayVisits = visitsByDate[todayKey] || [];
 
-  // Upcoming visits (next 7 days)
+  // Upcoming visits (next 30 days)
   const upcomingReminders = useMemo(() => {
     const now = new Date();
-    const weekLater = new Date(now);
-    weekLater.setDate(weekLater.getDate() + 30);
+    const later = new Date(now);
+    later.setDate(later.getDate() + 30);
     return visits
       .filter((v) => {
         const d = new Date(v.visitDate);
-        return d >= now && d <= weekLater && v.status !== "cancelled";
+        return d >= now && d <= later && v.status !== "cancelled";
       })
       .sort((a, b) => new Date(a.visitDate).getTime() - new Date(b.visitDate).getTime())
       .slice(0, 5);
   }, [visits]);
 
+  // Count pending messages (visits today needing messages)
+  const pendingMessages = todayVisits.length;
+  // Count upcoming reminders as notification count
+  const reminderCount = upcomingReminders.length;
+
   const todayDateStr = today.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" }).toUpperCase();
 
   return (
     <div className="p-5 h-full flex flex-col overflow-y-auto">
-      {/* Calendar Header */}
+      {/* ─── Admin Header ─── */}
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-3">
+          {/* Mail icon with badge */}
+          <button className="relative p-2 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
+            <Mail className="w-5 h-5 text-muted-foreground" />
+            {pendingMessages > 0 && (
+              <span className="absolute -top-1 -right-1 w-4.5 h-4.5 min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[9px] font-black flex items-center justify-center">
+                {pendingMessages}
+              </span>
+            )}
+          </button>
+          {/* Bell icon with badge */}
+          <button className="relative p-2 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
+            <Bell className="w-5 h-5 text-amber-500" />
+            {reminderCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-amber-500 text-white text-[9px] font-black flex items-center justify-center px-1">
+                {reminderCount}
+              </span>
+            )}
+          </button>
+        </div>
+        {/* Admin name + avatar */}
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <p className="text-xs font-bold text-foreground">{congregation.responsableName || "Administrateur"}</p>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Administrateur</p>
+          </div>
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center overflow-hidden shadow-md">
+            <User className="w-5 h-5 text-primary-foreground" />
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Calendar Header ─── */}
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-xs font-black text-foreground capitalize">{monthName}</h3>
+        <h3 className="text-sm font-black text-foreground capitalize">{monthName}</h3>
         <div className="flex items-center gap-1">
           <button onClick={prev} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
             <ChevronLeft className="w-4 h-4 text-muted-foreground" />
@@ -79,64 +120,65 @@ export function CalendarSidebar({ visits, onVisitClick }: CalendarSidebarProps) 
           <button onClick={next} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
             <ChevronRight className="w-4 h-4 text-muted-foreground" />
           </button>
-          <button onClick={() => setCurrentMonth(new Date())} className="ml-1 text-[9px] font-bold text-primary uppercase tracking-widest">
+          <button onClick={() => setCurrentMonth(new Date())} className="ml-2 text-[10px] font-black text-primary uppercase tracking-widest">
             {t("today")}
           </button>
         </div>
       </div>
 
       {/* Weekday headers */}
-      <div className="grid grid-cols-7 gap-0.5 mb-0.5">
+      <div className="grid grid-cols-7 gap-0.5 mb-1">
         {weekDays.map((d) => (
           <div key={d} className="text-center text-[9px] font-bold uppercase tracking-widest text-muted-foreground py-1">{d}</div>
         ))}
       </div>
 
       {/* Days Grid */}
-      <div className="grid grid-cols-7 gap-0.5 mb-4">
+      <div className="grid grid-cols-7 gap-0.5 mb-5">
         {days.map((day, i) => {
           if (!day) return <div key={i} />;
           const ds = dateStr(day);
-          const hasVisit = visitsByDate[ds]?.length > 0;
+          const dayVisits = visitsByDate[ds] || [];
+          const hasVisit = dayVisits.length > 0;
           const isSunday = new Date(year, month, day).getDay() === 0;
           return (
             <button
               key={i}
-              onClick={() => hasVisit && onVisitClick(visitsByDate[ds][0])}
-              className={`relative h-8 rounded-md text-xs font-medium transition-colors ${
+              onClick={() => hasVisit && onVisitClick(dayVisits[0])}
+              className={`relative h-9 rounded-lg text-xs font-semibold transition-all ${
                 isToday(day)
-                  ? "bg-primary text-primary-foreground font-black"
+                  ? "bg-primary text-primary-foreground font-black shadow-md"
                   : hasVisit
-                  ? "text-primary font-bold"
+                  ? "text-primary font-bold hover:bg-primary/10"
                   : isSunday
-                  ? "text-primary/50"
+                  ? "text-primary/40"
                   : "text-foreground hover:bg-muted/50"
               }`}
             >
               {day}
               {hasVisit && !isToday(day) && (
-                <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
+                <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-destructive" />
               )}
             </button>
           );
         })}
       </div>
 
-      {/* Programme du jour */}
-      <div className="mb-4">
-        <h4 className="text-[10px] font-black uppercase tracking-widest text-foreground mb-1">{t("program_today")}</h4>
-        <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-2">{todayDateStr}</p>
+      {/* ─── Programme du jour ─── */}
+      <div className="mb-5">
+        <h4 className="text-sm font-black text-foreground mb-0.5">{t("program_today")}</h4>
+        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-3">{todayDateStr}</p>
         {todayVisits.length === 0 ? (
-          <p className="text-xs text-muted-foreground">{t("no_visits_today")}</p>
+          <p className="text-xs text-muted-foreground italic">{t("no_visits_today")}</p>
         ) : (
           <div className="space-y-2">
             {todayVisits.map((v) => (
-              <button key={v.visitId} onClick={() => onVisitClick(v)} className="w-full flex items-start gap-2 text-left hover:bg-muted/30 rounded-lg p-1.5 transition-colors">
-                <div className="w-2 h-2 rounded-full bg-amber-400 mt-1.5 flex-shrink-0" />
-                <div>
-                  <p className="text-[10px] font-bold text-primary">{v.heure_visite || "11:30"}</p>
-                  <p className="text-xs font-bold text-foreground">{v.nom}</p>
-                  <p className="text-[10px] text-muted-foreground">{v.talkTheme || v.congregation}</p>
+              <button key={v.visitId} onClick={() => onVisitClick(v)} className="w-full flex items-center gap-3 text-left bg-muted/30 hover:bg-muted/60 rounded-xl p-3 transition-colors">
+                <div className="w-3 h-3 rounded-full bg-amber-400 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-black text-primary">{v.heure_visite || "11:30"}</p>
+                  <p className="text-sm font-bold text-foreground truncate">{v.nom}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{v.talkTheme || v.congregation}</p>
                 </div>
               </button>
             ))}
@@ -144,48 +186,69 @@ export function CalendarSidebar({ visits, onVisitClick }: CalendarSidebarProps) 
         )}
       </div>
 
-      {/* Messages du jour */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("messages_today")}</h4>
-          <button onClick={() => setShowMessages(!showMessages)} className="text-[10px] font-bold text-primary">
-            {showMessages ? t("close") : t("view")}
-          </button>
-        </div>
-        {showMessages && todayVisits.length > 0 && (
-          <div className="space-y-1.5">
-            {todayVisits.map((v) => (
-              <div key={v.visitId} className="text-xs">
-                <p className="font-bold text-foreground">{v.nom}</p>
-                <p className="text-[10px] text-muted-foreground">{v.congregation}</p>
-              </div>
-            ))}
+      {/* ─── Messages du jour ─── */}
+      {todayVisits.length > 0 && (
+        <div className="mb-5 premium-card p-4">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("messages_today")}</h4>
+            <button onClick={() => setShowMessages(!showMessages)} className="text-[10px] font-bold text-primary">
+              {showMessages ? t("close") : t("view")}
+            </button>
           </div>
-        )}
-      </div>
+          <AnimatePresence>
+            {showMessages && (
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                <div className="space-y-2">
+                  {todayVisits.map((v) => (
+                    <div key={v.visitId} className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <User className="w-4 h-4 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-foreground truncate">{v.nom}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{v.congregation}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
-      {/* Rappels à venir */}
-      <div className="flex-1">
-        <div className="flex items-center justify-between mb-2">
+      {/* ─── Rappels à venir ─── */}
+      <div className="flex-1 premium-card p-4">
+        <div className="flex items-center justify-between mb-3">
           <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("upcoming_reminders")}</h4>
           <button onClick={() => setShowReminders(!showReminders)} className="text-[10px] font-bold text-primary">
             {showReminders ? t("close") : t("view")}
           </button>
         </div>
-        {showReminders && (
-          <div className="space-y-2">
-            {upcomingReminders.map((v) => {
-              const d = new Date(v.visitDate);
-              const dateLabel = d.toLocaleDateString(locale, { weekday: "long", day: "2-digit", month: "2-digit" }).toUpperCase();
-              return (
-                <button key={v.visitId} onClick={() => onVisitClick(v)} className="w-full text-left hover:bg-muted/30 rounded-lg p-1 transition-colors">
-                  <p className="text-xs font-bold text-foreground">{v.nom}</p>
-                  <p className="text-[10px] text-muted-foreground">{dateLabel} · {v.congregation}</p>
-                </button>
-              );
-            })}
-          </div>
-        )}
+        <AnimatePresence>
+          {showReminders && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+              <div className="space-y-3">
+                {upcomingReminders.length === 0 && (
+                  <p className="text-xs text-muted-foreground italic">{t("no_upcoming")}</p>
+                )}
+                {upcomingReminders.map((v) => {
+                  const d = new Date(v.visitDate);
+                  const dateLabel = d.toLocaleDateString(locale, { weekday: "long", day: "2-digit", month: "2-digit" }).toUpperCase();
+                  return (
+                    <button key={v.visitId} onClick={() => onVisitClick(v)} className="w-full text-left hover:bg-muted/30 rounded-xl p-2 transition-colors border-b border-border/50 last:border-0">
+                      <p className="text-xs font-bold text-foreground">{v.nom}</p>
+                      <p className="text-[10px] text-muted-foreground">{dateLabel} · {v.congregation}</p>
+                      {v.talkTheme && (
+                        <p className="text-[10px] text-primary/70 italic truncate">{v.talkTheme}</p>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
