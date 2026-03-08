@@ -109,6 +109,7 @@ export function PlanningHub() {
   const [assignRole, setAssignRole] = useState<HostAssignment["role"]>("hebergement");
   const [assignDay, setAssignDay] = useState("");
   const [assignTime, setAssignTime] = useState("");
+  const [editingHostIdx, setEditingHostIdx] = useState<number | null>(null);
 
   const locale = language === "pt" ? "pt-PT" : language === "cv" ? "pt-CV" : "fr-FR";
   const now = new Date();
