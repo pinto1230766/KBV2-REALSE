@@ -76,8 +76,7 @@ function sendBrowserNotification(title: string, body: string) {
 export function useReminderEngine() {
   const visits = useVisitStore((s) => s.visits);
   const settings = useSettingsStore((s) => s.settings);
-  const { notifications, addNotification, hasNotification } =
-    useNotificationStore();
+  const notifications = useNotificationStore((s) => s.notifications);
 
   const lang = settings.language;
   const responsableName = settings.congregation.responsableName || "Le responsable";
@@ -87,6 +86,9 @@ export function useReminderEngine() {
 
   const checkReminders = useCallback(() => {
     if (!notifEnabled) return;
+
+    // Read store state directly to avoid dependency loops
+    const { addNotification, hasNotification } = useNotificationStore.getState();
 
     visits.forEach((visit) => {
       if (visit.status === "cancelled" || visit.status === "completed") return;
@@ -124,20 +126,17 @@ export function useReminderEngine() {
         );
       };
 
-      // J-7: 7 days or less before (but more than 2)
       if (remindJ7 && days <= 7 && days > 2) {
         createReminder("j7");
       }
-      // J-2: 2 days or less before (but >= 0)
       if (remindJ2 && days <= 2 && days >= 0) {
         createReminder("j2");
       }
-      // J+1: day after visit (completed or days <= -1)
       if (days <= -1 && days >= -3) {
         createReminder("j1_thanks");
       }
     });
-  }, [visits, notifEnabled, remindJ7, remindJ2, lang, responsableName, addNotification, hasNotification]);
+  }, [visits, notifEnabled, remindJ7, remindJ2, lang, responsableName]);
 
   useEffect(() => {
     if (notifEnabled) {
