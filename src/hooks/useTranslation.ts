@@ -284,6 +284,19 @@ const dictionary: Record<string, TranslationEntry> = {
   comments_followup: { fr: "Commentaires / Suivi", cv: "Komentarius / Seguimentu", pt: "Comentários / Seguimento" },
   feedback_visit_placeholder: { fr: "Comment s'est passée la visite ?", cv: "Komu vizita korreu?", pt: "Como correu a visita?" },
   save_feedback: { fr: "Enregistrer le feedback", cv: "Gravâ feedback", pt: "Guardar feedback" },
+
+  // Google Sheet sync
+  configure_google_sheet: { fr: "Configurer Google Sheet", cv: "Konfigurâ Google Sheet", pt: "Configurar Google Sheet" },
+  sheet_config_desc: { fr: "Collez l'URL de votre Google Sheet pour synchroniser les visites", cv: "Kola URL di bu Google Sheet pa sinkronizâ vizitas", pt: "Cole o URL do seu Google Sheet para sincronizar visitas" },
+  sheet_url: { fr: "URL du Google Sheet", cv: "URL di Google Sheet", pt: "URL do Google Sheet" },
+  sheet_url_hint: { fr: "Le Google Sheet doit être accessible en lecture (partagé via lien)", cv: "Google Sheet debe sta acessível pa leitura", pt: "O Google Sheet deve estar acessível para leitura (partilhado via link)" },
+  invalid_sheet_url: { fr: "URL Google Sheet invalide", cv: "URL Google Sheet inválidu", pt: "URL Google Sheet inválido" },
+  sync_success: { fr: "Synchronisation réussie", cv: "Sinkronizason feitu ku susesu", pt: "Sincronização concluída" },
+  sync_error: { fr: "Erreur de synchronisation. Vérifiez que le Sheet est partagé.", cv: "Erru di sinkronizason. Verifikâ si Sheet sta partilhadu.", pt: "Erro de sincronização. Verifique se o Sheet está partilhado." },
+  save_and_sync: { fr: "Enregistrer et synchroniser", cv: "Gravâ i sinkronizâ", pt: "Guardar e sincronizar" },
+  sheet_url_saved: { fr: "URL du Google Sheet enregistrée", cv: "URL di Google Sheet gravadu", pt: "URL do Google Sheet guardado" },
+  connected: { fr: "connecté", cv: "konetadu", pt: "conectado" },
+  modify: { fr: "Modifier", cv: "Modifikâ", pt: "Modificar" },
 };
 
 export function useTranslation() {

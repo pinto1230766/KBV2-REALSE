@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   Globe, Moon, Sun, Bell, Database, Download, Upload,
   Monitor, User, MessageSquare, CloudOff, Cloud, RefreshCw,
-  FileSpreadsheet, FolderArchive, ExternalLink, Search, Trash2, Check
+  FileSpreadsheet, FolderArchive, ExternalLink, Search, Trash2, Check, Link2, Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSettingsStore } from "../store/useSettingsStore";
@@ -11,14 +11,140 @@ import { useHostStore } from "../store/useHostStore";
 import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useTranslation } from "../hooks/useTranslation";
 import { toast } from "sonner";
-import type { Language } from "../store/visitTypes";
+import type { Language, Visit, Speaker } from "../store/visitTypes";
 
 type SettingsTab = "general" | "appearance" | "notifications" | "data";
 type ThemeMode = "light" | "dark" | "system";
 
+// Parse Google Sheets CSV
+function parseCSV(text: string): string[][] {
+  const rows: string[][] = [];
+  let current = "";
+  let inQuotes = false;
+  let row: string[] = [];
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (inQuotes) {
+      if (char === '"' && text[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else if (char === '"') {
+        inQuotes = false;
+      } else {
+        current += char;
+      }
+    } else {
+      if (char === '"') {
+        inQuotes = true;
+      } else if (char === ",") {
+        row.push(current.trim());
+        current = "";
+      } else if (char === "\n" || (char === "\r" && text[i + 1] === "\n")) {
+        row.push(current.trim());
+        current = "";
+        if (row.some((c) => c !== "")) rows.push(row);
+        row = [];
+        if (char === "\r") i++;
+      } else {
+        current += char;
+      }
+    }
+  }
+  row.push(current.trim());
+  if (row.some((c) => c !== "")) rows.push(row);
+  return rows;
+}
+
+function extractSheetInfo(url: string): { id: string; gid: string } | null {
+  const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+  if (!match) return null;
+  const id = match[1];
+  const gidMatch = url.match(/gid=(\d+)/);
+  const gid = gidMatch ? gidMatch[1] : "0";
+  return { id, gid };
+}
+
+function parseSheetDate(dateStr: string): string {
+  // Handles DD/MM/YYYY format
+  const parts = dateStr.split("/");
+  if (parts.length === 3) {
+    const [day, month, year] = parts;
+    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  }
+  return dateStr;
+}
+
+function parseRowsToVisitsAndSpeakers(rows: string[][]): { visits: Visit[]; speakers: Speaker[] } {
+  const visits: Visit[] = [];
+  const speakerMap = new Map<string, Speaker>();
+
+  for (const row of rows) {
+    // Find date column (column index 1 based on sheet structure)
+    const dateStr = row[1]?.trim();
+    if (!dateStr || !/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) continue;
+
+    const orador = row[2]?.trim() || "";
+    const congregation = row[3]?.trim() || "";
+    const talkNo = row[4]?.trim() || "";
+    const theme = row[5]?.trim() || "";
+
+    if (!orador) continue;
+
+    // Check if it's an event (no talk number, special text)
+    const isEvent = !talkNo && (
+      orador.toLowerCase().includes("assemblei") ||
+      orador.toLowerCase().includes("runion") ||
+      orador.toLowerCase().includes("visita") ||
+      orador.toLowerCase().includes("asenbleia") ||
+      orador.toLowerCase().includes("komemorason")
+    );
+
+    const visitDate = parseSheetDate(dateStr);
+    const visitId = `sheet-${visitDate}`;
+
+    if (isEvent) {
+      visits.push({
+        visitId,
+        nom: orador,
+        congregation: congregation || "",
+        visitDate,
+        locationType: "kingdom_hall",
+        status: "scheduled",
+        isEvent: true,
+        talkNoOrType: talkNo || "event",
+        talkTheme: theme,
+      });
+    } else {
+      // Create speaker if not already known
+      const speakerKey = orador.toLowerCase().replace(/\s+/g, " ");
+      if (!speakerMap.has(speakerKey)) {
+        speakerMap.set(speakerKey, {
+          id: `sheet-spk-${speakerKey.replace(/\s/g, "-")}`,
+          nom: orador,
+          congregation: congregation,
+        });
+      }
+
+      visits.push({
+        visitId,
+        nom: orador,
+        congregation: congregation,
+        visitDate,
+        locationType: "kingdom_hall",
+        status: new Date(visitDate) < new Date() ? "completed" : "scheduled",
+        talkNoOrType: talkNo,
+        talkTheme: theme,
+      });
+    }
+  }
+
+  return { visits, speakers: Array.from(speakerMap.values()) };
+}
+
 export function SettingsPage() {
   const { settings, setLanguage, setDarkMode, updateNotifications, updateCongregation } = useSettingsStore();
-  const congregation = settings.congregation || { name: "", city: "", day: "Dimanche", time: "11:30", responsableName: "", responsablePhone: "", whatsappGroup: "", whatsappInviteId: "" };
+  const congregation = settings.congregation || { name: "", city: "", day: "Dimanche", time: "11:30", responsableName: "", responsablePhone: "", whatsappGroup: "", whatsappInviteId: "", googleSheetUrl: "", lastSyncAt: "" };
   const notifications = settings.notifications || { enabled: false, steps: { remindJ7: true, remindJ2: true } };
   const visits = useVisitStore((s) => s.visits);
   const hosts = useHostStore((s) => s.hosts);
@@ -29,6 +155,9 @@ export function SettingsPage() {
   const [vibrationEnabled, setVibrationEnabled] = useState(true);
   const [duplicates, setDuplicates] = useState<Array<{ type: string; name: string; ids: string[] }>>([]);
   const [selectedDuplicates, setSelectedDuplicates] = useState<string[]>([]);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [sheetUrlInput, setSheetUrlInput] = useState(congregation.googleSheetUrl || "");
+  const [showSheetConfig, setShowSheetConfig] = useState(false);
 
   const themeMode: ThemeMode = settings.darkMode ? "dark" : "light";
 
@@ -38,10 +167,73 @@ export function SettingsPage() {
     } else if (mode === "light") {
       setDarkMode(false);
     } else {
-      // System mode: follow OS preference
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       setDarkMode(prefersDark);
     }
+  };
+
+  const handleSyncGoogleSheet = async () => {
+    const url = congregation.googleSheetUrl || sheetUrlInput;
+    if (!url) {
+      setShowSheetConfig(true);
+      return;
+    }
+
+    const info = extractSheetInfo(url);
+    if (!info) {
+      toast.error(t("invalid_sheet_url"));
+      return;
+    }
+
+    setIsSyncing(true);
+    try {
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${info.id}/export?format=csv&gid=${info.gid}`;
+      const response = await fetch(csvUrl);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const text = await response.text();
+      const rows = parseCSV(text);
+      const { visits: newVisits, speakers: newSpeakers } = parseRowsToVisitsAndSpeakers(rows);
+
+      let addedVisits = 0;
+      let addedSpeakers = 0;
+      const existingVisitIds = new Set(useVisitStore.getState().visits.map((v) => v.visitId));
+      const existingSpeakerNames = new Set(useSpeakerStore.getState().speakers.map((s) => s.nom.toLowerCase().replace(/\s+/g, " ")));
+
+      newVisits.forEach((v) => {
+        if (!existingVisitIds.has(v.visitId)) {
+          useVisitStore.getState().addVisit(v);
+          addedVisits++;
+        }
+      });
+
+      newSpeakers.forEach((s) => {
+        const key = s.nom.toLowerCase().replace(/\s+/g, " ");
+        if (!existingSpeakerNames.has(key)) {
+          useSpeakerStore.getState().addSpeaker(s);
+          addedSpeakers++;
+        }
+      });
+
+      updateCongregation({ lastSyncAt: new Date().toISOString() });
+      toast.success(`${t("sync_success")}: +${addedVisits} visites, +${addedSpeakers} orateurs`);
+    } catch (err) {
+      console.error("Sync error:", err);
+      toast.error(t("sync_error"));
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleSaveSheetUrl = () => {
+    if (!sheetUrlInput) return;
+    const info = extractSheetInfo(sheetUrlInput);
+    if (!info) {
+      toast.error(t("invalid_sheet_url"));
+      return;
+    }
+    updateCongregation({ googleSheetUrl: sheetUrlInput });
+    setShowSheetConfig(false);
+    toast.success(t("sheet_url_saved"));
   };
 
   const handleExport = () => {
@@ -421,12 +613,68 @@ export function SettingsPage() {
       {/* Data / Import-Export Tab */}
       {activeTab === "data" && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-3xl">
+
+          {/* Google Sheet Config Modal */}
+          <AnimatePresence>
+            {showSheetConfig && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="w-full max-w-lg bg-background rounded-3xl border border-border shadow-2xl p-6 space-y-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <FileSpreadsheet className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-black text-foreground">{t("configure_google_sheet")}</h3>
+                      <p className="text-xs text-muted-foreground">{t("sheet_config_desc")}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("sheet_url")}</label>
+                    <input
+                      className="input-soft text-sm w-full"
+                      placeholder="https://docs.google.com/spreadsheets/d/..."
+                      value={sheetUrlInput}
+                      onChange={(e) => setSheetUrlInput(e.target.value)}
+                    />
+                    <p className="text-[10px] text-muted-foreground">{t("sheet_url_hint")}</p>
+                  </div>
+
+                  <div className="flex gap-3 justify-end">
+                    <button onClick={() => setShowSheetConfig(false)} className="px-4 py-2 rounded-xl text-sm font-bold text-muted-foreground hover:text-foreground transition-colors">
+                      {t("cancel")}
+                    </button>
+                    <button onClick={handleSaveSheetUrl} className="px-5 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 transition-opacity">
+                      {t("save_and_sync")}
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Import / Export Card */}
           <div className="premium-card p-6 space-y-5">
             <h3 className="text-base font-black text-foreground flex items-center gap-2">
               <Database className="w-5 h-5 text-primary" />
               {t("import_export")}
             </h3>
+
+            {/* Google Sheet Status Banner */}
+            {congregation.googleSheetUrl && (
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-primary/5 border border-primary/20">
+                <Link2 className="w-4 h-4 text-primary flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-primary truncate">Google Sheet {t("connected")}</p>
+                  {congregation.lastSyncAt && (
+                    <p className="text-[10px] text-muted-foreground">{t("last_sync")}: {new Date(congregation.lastSyncAt).toLocaleString("fr-FR")}</p>
+                  )}
+                </div>
+                <button onClick={() => setShowSheetConfig(true)} className="text-[10px] font-bold uppercase tracking-widest text-primary hover:underline flex-shrink-0">
+                  {t("modify")}
+                </button>
+              </div>
+            )}
 
             <div className="grid grid-cols-3 gap-4">
               {/* Cloud Sync Status */}
@@ -438,17 +686,23 @@ export function SettingsPage() {
                 <p className="text-base font-black text-foreground">Idle</p>
                 <div>
                   <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t("last_sync")}</p>
-                  <p className="text-xs font-bold text-foreground mt-0.5">{new Date().toLocaleString("fr-FR")}</p>
+                  <p className="text-xs font-bold text-foreground mt-0.5">
+                    {congregation.lastSyncAt ? new Date(congregation.lastSyncAt).toLocaleString("fr-FR") : "—"}
+                  </p>
                 </div>
-                <button className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-primary/20 text-primary text-xs font-bold hover:bg-primary/30 transition-colors">
-                  <RefreshCw className="w-3.5 h-3.5" /> SYNC CLOUD
+                <button onClick={handleSyncGoogleSheet} disabled={isSyncing}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-primary/20 text-primary text-xs font-bold hover:bg-primary/30 transition-colors disabled:opacity-50">
+                  {isSyncing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                  {isSyncing ? "SYNCING..." : "SYNC CLOUD"}
                 </button>
               </div>
 
               {/* Middle column: Sync Google Sheet + Import JSON */}
               <div className="flex flex-col gap-3">
-                <button className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity">
-                  <FileSpreadsheet className="w-4 h-4" /> Sync Google Sheet
+                <button onClick={handleSyncGoogleSheet} disabled={isSyncing}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity disabled:opacity-50">
+                  {isSyncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
+                  {isSyncing ? "Syncing..." : "Sync Google Sheet"}
                 </button>
                 <button onClick={handleImport} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gradient-to-r from-emerald-600/80 to-teal-600/80 text-white text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity">
                   <Upload className="w-4 h-4" /> {t("import_json")}
@@ -482,7 +736,8 @@ export function SettingsPage() {
             <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground">{t("quick_access")}</h3>
             <p className="text-sm text-muted-foreground">{t("quick_access_desc")}</p>
             <div className="grid grid-cols-2 gap-3">
-              <a href="#" target="_blank" rel="noopener noreferrer"
+              <a href={congregation.googleSheetUrl || "#"} target="_blank" rel="noopener noreferrer"
+                onClick={(e) => { if (!congregation.googleSheetUrl) { e.preventDefault(); setShowSheetConfig(true); } }}
                 className="flex items-center justify-between p-4 rounded-2xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors">
                 <span className="text-sm font-bold text-primary">Google Sheet</span>
                 <ExternalLink className="w-4 h-4 text-primary" />

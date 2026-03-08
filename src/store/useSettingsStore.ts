@@ -26,6 +26,8 @@ const defaultSettings: AppSettings = {
     responsablePhone: "",
     whatsappGroup: "",
     whatsappInviteId: "",
+    googleSheetUrl: "",
+    lastSyncAt: "",
   },
 };
 

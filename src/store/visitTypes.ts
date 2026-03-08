@@ -106,6 +106,8 @@ export interface CongregationProfile {
   responsablePhone: string;
   whatsappGroup: string;
   whatsappInviteId: string;
+  googleSheetUrl?: string;
+  lastSyncAt?: string;
 }
 
 export interface AppSettings {
