@@ -891,15 +891,20 @@ export function PlanningHub() {
                                 </button>
                               ))}
                             </div>
-                            <p className="text-[10px] text-muted-foreground">
-                              {viewVisit.nom} · {detailForm.speakerPhone || ""}
-                            </p>
+                            {(() => {
+                              const recipient = getSelectedRecipient();
+                              return (
+                                <p className="text-[10px] text-muted-foreground">
+                                  {recipient ? `${recipient.label} · ${recipient.phone}` : viewVisit.nom}
+                                </p>
+                              );
+                            })()}
                             <textarea ref={(el) => { if (el) { el.style.height = "auto"; el.style.height = Math.max(80, el.scrollHeight) + "px"; } }} className="input-soft text-sm min-h-[80px] max-h-[60vh] resize-y w-full" placeholder={t("write_message")} value={messageText} onChange={(e) => setMessageText(e.target.value)} />
                             <div className="flex items-center justify-end gap-2">
                               <button onClick={() => copyText(messageText)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border text-xs font-bold text-foreground hover:bg-muted transition-colors">
                                 <Copy className="w-3.5 h-3.5" /> {t("copy")}
                               </button>
-                              <button onClick={() => { const phone = detailForm.speakerPhone || ""; if (phone) sendWhatsApp(phone, messageText); }}
+                              <button onClick={() => { const recipient = getSelectedRecipient(); const phone = recipient?.phone || detailForm.speakerPhone || ""; if (phone) sendWhatsApp(phone, messageText); }}
                                 className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider">
                                 <Send className="w-3.5 h-3.5" /> {t("send_whatsapp")}
                               </button>
