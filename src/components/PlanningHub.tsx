@@ -64,17 +64,17 @@ const messageTemplates = {
     fr: {
       title: "Remerciements – Orateur",
       desc: "Message après la visite",
-      body: `Bonjour Frère {prenom_orateur},\n\nJe vous remercie sincèrement pour votre présence et votre discours qui nous a tous fortifiés ! 🙏✨\nCe fut un grand plaisir de vous accueillir au sein du Groupe Kabuverdianu de Lyon.\n\nNous espérons vous revoir bientôt. Que Jéhovah continue de vous donner des forces pour le servir.\n\nFraternellement,\n{ton_nom}`,
+      body: `Bonjour Frère {prenom_orateur},\n\nJe vous remercie sincèrement pour votre présence et votre discours qui nous a tous fortifiés ! 🙏✨\nCe fut un grand plaisir de vous accueillir au sein du Groupe Kabuverdianu de Lyon.\n\nNous espérons vous revoir bientôt. Que Jéhovah continue de vous donner des forces pour le servir.\n\n📋 Si vous avez engagé des frais de déplacement, voici le formulaire de remboursement (H-8) à remplir et nous renvoyer :\n{lien_formulaire_h8}\n\nFraternellement,\n{ton_nom}`,
     },
     cv: {
       title: "Agradecementu – Orador",
       desc: "Mensajen pós-vizita",
-      body: `Bon dia Irmãu {prenom_orateur},\n\nNha sinseru obrigadu pa bu presensa y pa diskursu ki fortifika nos tudu! 🙏✨\nFoi un grandi prazeri akolhe bu na Grupu Kabuverdianu di Lyon.\n\nNu ta spera torna odja bu brebe. Ma Jeová kontinia da bu forsa na servi.\n\nFraternalmenti,\n{ton_nom}`,
+      body: `Bon dia Irmãu {prenom_orateur},\n\nNha sinseru obrigadu pa bu presensa y pa diskursu ki fortifika nos tudu! 🙏✨\nFoi un grandi prazeri akolhe bu na Grupu Kabuverdianu di Lyon.\n\nNu ta spera torna odja bu brebe. Ma Jeová kontinia da bu forsa na servi.\n\n📋 Si bu ten despeza di deslocamentu, li sta formuláriu di reembolsu (H-8) pa preenche i manda-nu volta :\n{lien_formulaire_h8}\n\nFraternalmenti,\n{ton_nom}`,
     },
     pt: {
       title: "Agradecimento – Orador",
       desc: "Mensagem pós-visita",
-      body: `Bom dia Irmão {prenom_orateur},\n\nO nosso sincero obrigado pela sua presença e pelo discurso que fortaleceu todos nós! 🙏✨\nFoi um grande prazer recebê-lo no Grupo Cabo-verdiano de Lyon.\n\nEsperamos vê-lo em breve. Que Jeová continue a dar-lhe forças.\n\nFraternalmente,\n{ton_nom}`,
+      body: `Bom dia Irmão {prenom_orateur},\n\nO nosso sincero obrigado pela sua presença e pelo discurso que fortaleceu todos nós! 🙏✨\nFoi um grande prazer recebê-lo no Grupo Cabo-verdiano de Lyon.\n\nEsperamos vê-lo em breve. Que Jeová continue a dar-lhe forças.\n\n📋 Se teve despesas de deslocação, aqui está o formulário de reembolso (H-8) para preencher e nos devolver:\n{lien_formulaire_h8}\n\nFraternalmente,\n{ton_nom}`,
     },
   },
   thanks_speaker_online: {
