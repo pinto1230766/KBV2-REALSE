@@ -232,7 +232,12 @@ export function PlanningHub() {
     setDetailForm({ ...detailForm, hostAssignments: updated });
   };
 
-  // WhatsApp send
+  const updateHostAssignment = (idx: number, field: string, value: string) => {
+    const updated = [...(detailForm.hostAssignments || [])];
+    updated[idx] = { ...updated[idx], [field]: value };
+    setDetailForm({ ...detailForm, hostAssignments: updated });
+  };
+
   const sendWhatsApp = (phone: string, text: string) => {
     const cleaned = phone.replace(/\s/g, "");
     window.open(`https://wa.me/${cleaned}?text=${encodeURIComponent(text)}`, "_blank");
