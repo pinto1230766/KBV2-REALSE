@@ -38,6 +38,7 @@ function App() {
   const setIsOnline = useUIStore((s) => s.setIsOnline);
   const { t } = useTranslation();
   const { pendingCount } = useReminderEngine();
+  const { runSync } = useAutoSync();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
