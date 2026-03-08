@@ -338,6 +338,14 @@ export function PlanningHub() {
   };
 
   const sendWhatsApp = (phone: string, text: string) => {
+    if (phone === WHATSAPP_GROUP_ID || phone.length < 6) {
+      // Group: open WhatsApp group chat link
+      window.open(`https://chat.whatsapp.com/${WHATSAPP_GROUP_ID}`, "_blank");
+      // Also copy message to clipboard so user can paste it
+      navigator.clipboard.writeText(text);
+      toast.success(t("copied") + " – Collez le message dans le groupe");
+      return;
+    }
     const cleaned = phone.replace(/\s/g, "");
     window.open(`https://wa.me/${cleaned}?text=${encodeURIComponent(text)}`, "_blank");
   };
