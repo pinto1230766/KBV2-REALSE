@@ -115,15 +115,15 @@ export function SettingsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("congregation_name")}</label>
-                <input className="input-soft text-sm mt-1" value={settings.congregation.name} onChange={(e) => updateCongregation({ name: e.target.value })} />
+                <input className="input-soft text-sm mt-1" value={congregation.name} onChange={(e) => updateCongregation({ name: e.target.value })} />
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("city")}</label>
-                <input className="input-soft text-sm mt-1" value={settings.congregation.city} onChange={(e) => updateCongregation({ city: e.target.value })} />
+                <input className="input-soft text-sm mt-1" value={congregation.city} onChange={(e) => updateCongregation({ city: e.target.value })} />
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("day")}</label>
-                <select className="input-soft text-sm mt-1" value={settings.congregation.day} onChange={(e) => updateCongregation({ day: e.target.value })}>
+                <select className="input-soft text-sm mt-1" value={congregation.day} onChange={(e) => updateCongregation({ day: e.target.value })}>
                   {["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"].map((d) => (
                     <option key={d} value={d}>{d}</option>
                   ))}
@@ -131,7 +131,7 @@ export function SettingsPage() {
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("time")}</label>
-                <input className="input-soft text-sm mt-1" type="time" value={settings.congregation.time} onChange={(e) => updateCongregation({ time: e.target.value })} />
+                <input className="input-soft text-sm mt-1" type="time" value={congregation.time} onChange={(e) => updateCongregation({ time: e.target.value })} />
               </div>
             </div>
           </div>
