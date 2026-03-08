@@ -20,7 +20,8 @@ export function CalendarSidebar({ visits, onVisitClick, onSyncNow }: CalendarSid
   const [showReminders, setShowReminders] = useState(true);
   const congregation = useSettingsStore((s) => s.settings.congregation);
   const lastSyncAt = congregation.lastSyncAt;
-  const pendingNotifications = useNotificationStore((s) => s.notifications.filter((n) => n.status === "pending"));
+  const allNotifications = useNotificationStore((s) => s.notifications);
+  const pendingNotifications = useMemo(() => allNotifications.filter((n) => n.status === "pending"), [allNotifications]);
   const setActiveTab = useUIStore((s) => s.setActiveTab);
   const setPendingVisit = useUIStore((s) => s.setPendingVisit);
 
