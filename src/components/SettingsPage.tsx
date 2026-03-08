@@ -13,6 +13,7 @@ type SettingsTab = "general" | "appearance" | "notifications" | "data";
 
 export function SettingsPage() {
   const { settings, setLanguage, setDarkMode, updateNotifications, updateCongregation } = useSettingsStore();
+  const congregation = settings.congregation || { name: "", city: "", day: "Dimanche", time: "11:30", responsableName: "", responsablePhone: "", whatsappGroup: "", whatsappInviteId: "" };
   const visits = useVisitStore((s) => s.visits);
   const hosts = useHostStore((s) => s.hosts);
   const speakers = useSpeakerStore((s) => s.speakers);
@@ -114,15 +115,15 @@ export function SettingsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("congregation_name")}</label>
-                <input className="input-soft text-sm mt-1" value={settings.congregation.name} onChange={(e) => updateCongregation({ name: e.target.value })} />
+                <input className="input-soft text-sm mt-1" value={congregation.name} onChange={(e) => updateCongregation({ name: e.target.value })} />
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("city")}</label>
-                <input className="input-soft text-sm mt-1" value={settings.congregation.city} onChange={(e) => updateCongregation({ city: e.target.value })} />
+                <input className="input-soft text-sm mt-1" value={congregation.city} onChange={(e) => updateCongregation({ city: e.target.value })} />
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("day")}</label>
-                <select className="input-soft text-sm mt-1" value={settings.congregation.day} onChange={(e) => updateCongregation({ day: e.target.value })}>
+                <select className="input-soft text-sm mt-1" value={congregation.day} onChange={(e) => updateCongregation({ day: e.target.value })}>
                   {["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"].map((d) => (
                     <option key={d} value={d}>{d}</option>
                   ))}
@@ -130,7 +131,7 @@ export function SettingsPage() {
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("time")}</label>
-                <input className="input-soft text-sm mt-1" type="time" value={settings.congregation.time} onChange={(e) => updateCongregation({ time: e.target.value })} />
+                <input className="input-soft text-sm mt-1" type="time" value={congregation.time} onChange={(e) => updateCongregation({ time: e.target.value })} />
               </div>
             </div>
           </div>
@@ -144,19 +145,19 @@ export function SettingsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("full_name")}</label>
-                <input className="input-soft text-sm mt-1" value={settings.congregation.responsableName} onChange={(e) => updateCongregation({ responsableName: e.target.value })} />
+                <input className="input-soft text-sm mt-1" value={congregation.responsableName} onChange={(e) => updateCongregation({ responsableName: e.target.value })} />
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("phone")}</label>
-                <input className="input-soft text-sm mt-1" value={settings.congregation.responsablePhone} onChange={(e) => updateCongregation({ responsablePhone: e.target.value })} />
+                <input className="input-soft text-sm mt-1" value={congregation.responsablePhone} onChange={(e) => updateCongregation({ responsablePhone: e.target.value })} />
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("whatsapp_group")}</label>
-                <input className="input-soft text-sm mt-1" placeholder="Numéro du groupe ou admin" value={settings.congregation.whatsappGroup} onChange={(e) => updateCongregation({ whatsappGroup: e.target.value })} />
+                <input className="input-soft text-sm mt-1" placeholder="Numéro du groupe ou admin" value={congregation.whatsappGroup} onChange={(e) => updateCongregation({ whatsappGroup: e.target.value })} />
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("whatsapp_invite_id")}</label>
-                <input className="input-soft text-sm mt-1" value={settings.congregation.whatsappInviteId} onChange={(e) => updateCongregation({ whatsappInviteId: e.target.value })} />
+                <input className="input-soft text-sm mt-1" value={congregation.whatsappInviteId} onChange={(e) => updateCongregation({ whatsappInviteId: e.target.value })} />
               </div>
             </div>
           </div>
