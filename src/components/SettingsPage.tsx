@@ -719,20 +719,22 @@ export function SettingsPage() {
               {/* Cloud Sync Status */}
               <div className="p-4 rounded-2xl bg-muted/50 border border-border space-y-3">
                 <div className="flex items-center gap-2">
-                  <Cloud className="w-4 h-4 text-cyan-400" />
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-cyan-400">Cloud Sync</p>
+                  <Cloud className={`w-4 h-4 ${cloudStatus === "done" ? "text-emerald-400" : cloudStatus === "error" ? "text-destructive" : "text-cyan-400"}`} />
+                  <p className={`text-[10px] font-bold uppercase tracking-widest ${cloudStatus === "done" ? "text-emerald-400" : cloudStatus === "error" ? "text-destructive" : "text-cyan-400"}`}>Cloud Sync</p>
                 </div>
-                <p className="text-base font-black text-foreground">Idle</p>
+                <p className="text-base font-black text-foreground">
+                  {cloudStatus === "syncing" ? "Syncing..." : cloudStatus === "done" ? "✓ Synced" : cloudStatus === "error" ? "✗ Error" : "Idle"}
+                </p>
                 <div>
                   <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t("last_sync")}</p>
                   <p className="text-xs font-bold text-foreground mt-0.5">
                     {congregation.lastSyncAt ? new Date(congregation.lastSyncAt).toLocaleString("fr-FR") : "—"}
                   </p>
                 </div>
-                <button onClick={handleSyncGoogleSheet} disabled={isSyncing}
+                <button onClick={handleCloudSync} disabled={isCloudSyncing}
                   className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-primary/20 text-primary text-xs font-bold hover:bg-primary/30 transition-colors disabled:opacity-50">
-                  {isSyncing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                  {isSyncing ? "SYNCING..." : "SYNC CLOUD"}
+                  {isCloudSyncing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                  {isCloudSyncing ? "SYNCING..." : "SYNC CLOUD"}
                 </button>
               </div>
 
