@@ -76,6 +76,17 @@ export interface Speaker {
 
 export type Language = "fr" | "cv" | "pt";
 
+export interface CongregationProfile {
+  name: string;
+  city: string;
+  day: string;
+  time: string;
+  responsableName: string;
+  responsablePhone: string;
+  whatsappGroup: string;
+  whatsappInviteId: string;
+}
+
 export interface AppSettings {
   language: Language;
   darkMode: boolean;
@@ -86,4 +97,5 @@ export interface AppSettings {
       remindJ2: boolean;
     };
   };
+  congregation: CongregationProfile;
 }
