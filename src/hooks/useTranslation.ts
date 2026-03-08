@@ -123,6 +123,41 @@ const dictionary: Record<string, TranslationEntry> = {
   host_updated: { fr: "Hôte modifié", cv: "Anfitrion modifikadu", pt: "Anfitrião atualizado" },
   host_deleted: { fr: "Hôte supprimé", cv: "Anfitrion apagadu", pt: "Anfitrião eliminado" },
   visit_confirmed: { fr: "Visite confirmée", cv: "Vizita confirmadu", pt: "Visita confirmada" },
+
+  // New — Dashboard
+  welcome_back: { fr: "Bon retour ! Voici un aperçu de votre activité.", cv: "Ben-vindu di volta! Kel ki sta kontese.", pt: "Bem-vindo de volta! Aqui está um resumo da sua atividade." },
+  confirmed_count: { fr: "Confirmées", cv: "Confirmadus", pt: "Confirmadas" },
+  this_month: { fr: "Ce mois-ci", cv: "Es mes li", pt: "Este mês" },
+  recent_activities: { fr: "Activités récentes", cv: "Atividadis resentis", pt: "Atividades recentes" },
+  see_all: { fr: "Voir tout", cv: "Odja tudu", pt: "Ver tudo" },
+  backup: { fr: "Backup", cv: "Backup", pt: "Backup" },
+  in_person: { fr: "Présentiel", cv: "Prezensial", pt: "Presencial" },
+  archived: { fr: "Archivées", cv: "Arkivadus", pt: "Arquivadas" },
+  schedule: { fr: "Programmer", cv: "Programâ", pt: "Programar" },
+  view: { fr: "Voir", cv: "Odja", pt: "Ver" },
+  repertoire: { fr: "Répertoire", cv: "Repertóriu", pt: "Repertório" },
+  global_repertoire: { fr: "Répertoire global", cv: "Repertóriu global", pt: "Repertório global" },
+  search_speaker: { fr: "Rechercher un orateur...", cv: "Buska un orador...", pt: "Pesquisar um orador..." },
+  search_host: { fr: "Chercher un hôte...", cv: "Buska un anfitrion...", pt: "Pesquisar um anfitrião..." },
+
+  // Settings tabs
+  general: { fr: "Général", cv: "Jeral", pt: "Geral" },
+  congregation_profile: { fr: "Profil de la Congrégation", cv: "Perfil di Kongregason", pt: "Perfil da Congregação" },
+  congregation_name: { fr: "Nom", cv: "Nomi", pt: "Nome" },
+  city: { fr: "Ville", cv: "Sidadi", pt: "Cidade" },
+  day: { fr: "Jour", cv: "Dia", pt: "Dia" },
+  time: { fr: "Heure", cv: "Ora", pt: "Hora" },
+  reception_manager: { fr: "Responsable Accueil", cv: "Responsavel Akolimentu", pt: "Responsável Acolhimento" },
+  full_name: { fr: "Nom complet", cv: "Nomi kompletu", pt: "Nome completo" },
+  whatsapp_group: { fr: "Groupe WhatsApp (Hôtes)", cv: "Grupu WhatsApp (Anfitrions)", pt: "Grupo WhatsApp (Anfitriões)" },
+  whatsapp_invite_id: { fr: "Invite ID (Groupe WhatsApp)", cv: "Invite ID (Grupu WhatsApp)", pt: "Invite ID (Grupo WhatsApp)" },
+  developer: { fr: "Développeur", cv: "Dezenvolvedor", pt: "Desenvolvedor" },
+  last_update: { fr: "Dernière mise à jour", cv: "Última atualizason", pt: "Última atualização" },
+
+  // Sidebar
+  program_today: { fr: "Programme du jour", cv: "Programa di oji", pt: "Programa do dia" },
+  messages_today: { fr: "Messages du jour", cv: "Mensajens di oji", pt: "Mensagens do dia" },
+  upcoming_reminders: { fr: "Rappels à venir", cv: "Lembranças ki sta pa bem", pt: "Lembretes a vir" },
 };
 
 export function useTranslation() {
