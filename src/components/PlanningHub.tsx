@@ -510,6 +510,10 @@ export function PlanningHub() {
                               <div className="flex items-center gap-3">
                                 {resolvedPhoto ? (
                                   <img src={resolvedPhoto} alt={ha.hostName || ""} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+                                ) : ha.origin === "kingdom_hall" ? (
+                                  <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center flex-shrink-0"><Building2 className="w-5 h-5 text-amber-600" /></div>
+                                ) : ha.origin === "restaurant" ? (
+                                  <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center flex-shrink-0"><Utensils className="w-5 h-5 text-orange-600" /></div>
                                 ) : (
                                   <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center flex-shrink-0"><Users className="w-5 h-5 text-muted-foreground" /></div>
                                 )}
