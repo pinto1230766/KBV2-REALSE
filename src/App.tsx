@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Toaster } from "sonner";
 import {
   Search,
   LayoutGrid,
@@ -220,6 +221,7 @@ function App() {
           }}
         />
       </aside>
+      <Toaster position="top-right" richColors closeButton />
     </div>
   );
 }

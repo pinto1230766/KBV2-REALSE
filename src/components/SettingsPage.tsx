@@ -1,9 +1,11 @@
 import { Settings, Globe, Moon, Sun, Bell, Database, Download, Upload } from "lucide-react";
+import { motion } from "framer-motion";
 import { useSettingsStore } from "../store/useSettingsStore";
 import { useVisitStore } from "../store/useVisitStore";
 import { useHostStore } from "../store/useHostStore";
 import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useTranslation } from "../hooks/useTranslation";
+import { toast } from "sonner";
 import type { Language } from "../store/visitTypes";
 
 export function SettingsPage() {
@@ -22,6 +24,7 @@ export function SettingsPage() {
     a.download = `kbv-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    toast.success(t("export_success"));
   };
 
   const handleImport = () => {
@@ -46,30 +49,41 @@ export function SettingsPage() {
           const store = useSpeakerStore.getState();
           data.speakers.forEach((s: any) => store.addSpeaker(s));
         }
+        toast.success(t("import_success"));
       } catch {
-        alert("Erreur lors de l'import");
+        toast.error(t("import_error"));
       }
     };
     input.click();
   };
 
+  const container = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.08 } },
+  };
+  const item = {
+    hidden: { opacity: 0, y: 16 },
+    show: { opacity: 1, y: 0 },
+  };
+
   return (
-    <div className="py-6 space-y-6 max-w-2xl">
+    <motion.div variants={container} initial="hidden" animate="show" className="py-6 space-y-6 max-w-2xl">
       <h2 className="text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2">
-        <Settings className="w-5 h-5 text-primary-500" />
+        <Settings className="w-5 h-5 text-primary" />
         {t("settings")}
       </h2>
 
       {/* Language */}
-      <div className="premium-card p-4 sm:p-6 space-y-4">
+      <motion.div variants={item} className="premium-card p-4 sm:p-6 space-y-4">
         <div className="flex items-center gap-2">
-          <Globe className="w-4 h-4 text-primary-500" />
+          <Globe className="w-4 h-4 text-primary" />
           <h3 className="text-xs font-black uppercase tracking-widest text-foreground">{t("language")}</h3>
         </div>
         <div className="flex gap-2">
           {(["fr", "cv", "pt"] as Language[]).map((lang) => (
-            <button
+            <motion.button
               key={lang}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setLanguage(lang)}
               className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors ${
                 settings.language === lang
@@ -78,15 +92,15 @@ export function SettingsPage() {
               }`}
             >
               {lang === "fr" ? "Français" : lang === "cv" ? "Kriolu" : "Português"}
-            </button>
+            </motion.button>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Appearance */}
-      <div className="premium-card p-4 sm:p-6 space-y-4">
+      <motion.div variants={item} className="premium-card p-4 sm:p-6 space-y-4">
         <div className="flex items-center gap-2">
-          {settings.darkMode ? <Moon className="w-4 h-4 text-primary-500" /> : <Sun className="w-4 h-4 text-primary-500" />}
+          {settings.darkMode ? <Moon className="w-4 h-4 text-primary" /> : <Sun className="w-4 h-4 text-primary" />}
           <h3 className="text-xs font-black uppercase tracking-widest text-foreground">{t("appearance")}</h3>
         </div>
         <button
@@ -95,15 +109,19 @@ export function SettingsPage() {
         >
           <span className="text-sm font-medium text-foreground">{t("dark_mode")}</span>
           <div className={`w-11 h-6 rounded-full transition-colors relative ${settings.darkMode ? "bg-primary" : "bg-muted"}`}>
-            <div className={`w-5 h-5 rounded-full bg-card shadow absolute top-0.5 transition-transform ${settings.darkMode ? "translate-x-5" : "translate-x-0.5"}`} />
+            <motion.div
+              layout
+              className="w-5 h-5 rounded-full bg-card shadow absolute top-0.5"
+              style={{ left: settings.darkMode ? "calc(100% - 22px)" : "2px" }}
+            />
           </div>
         </button>
-      </div>
+      </motion.div>
 
       {/* Notifications */}
-      <div className="premium-card p-4 sm:p-6 space-y-4">
+      <motion.div variants={item} className="premium-card p-4 sm:p-6 space-y-4">
         <div className="flex items-center gap-2">
-          <Bell className="w-4 h-4 text-primary-500" />
+          <Bell className="w-4 h-4 text-primary" />
           <h3 className="text-xs font-black uppercase tracking-widest text-foreground">{t("notifications_label")}</h3>
         </div>
         <button
@@ -112,11 +130,15 @@ export function SettingsPage() {
         >
           <span className="text-sm font-medium text-foreground">{t("notifications_label")}</span>
           <div className={`w-11 h-6 rounded-full transition-colors relative ${settings.notifications.enabled ? "bg-primary" : "bg-muted"}`}>
-            <div className={`w-5 h-5 rounded-full bg-card shadow absolute top-0.5 transition-transform ${settings.notifications.enabled ? "translate-x-5" : "translate-x-0.5"}`} />
+            <motion.div
+              layout
+              className="w-5 h-5 rounded-full bg-card shadow absolute top-0.5"
+              style={{ left: settings.notifications.enabled ? "calc(100% - 22px)" : "2px" }}
+            />
           </div>
         </button>
         {settings.notifications.enabled && (
-          <div className="space-y-2 pl-3">
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="space-y-2 pl-3">
             <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/30 cursor-pointer">
               <input
                 type="checkbox"
@@ -135,40 +157,42 @@ export function SettingsPage() {
               />
               <span className="text-sm text-foreground">{t("remind_2_days")}</span>
             </label>
-          </div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
 
       {/* Data */}
-      <div className="premium-card p-4 sm:p-6 space-y-4">
+      <motion.div variants={item} className="premium-card p-4 sm:p-6 space-y-4">
         <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-primary-500" />
+          <Database className="w-4 h-4 text-primary" />
           <h3 className="text-xs font-black uppercase tracking-widest text-foreground">{t("data")}</h3>
         </div>
         <div className="flex gap-2">
-          <button
+          <motion.button
+            whileTap={{ scale: 0.97 }}
             onClick={handleExport}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity"
           >
             <Download className="w-4 h-4" />
             {t("export_data")}
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.97 }}
             onClick={handleImport}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-muted text-muted-foreground text-xs font-bold hover:bg-muted/80 transition-colors"
           >
             <Upload className="w-4 h-4" />
             {t("import_data")}
-          </button>
+          </motion.button>
         </div>
         <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-          {visits.length} visites · {speakers.length} orateurs · {hosts.length} hôtes
+          {visits.length} {t("visits_count")} · {speakers.length} {t("speakers_count")} · {hosts.length} {t("hosts_count")}
         </p>
-      </div>
+      </motion.div>
 
       <p className="text-[10px] text-muted-foreground text-center uppercase tracking-widest">
         KBV Lyon v2.0 — Coordination
       </p>
-    </div>
+    </motion.div>
   );
 }

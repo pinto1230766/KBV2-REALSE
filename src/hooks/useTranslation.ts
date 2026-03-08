@@ -4,84 +4,125 @@ import type { Language } from "../store/visitTypes";
 interface TranslationEntry {
   fr: string;
   cv: string;
-  pt?: string;
+  pt: string;
 }
 
 const dictionary: Record<string, TranslationEntry> = {
   // Navigation
-  dashboard: { fr: "Tableau de bord", cv: "Painel" },
-  planning: { fr: "Planning", cv: "Planifikason" },
-  speakers: { fr: "Orateurs", cv: "Irmons" },
-  hosts: { fr: "Hôtes", cv: "Anfitrions" },
-  settings: { fr: "Paramètres", cv: "Configurasons" },
-  
+  dashboard: { fr: "Tableau de bord", cv: "Painel", pt: "Painel" },
+  planning: { fr: "Planning", cv: "Planifikason", pt: "Planeamento" },
+  speakers: { fr: "Orateurs", cv: "Irmons", pt: "Oradores" },
+  hosts: { fr: "Hôtes", cv: "Anfitrions", pt: "Anfitriões" },
+  settings: { fr: "Paramètres", cv: "Configurasons", pt: "Configurações" },
+
   // Status
-  upcoming: { fr: "À venir", cv: "Ki sta pa bem" },
-  confirmed: { fr: "Confirmé", cv: "Confirmadu" },
-  scheduled: { fr: "Planifié", cv: "Planifikadu" },
-  completed: { fr: "Terminé", cv: "Terminadu" },
-  cancelled: { fr: "Annulé", cv: "Kanseladu" },
-  
+  all: { fr: "Tous", cv: "Tudu", pt: "Todos" },
+  upcoming: { fr: "À venir", cv: "Ki sta pa bem", pt: "Próximas" },
+  confirmed: { fr: "Confirmé", cv: "Confirmadu", pt: "Confirmado" },
+  scheduled: { fr: "Planifié", cv: "Planifikadu", pt: "Planeado" },
+  completed: { fr: "Terminé", cv: "Terminadu", pt: "Concluído" },
+  cancelled: { fr: "Annulé", cv: "Kanseladu", pt: "Cancelado" },
+
   // Actions
-  add: { fr: "Ajouter", cv: "Ajuntâ" },
-  edit: { fr: "Modifier", cv: "Modifikâ" },
-  delete: { fr: "Supprimer", cv: "Apagâ" },
-  save: { fr: "Enregistrer", cv: "Gravâ" },
-  cancel: { fr: "Annuler", cv: "Kanselâ" },
-  confirm: { fr: "Confirmer", cv: "Konfirmâ" },
-  close: { fr: "Fermer", cv: "Fexâ" },
-  search: { fr: "Rechercher...", cv: "Buska..." },
-  
+  add: { fr: "Ajouter", cv: "Ajuntâ", pt: "Adicionar" },
+  edit: { fr: "Modifier", cv: "Modifikâ", pt: "Editar" },
+  delete: { fr: "Supprimer", cv: "Apagâ", pt: "Eliminar" },
+  save: { fr: "Enregistrer", cv: "Gravâ", pt: "Guardar" },
+  cancel: { fr: "Annuler", cv: "Kanselâ", pt: "Cancelar" },
+  confirm: { fr: "Confirmer", cv: "Konfirmâ", pt: "Confirmar" },
+  close: { fr: "Fermer", cv: "Fexâ", pt: "Fechar" },
+  search: { fr: "Rechercher...", cv: "Buska...", pt: "Pesquisar..." },
+
   // Visit form
-  add_visit: { fr: "Programmer une visite", cv: "Programâ un vizita" },
-  speaker_name: { fr: "Nom de l'orateur", cv: "Nomi di orador" },
-  congregation: { fr: "Congrégation", cv: "Kongregason" },
-  visit_date: { fr: "Date de visite", cv: "Data di vizita" },
-  talk_number: { fr: "N° discours", cv: "N° diskursu" },
-  talk_theme: { fr: "Thème", cv: "Tema" },
-  location: { fr: "Lieu", cv: "Lugar" },
-  kingdom_hall: { fr: "Salle du Royaume", cv: "Sala di Reinu" },
-  zoom: { fr: "Zoom", cv: "Zoom" },
-  notes: { fr: "Notes", cv: "Notas" },
-  phone: { fr: "Téléphone", cv: "Telefoni" },
-  email: { fr: "Email", cv: "Email" },
-  address: { fr: "Adresse", cv: "Enderesu" },
-  
+  add_visit: { fr: "Programmer une visite", cv: "Programâ un vizita", pt: "Programar uma visita" },
+  edit_visit: { fr: "Modifier la visite", cv: "Modifikâ vizita", pt: "Editar a visita" },
+  speaker_name: { fr: "Nom de l'orateur", cv: "Nomi di orador", pt: "Nome do orador" },
+  congregation: { fr: "Congrégation", cv: "Kongregason", pt: "Congregação" },
+  visit_date: { fr: "Date de visite", cv: "Data di vizita", pt: "Data da visita" },
+  talk_number: { fr: "N° discours", cv: "N° diskursu", pt: "N° discurso" },
+  talk_theme: { fr: "Thème", cv: "Tema", pt: "Tema" },
+  location: { fr: "Lieu", cv: "Lugar", pt: "Local" },
+  kingdom_hall: { fr: "Salle du Royaume", cv: "Sala di Reinu", pt: "Salão do Reino" },
+  zoom: { fr: "Zoom", cv: "Zoom", pt: "Zoom" },
+  streaming: { fr: "Streaming", cv: "Streaming", pt: "Streaming" },
+  other: { fr: "Autre", cv: "Otru", pt: "Outro" },
+  notes: { fr: "Notes", cv: "Notas", pt: "Notas" },
+  phone: { fr: "Téléphone", cv: "Telefoni", pt: "Telefone" },
+  email: { fr: "Email", cv: "Email", pt: "Email" },
+  address: { fr: "Adresse", cv: "Enderesu", pt: "Endereço" },
+  name: { fr: "Nom", cv: "Nomi", pt: "Nome" },
+  status: { fr: "Statut", cv: "Statu", pt: "Estado" },
+
   // Dashboard
-  total_visits: { fr: "Total visites", cv: "Total vizitas" },
-  upcoming_visits: { fr: "Visites à venir", cv: "Vizitas ki sta pa bem" },
-  total_speakers: { fr: "Orateurs", cv: "Irmons" },
-  total_hosts: { fr: "Hôtes", cv: "Anfitrions" },
-  recent_activity: { fr: "Activité récente", cv: "Atividadi resenti" },
-  no_visits: { fr: "Aucune visite programmée", cv: "Ninhun vizita programadu" },
-  
+  total_visits: { fr: "Total visites", cv: "Total vizitas", pt: "Total visitas" },
+  upcoming_visits: { fr: "Visites à venir", cv: "Vizitas ki sta pa bem", pt: "Próximas visitas" },
+  total_speakers: { fr: "Orateurs", cv: "Irmons", pt: "Oradores" },
+  total_hosts: { fr: "Hôtes", cv: "Anfitrions", pt: "Anfitriões" },
+  recent_activity: { fr: "Activité récente", cv: "Atividadi resenti", pt: "Atividade recente" },
+  no_visits: { fr: "Aucune visite programmée", cv: "Ninhun vizita programadu", pt: "Nenhuma visita programada" },
+  welcome_message: { fr: "Bienvenue dans votre espace de coordination", cv: "Ben-vindu na bo espasu di koordinason", pt: "Bem-vindo ao seu espaço de coordenação" },
+
   // Settings
-  language: { fr: "Langue", cv: "Lingua" },
-  dark_mode: { fr: "Mode sombre", cv: "Modu skuru" },
-  notifications_label: { fr: "Notifications", cv: "Notifikasons" },
-  remind_7_days: { fr: "Rappel J-7", cv: "Lembra J-7" },
-  remind_2_days: { fr: "Rappel J-2", cv: "Lembra J-2" },
-  general: { fr: "Général", cv: "Jeral" },
-  appearance: { fr: "Apparence", cv: "Aparensia" },
-  data: { fr: "Données", cv: "Dadus" },
-  export_data: { fr: "Exporter les données", cv: "Esportâ dadus" },
-  import_data: { fr: "Importer les données", cv: "Inportâ dadus" },
-  
+  language: { fr: "Langue", cv: "Lingua", pt: "Idioma" },
+  dark_mode: { fr: "Mode sombre", cv: "Modu skuru", pt: "Modo escuro" },
+  notifications_label: { fr: "Notifications", cv: "Notifikasons", pt: "Notificações" },
+  remind_7_days: { fr: "Rappel J-7", cv: "Lembra J-7", pt: "Lembrete D-7" },
+  remind_2_days: { fr: "Rappel J-2", cv: "Lembra J-2", pt: "Lembrete D-2" },
+  general: { fr: "Général", cv: "Jeral", pt: "Geral" },
+  appearance: { fr: "Apparence", cv: "Aparensia", pt: "Aparência" },
+  data: { fr: "Données", cv: "Dadus", pt: "Dados" },
+  export_data: { fr: "Exporter les données", cv: "Esportâ dadus", pt: "Exportar dados" },
+  import_data: { fr: "Importer les données", cv: "Inportâ dadus", pt: "Importar dados" },
+  import_success: { fr: "Import réussi", cv: "Inportason susesu", pt: "Importação com sucesso" },
+  import_error: { fr: "Erreur lors de l'import", cv: "Eru na inportason", pt: "Erro na importação" },
+  export_success: { fr: "Export réussi", cv: "Esportason susesu", pt: "Exportação com sucesso" },
+
   // Hosts
-  add_host: { fr: "Ajouter un hôte", cv: "Ajuntâ un anfitrion" },
-  capacity: { fr: "Capacité", cv: "Kapasidadi" },
-  role: { fr: "Rôle", cv: "Papel" },
-  hebergement: { fr: "Hébergement", cv: "Alojamentu" },
-  transport: { fr: "Transport", cv: "Transporti" },
-  repas: { fr: "Repas", cv: "Kumida" },
-  
+  add_host: { fr: "Ajouter un hôte", cv: "Ajuntâ un anfitrion", pt: "Adicionar anfitrião" },
+  capacity: { fr: "Capacité", cv: "Kapasidadi", pt: "Capacidade" },
+  role: { fr: "Rôle", cv: "Papel", pt: "Função" },
+  hebergement: { fr: "Hébergement", cv: "Alojamentu", pt: "Alojamento" },
+  transport: { fr: "Transport", cv: "Transporti", pt: "Transporte" },
+  repas: { fr: "Repas", cv: "Kumida", pt: "Refeição" },
+
   // Speakers
-  add_speaker: { fr: "Ajouter un orateur", cv: "Ajuntâ un orador" },
-  
+  add_speaker: { fr: "Ajouter un orateur", cv: "Ajuntâ un orador", pt: "Adicionar orador" },
+
+  // Calendar
+  today: { fr: "Aujourd'hui", cv: "Oji", pt: "Hoje" },
+  no_visits_today: { fr: "Aucune visite aujourd'hui", cv: "Ninhun vizita oji", pt: "Nenhuma visita hoje" },
+  mon: { fr: "Lu", cv: "Sg", pt: "Sg" },
+  tue: { fr: "Ma", cv: "Te", pt: "Te" },
+  wed: { fr: "Me", cv: "Ku", pt: "Qu" },
+  thu: { fr: "Je", cv: "Ki", pt: "Qi" },
+  fri: { fr: "Ve", cv: "Ss", pt: "Sx" },
+  sat: { fr: "Sa", cv: "Sb", pt: "Sb" },
+  sun: { fr: "Di", cv: "Dm", pt: "Dm" },
+
+  // Confirmations
+  confirm_delete: { fr: "Confirmer la suppression ?", cv: "Konfirmâ apagâ ?", pt: "Confirmar eliminação?" },
+  confirm_delete_visit: { fr: "Supprimer cette visite ?", cv: "Apagâ es vizita ?", pt: "Eliminar esta visita?" },
+  confirm_delete_speaker: { fr: "Supprimer cet orateur ?", cv: "Apagâ es orador ?", pt: "Eliminar este orador?" },
+  confirm_delete_host: { fr: "Supprimer cet hôte ?", cv: "Apagâ es anfitrion ?", pt: "Eliminar este anfitrião?" },
+  yes_delete: { fr: "Oui, supprimer", cv: "Sin, apagâ", pt: "Sim, eliminar" },
+
   // Misc
-  no_results: { fr: "Aucun résultat", cv: "Ninhun rezultadu" },
-  loading: { fr: "Chargement...", cv: "Karregâ..." },
-  version: { fr: "Version", cv: "Verson" },
+  no_results: { fr: "Aucun résultat", cv: "Ninhun rezultadu", pt: "Nenhum resultado" },
+  loading: { fr: "Chargement...", cv: "Karregâ...", pt: "A carregar..." },
+  version: { fr: "Version", cv: "Verson", pt: "Versão" },
+  visits_count: { fr: "visites", cv: "vizitas", pt: "visitas" },
+  speakers_count: { fr: "orateurs", cv: "irmons", pt: "oradores" },
+  hosts_count: { fr: "hôtes", cv: "anfitrions", pt: "anfitriões" },
+  visit_added: { fr: "Visite ajoutée", cv: "Vizita ajuntadu", pt: "Visita adicionada" },
+  visit_updated: { fr: "Visite modifiée", cv: "Vizita modifikadu", pt: "Visita atualizada" },
+  visit_deleted: { fr: "Visite supprimée", cv: "Vizita apagadu", pt: "Visita eliminada" },
+  speaker_added: { fr: "Orateur ajouté", cv: "Orador ajuntadu", pt: "Orador adicionado" },
+  speaker_updated: { fr: "Orateur modifié", cv: "Orador modifikadu", pt: "Orador atualizado" },
+  speaker_deleted: { fr: "Orateur supprimé", cv: "Orador apagadu", pt: "Orador eliminado" },
+  host_added: { fr: "Hôte ajouté", cv: "Anfitrion ajuntadu", pt: "Anfitrião adicionado" },
+  host_updated: { fr: "Hôte modifié", cv: "Anfitrion modifikadu", pt: "Anfitrião atualizado" },
+  host_deleted: { fr: "Hôte supprimé", cv: "Anfitrion apagadu", pt: "Anfitrião eliminado" },
+  visit_confirmed: { fr: "Visite confirmée", cv: "Vizita confirmadu", pt: "Visita confirmada" },
 };
 
 export function useTranslation() {
