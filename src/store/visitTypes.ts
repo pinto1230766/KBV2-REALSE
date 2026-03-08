@@ -32,10 +32,23 @@ export interface HostAssignment {
   hostId?: string;
   hostName?: string;
   hostPhone?: string;
+  hostEmail?: string;
+  hostAddress?: string;
+  hostPhotoUrl?: string;
   role: VisitHostRole;
   day?: string;
   time?: string;
 }
+
+export interface Expense {
+  id: string;
+  label: string;
+  amount: number;
+  category?: string;
+}
+
+export type GroupMealType = "salle_du_royaume" | "restaurant" | "";
+
 
 export interface Visit {
   visitId: string;
