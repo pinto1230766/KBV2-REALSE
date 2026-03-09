@@ -27,6 +27,8 @@ import { useTranslation } from "./hooks/useTranslation";
 import { useReminderEngine } from "./hooks/useReminderEngine";
 import { NotificationCenter } from "./components/NotificationCenter";
 import { useAutoSync } from "./hooks/useAutoSync";
+import { PWAInstallBanner } from "./components/PWAInstallBanner";
+import { OfflineIndicator } from "./components/OfflineIndicator";
 
 function App() {
   const visits = useVisitStore((s) => s.visits);
@@ -198,8 +200,11 @@ function App() {
           </div>
         </header>
 
+        {/* PWA Install Banner */}
+        <PWAInstallBanner />
+
         {/* Content — add bottom padding on mobile for bottom nav */}
-        <main className="flex-1 px-4 md:px-8 pb-24 md:pb-8 overflow-y-auto">
+        <main className="flex-1 px-4 md:px-8 pb-24 md:pb-8 overflow-y-auto overscroll-contain">
           {activeTab === "dashboard" ? (
             <DashboardView />
           ) : activeTab === "planning" ? (
@@ -246,9 +251,11 @@ function App() {
         </div>
       </nav>
 
+      {/* Offline floating indicator */}
+      <OfflineIndicator />
+
       <Toaster position="top-right" richColors closeButton />
     </div>
-  );
 }
 
 export default App;
