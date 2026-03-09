@@ -256,6 +256,8 @@ function App() {
 
       <Toaster position="top-right" richColors closeButton />
     </div>
+  );
 }
 
+export default App;
 export default App;
