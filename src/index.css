@@ -178,12 +178,46 @@
   }
 }
 
+
 /* Safe area helpers for phones with notch/gesture bar */
 .safe-top {
   padding-top: max(0.75rem, env(safe-area-inset-top));
 }
 .safe-bottom {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+/* PWA standalone mode adjustments */
+@media (display-mode: standalone) {
+  .safe-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  .safe-bottom {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Prevent overscroll bounce on iOS */
+html, body {
+  overscroll-behavior: none;
+}
+
+/* Improve touch targets on mobile */
+@media (max-width: 768px) {
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  input, select, textarea {
+    font-size: 16px !important; /* Prevent iOS zoom on focus */
+  }
+}
+
+/* Pull-to-refresh prevention in standalone */
+@media (display-mode: standalone) {
+  body {
+    overscroll-behavior-y: contain;
+  }
 }
 
 /* Focus ring */
