@@ -30,7 +30,6 @@ import { useSettingsStore } from "./store/useSettingsStore";
 import type { AppTab } from "./store/useUIStore";
 import { useTranslation } from "./hooks/useTranslation";
 import { useReminderEngine } from "./hooks/useReminderEngine";
-import { NotificationCenter } from "./components/NotificationCenter";
 import { useAutoSync } from "./hooks/useAutoSync";
 import { PWAInstallBanner } from "./components/PWAInstallBanner";
 import { OfflineIndicator } from "./components/OfflineIndicator";
@@ -201,7 +200,6 @@ function App() {
             >
               <Download className="w-4 h-4 text-muted-foreground" />
             </button>
-            <NotificationCenter />
             <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
