@@ -171,6 +171,13 @@ function App() {
 
           {/* Notifications + Search */}
           <div className="flex items-center gap-2 flex-1 max-w-xs md:max-w-sm justify-end">
+            <button
+              onClick={() => setActiveTab("install")}
+              className="p-2 rounded-xl hover:bg-muted transition-colors"
+              title="Installer l'app"
+            >
+              <Download className="w-4 h-4 text-muted-foreground" />
+            </button>
             <NotificationCenter />
             <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
