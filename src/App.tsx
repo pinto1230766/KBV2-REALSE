@@ -124,6 +124,11 @@ function App() {
     { id: "settings", label: t("settings"), icon: Settings },
   ];
 
+  const handleOnboardingComplete = useCallback(() => {
+    localStorage.setItem("kbv-onboarding-done", "true");
+    setShowOnboarding(false);
+  }, []);
+
   if (activeTab === "install") {
     return (
       <>
@@ -132,11 +137,6 @@ function App() {
       </>
     );
   }
-
-  const handleOnboardingComplete = useCallback(() => {
-    localStorage.setItem("kbv-onboarding-done", "true");
-    setShowOnboarding(false);
-  }, []);
 
   return (
     <>
