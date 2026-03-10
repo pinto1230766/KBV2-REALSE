@@ -323,7 +323,7 @@ export function SettingsPage() {
               <Monitor className="w-7 h-7 text-primary-foreground" />
             </div>
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">KBV Manager</p>
-            <h2 className="text-xl font-black text-foreground mt-1">Version 2.0.0</h2>
+            <h2 className="text-xl font-black text-foreground mt-1">Version 1.20.7-build 2403</h2>
             <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
               {t("app_description")}
             </p>
@@ -334,7 +334,11 @@ export function SettingsPage() {
               </div>
               <div className="p-3 rounded-xl bg-muted">
                 <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t("last_update")}</p>
-                <p className="text-sm font-bold text-foreground mt-1">Mar 2026 (v2.0.0)</p>
+                <p className="text-sm font-bold text-foreground mt-1">Mars 2026</p>
+              </div>
+              <div className="p-3 rounded-xl bg-muted col-span-2">
+                <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Contact / Support</p>
+                <p className="text-sm font-bold text-foreground mt-1">fp123@outlook.fr</p>
               </div>
             </div>
             <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-4">© 2025-2026 Pinto Francisco · Tous droits réservés</p>
@@ -354,7 +358,7 @@ export function SettingsPage() {
                 <strong className="text-foreground">Droit d'accès:</strong> Vous pouvez à tout moment supprimer les données de l'application via les paramètres.
               </p>
               <p>
-                <strong className="text-foreground">Contact:</strong> Pour toute question concernant vos données, contactez l'administrateur de l'application.
+                <strong className="text-foreground">Contact:</strong> Pour toute question concernant vos données ou pour obtenir de l'aide, contactez: <a href="mailto:fp123@outlook.fr" className="text-primary hover:underline">fp123@outlook.fr</a>
               </p>
             </div>
             <div className="pt-2 border-t border-border">
