@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Toaster } from "sonner";
+import { SplashScreen } from "./components/SplashScreen";
+import { usePWA } from "./hooks/usePWA";
 import {
   Search,
   LayoutGrid,
