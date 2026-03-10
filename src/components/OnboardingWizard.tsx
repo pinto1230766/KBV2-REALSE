@@ -122,7 +122,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     {
       id: "schedule",
       icon: Clock,
-      title: t("schedule"),
+      title: form.name ? `${form.name}` : t("schedule"),
       subtitle: selectedLanguage === "cv" ? "Koru ta sta reunions publiku?" : selectedLanguage === "pt" ? "Quando se reúnem as reuniões públicas?" : "Quand se tiennent vos réunions publiques ?",
       content: (
         <div className="space-y-4">
@@ -160,7 +160,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     {
       id: "responsable",
       icon: User,
-      title: t("reception_manager"),
+      title: form.name ? `${form.name}` : t("reception_manager"),
       subtitle: selectedLanguage === "cv" ? "Keni ta koordena akolimentu di oradores? (opasonal)" : selectedLanguage === "pt" ? "Quem coordena o acolhimento dos oradores? (opcional)" : "Qui coordonne l'accueil des orateurs ? (optionnel)",
       content: (
         <div className="space-y-4">
