@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, ChevronLeft, Church, User, Clock, Check, Sparkles, Globe } from "lucide-react";
+import { ChevronRight, ChevronLeft, Church, User, Clock, Check, Sparkles, Globe, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -89,7 +89,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     },
     {
       id: "congregation",
-      icon: Church,
+      icon: MapPin,
       title: t("congregation_profile"),
       subtitle: t("congregation"),
       content: (
