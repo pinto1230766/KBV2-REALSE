@@ -33,6 +33,15 @@ import { PWAInstallBanner } from "./components/PWAInstallBanner";
 import { OfflineIndicator } from "./components/OfflineIndicator";
 
 function App() {
+  const { isStandalone } = usePWA();
+  const [showSplash, setShowSplash] = useState(() => {
+    const standalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as any).standalone === true;
+    return standalone;
+  });
+  const hideSplash = useCallback(() => setShowSplash(false), []);
+
   const visits = useVisitStore((s) => s.visits);
   const hosts = useHostStore((s) => s.hosts);
   const speakers = useSpeakerStore((s) => s.speakers);
