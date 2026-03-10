@@ -133,9 +133,15 @@ function App() {
     );
   }
 
+  const handleOnboardingComplete = useCallback(() => {
+    localStorage.setItem("kbv-onboarding-done", "true");
+    setShowOnboarding(false);
+  }, []);
+
   return (
     <>
       {showSplash && <SplashScreen onFinished={hideSplash} />}
+      {!showSplash && showOnboarding && <OnboardingWizard onComplete={handleOnboardingComplete} />}
     <div className="flex h-screen w-screen overflow-x-hidden">
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
