@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   Globe, Moon, Sun, Bell, Database, Download, Upload,
   Monitor, User, MessageSquare, CloudOff, Cloud, RefreshCw,
-  FileSpreadsheet, FolderArchive, ExternalLink, Search, Trash2, Check, Link2, Loader2, AlertTriangle
+  FileSpreadsheet, FolderArchive, ExternalLink, Search, Trash2, Check, Link2, Loader2, AlertTriangle, Shield
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -338,6 +338,33 @@ export function SettingsPage() {
               </div>
             </div>
             <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-4">© 2025-2026 Pinto Francisco · Tous droits réservés</p>
+          </div>
+
+          {/* RGPD & Legal Info */}
+          <div className="premium-card p-6 space-y-4">
+            <h3 className="text-sm font-black text-foreground flex items-center gap-2">
+              <Shield className="w-4 h-4 text-primary" />
+              {t("legal_info") || "Informations légales"}
+            </h3>
+            <div className="space-y-3 text-xs text-muted-foreground">
+              <p>
+                <strong className="text-foreground">Protection des données (RGPD):</strong> Cette application stocke toutes les données localement sur votre appareil. Aucune donnée personnelle n'est transmise à des serveurs tiers. Vous êtes responsable de la sauvegarde de vos données.
+              </p>
+              <p>
+                <strong className="text-foreground">Droit d'accès:</strong> Vous pouvez à tout moment supprimer les données de l'application via les paramètres.
+              </p>
+              <p>
+                <strong className="text-foreground">Contact:</strong> Pour toute question concernant vos données, contactez l'administrateur de l'application.
+              </p>
+            </div>
+            <div className="pt-2 border-t border-border">
+              <button 
+                onClick={() => alert("Fonctionnalité d'exportation des données à venir. Vos données sont stockées localement sur votre appareil.")}
+                className="text-xs text-primary hover:underline"
+              >
+                Exporter mes données (JSON)
+              </button>
+            </div>
           </div>
 
           {/* Congregation Profile */}
