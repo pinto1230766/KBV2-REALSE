@@ -4,6 +4,7 @@ import {
   Monitor, User, MessageSquare, CloudOff, Cloud, RefreshCw,
   FileSpreadsheet, FolderArchive, ExternalLink, Search, Trash2, Check, Link2, Loader2, AlertTriangle
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSettingsStore } from "../store/useSettingsStore";
 import { useVisitStore } from "../store/useVisitStore";
@@ -11,7 +12,7 @@ import { useHostStore } from "../store/useHostStore";
 import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useTranslation } from "../hooks/useTranslation";
 import { toast } from "sonner";
-import type { Language, Visit, Speaker } from "../store/visitTypes";
+import type { Language, Visit, Speaker, Host } from "../store/visitTypes";
 import { syncCloud, normalizeName } from "../lib/syncCloud";
 import { parseCSV, extractSheetInfo, parseRowsToData } from "../lib/sheetUtils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
@@ -189,9 +190,9 @@ export function SettingsPage() {
       try {
         const text = await file.text();
         const data = JSON.parse(text);
-        if (data.visits) data.visits.forEach((v: any) => useVisitStore.getState().addVisit(v));
-        if (data.hosts) data.hosts.forEach((h: any) => useHostStore.getState().addHost(h));
-        if (data.speakers) data.speakers.forEach((s: any) => useSpeakerStore.getState().addSpeaker(s));
+        if (data.visits) data.visits.forEach((v: Visit) => useVisitStore.getState().addVisit(v));
+        if (data.hosts) data.hosts.forEach((h: Host) => useHostStore.getState().addHost(h));
+        if (data.speakers) data.speakers.forEach((s: Speaker) => useSpeakerStore.getState().addSpeaker(s));
         toast.success(t("import_success"));
       } catch {
         toast.error(t("import_error"));
@@ -249,15 +250,15 @@ export function SettingsPage() {
   const deleteSelectedDuplicates = () => {
     selectedDuplicates.forEach((id) => {
       // Try deleting from both stores
-      try { useSpeakerStore.getState().deleteSpeaker(id); } catch {}
-      try { useHostStore.getState().deleteHost(id); } catch {}
+      try { useSpeakerStore.getState().deleteSpeaker(id); } catch { /* ignore */ }
+      try { useHostStore.getState().deleteHost(id); } catch { /* ignore */ }
     });
     setSelectedDuplicates([]);
     findDuplicates();
     toast.success(t("duplicates_deleted"));
   };
 
-  const tabs: Array<{ id: SettingsTab; label: string; icon: any }> = [
+  const tabs: Array<{ id: SettingsTab; label: string; icon: LucideIcon }> = [
     { id: "general", label: t("general"), icon: User },
     { id: "appearance", label: t("appearance"), icon: Sun },
     { id: "notifications", label: t("notifications_label"), icon: Bell },
@@ -325,24 +326,24 @@ export function SettingsPage() {
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("congregation_name")}</label>
-                <input className="input-soft text-sm mt-1" value={congregation.name} onChange={(e) => updateCongregation({ name: e.target.value })} />
+                <label htmlFor="cong-name" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("congregation_name")}</label>
+                <input id="cong-name" className="input-soft text-sm mt-1" value={congregation.name} onChange={(e) => updateCongregation({ name: e.target.value })} />
               </div>
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("city")}</label>
-                <input className="input-soft text-sm mt-1" value={congregation.city} onChange={(e) => updateCongregation({ city: e.target.value })} />
+                <label htmlFor="cong-city" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("city")}</label>
+                <input id="cong-city" className="input-soft text-sm mt-1" value={congregation.city} onChange={(e) => updateCongregation({ city: e.target.value })} />
               </div>
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("day")}</label>
-                <select className="input-soft text-sm mt-1" value={congregation.day} onChange={(e) => updateCongregation({ day: e.target.value })}>
+                <label htmlFor="cong-day" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("day")}</label>
+                <select id="cong-day" className="input-soft text-sm mt-1" value={congregation.day} onChange={(e) => updateCongregation({ day: e.target.value })}>
                   {["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"].map((d) => (
                     <option key={d} value={d}>{d}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("time")}</label>
-                <input className="input-soft text-sm mt-1" type="time" value={congregation.time} onChange={(e) => updateCongregation({ time: e.target.value })} />
+                <label htmlFor="cong-time" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("time")}</label>
+                <input id="cong-time" className="input-soft text-sm mt-1" type="time" value={congregation.time} onChange={(e) => updateCongregation({ time: e.target.value })} />
               </div>
             </div>
           </div>
@@ -355,20 +356,20 @@ export function SettingsPage() {
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("full_name")}</label>
-                <input className="input-soft text-sm mt-1" value={congregation.responsableName} onChange={(e) => updateCongregation({ responsableName: e.target.value })} />
+                <label htmlFor="resp-name" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("full_name")}</label>
+                <input id="resp-name" className="input-soft text-sm mt-1" value={congregation.responsableName} onChange={(e) => updateCongregation({ responsableName: e.target.value })} />
               </div>
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("phone")}</label>
-                <input className="input-soft text-sm mt-1" value={congregation.responsablePhone} onChange={(e) => updateCongregation({ responsablePhone: e.target.value })} />
+                <label htmlFor="resp-phone" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("phone")}</label>
+                <input id="resp-phone" className="input-soft text-sm mt-1" value={congregation.responsablePhone} onChange={(e) => updateCongregation({ responsablePhone: e.target.value })} />
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("whatsapp_group")}</label>
                 <input className="input-soft text-sm mt-1" placeholder="Numéro du groupe ou admin" value={congregation.whatsappGroup} onChange={(e) => updateCongregation({ whatsappGroup: e.target.value })} />
               </div>
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("whatsapp_invite_id")}</label>
-                <input className="input-soft text-sm mt-1" value={congregation.whatsappInviteId} onChange={(e) => updateCongregation({ whatsappInviteId: e.target.value })} />
+                <label htmlFor="whatsapp-invite" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("whatsapp_invite_id")}</label>
+                <input id="whatsapp-invite" className="input-soft text-sm mt-1" value={congregation.whatsappInviteId} onChange={(e) => updateCongregation({ whatsappInviteId: e.target.value })} />
               </div>
             </div>
           </div>
@@ -456,9 +457,10 @@ export function SettingsPage() {
 
             {/* Language selector */}
             <div className="space-y-3">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("display_language")}</p>
+              <label htmlFor="lang-select" className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("display_language")}</label>
               <div className="relative">
                 <select
+                  id="lang-select"
                   value={settings.language}
                   onChange={(e) => setLanguage(e.target.value as Language)}
                   className="input-soft text-sm w-full appearance-none pr-10 font-bold"
@@ -699,6 +701,7 @@ export function SettingsPage() {
                 {duplicates.map((dup, i) => (
                   <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 border border-border">
                     <input
+                      id={`dup-${dup.ids[0]}`}
                       type="checkbox"
                       checked={dup.ids.slice(1).some((id) => selectedDuplicates.includes(id))}
                       onChange={(e) => {
