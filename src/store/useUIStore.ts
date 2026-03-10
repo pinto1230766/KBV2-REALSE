@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type AppTab = "dashboard" | "planning" | "speakers" | "hosts" | "settings";
+export type AppTab = "dashboard" | "planning" | "speakers" | "hosts" | "settings" | "install";
 
 interface UIState {
   activeTab: AppTab;
