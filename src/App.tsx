@@ -33,6 +33,7 @@ import { NotificationCenter } from "./components/NotificationCenter";
 import { useAutoSync } from "./hooks/useAutoSync";
 import { PWAInstallBanner } from "./components/PWAInstallBanner";
 import { OfflineIndicator } from "./components/OfflineIndicator";
+import { OnboardingWizard } from "./components/OnboardingWizard";
 
 function App() {
   const { isStandalone } = usePWA();
@@ -43,6 +44,9 @@ function App() {
     return standalone;
   });
   const hideSplash = useCallback(() => setShowSplash(false), []);
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return !localStorage.getItem("kbv-onboarding-done");
+  });
 
   const visits = useVisitStore((s) => s.visits);
   const hosts = useHostStore((s) => s.hosts);
