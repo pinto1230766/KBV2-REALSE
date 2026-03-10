@@ -11,8 +11,17 @@
       name="description"
       content="KBV Lyon - Système de gestion des visites de conférenciers"
     />
-    <!-- Supported by most browsers -->
+    <!-- theme-color is supported in Chrome, Edge, Safari, Firefox 31+, Opera 32+, and most modern browsers -->
     <meta name="theme-color" content="#4f46e5" />
+    <!-- Fallback for older browsers: set theme color via JavaScript -->
+    <script>
+      (function() {
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) {
+          document.documentElement.style.backgroundColor = meta.getAttribute('content');
+        }
+      })();
+    </script>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta
       name="apple-mobile-web-app-status-bar-style"

@@ -26,6 +26,7 @@ import { useVisitStore } from "./store/useVisitStore";
 import { useHostStore } from "./store/useHostStore";
 import { useSpeakerStore } from "./store/useSpeakerStore";
 import { useUIStore } from "./store/useUIStore";
+import { useSettingsStore } from "./store/useSettingsStore";
 import type { AppTab } from "./store/useUIStore";
 import { useTranslation } from "./hooks/useTranslation";
 import { useReminderEngine } from "./hooks/useReminderEngine";
@@ -52,6 +53,8 @@ function App() {
   const hosts = useHostStore((s) => s.hosts);
   const speakers = useSpeakerStore((s) => s.speakers);
   const activeTab = useUIStore((s) => s.activeTab);
+  const settings = useSettingsStore((s) => s.settings);
+  const congregationName = settings?.congregation?.name || "";
   const setActiveTab = useUIStore((s) => s.setActiveTab);
   const setPendingVisit = useUIStore((s) => s.setPendingVisit);
   const setIsOnline = useUIStore((s) => s.setIsOnline);
@@ -156,7 +159,7 @@ function App() {
               <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.35em] text-primary">
                 Coordination
               </p>
-              <h1 className="text-lg md:text-xl font-black text-foreground">KBV LYON</h1>
+              <h1 className="text-lg md:text-xl font-black text-foreground">KBV {congregationName && `- ${congregationName}`}</h1>
             </div>
           </div>
 

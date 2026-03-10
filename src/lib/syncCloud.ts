@@ -215,12 +215,7 @@ export async function syncCloud(): Promise<SyncResult> {
 
   // Check if Supabase is configured
   if (!supabase) {
-    // Only warn once to avoid console spam
-    if (!warnedSupabaseNotConfigured) {
-      console.warn("Supabase is not configured. Cloud sync is disabled.");
-      console.warn("To enable: create a Supabase project and add credentials to .env");
-      warnedSupabaseNotConfigured = true;
-    }
+    // Supabase is optional - silently skip cloud sync if not configured
     return result;
   }
   

@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { useSpeakerStore } from "@/store/useSpeakerStore";
+import { useHostStore } from "@/store/useHostStore";
+import { useVisitStore } from "@/store/useVisitStore";
 import type { Language } from "@/store/visitTypes";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -78,7 +81,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       content: (
         <div className="space-y-4 text-center">
           <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
-            {selectedLanguage === "cv" ? "Konfigurans jundu bo kongregason em kalker etapas. Tudu bo dadus prienmu这台设备上。" : selectedLanguage === "pt" ? "Vamos configurar sua congregação em algumas etapas. Todos os seus dados permanecerão privados neste dispositivo." : "Configurons ensemble votre congrégation en quelques étapes. Toutes vos données resteront privées sur cet appareil."}
+            {selectedLanguage === "cv" ? "Konfigurans jundu bo kongregason em kalker etapas. Tudu bo dadus ta fica privadu na dispositivo." : selectedLanguage === "pt" ? "Vamos configurar sua congregação em algumas etapas. Todos os seus dados permanecerão privados neste dispositivo." : "Configurons ensemble votre congrégation en quelques étapes. Toutes vos données resteront privées sur cet appareil."}
           </p>
         </div>
       ),
@@ -88,7 +91,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       id: "congregation",
       icon: MapPin,
       title: t("congregation_profile"),
-      subtitle: t("congregation"),
+      subtitle: "",
       content: (
         <div className="space-y-4">
           <div className="space-y-2">
@@ -123,7 +126,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       id: "schedule",
       icon: Clock,
       title: form.name ? `${form.name}` : t("schedule"),
-      subtitle: selectedLanguage === "cv" ? "Koru ta sta reunions publiku?" : selectedLanguage === "pt" ? "Quando se reúnem as reuniões públicas?" : "Quand se tiennent vos réunions publiques ?",
+      subtitle: selectedLanguage === "cv" ? "Koru ki reunions publiku ta sta?" : selectedLanguage === "pt" ? "Quando se reúnem as reuniões públicas?" : "Quand se tiennent vos réunions publiques ?",
       content: (
         <div className="space-y-4">
           <div className="space-y-2">
@@ -207,6 +210,52 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       responsableName: form.responsableName.trim(),
       responsablePhone: form.responsablePhone.trim(),
     });
+    
+    // Add sample data for demonstration
+    const addSpeaker = useSpeakerStore.getState().addSpeaker;
+    const addHost = useHostStore.getState().addHost;
+    const addVisit = useVisitStore.getState().addVisit;
+    
+    // Sample speaker
+    addSpeaker({
+      id: "sample-speaker-1",
+      nom: "Jean Dupont",
+      congregation: form.name.trim() || "Ma congrégation",
+      telephone: "+33 6 12 34 56 78",
+      email: "jean.dupont@email.com",
+      notes: "Ancien responsable du programme",
+      householdType: "single",
+    });
+    
+    // Sample host
+    addHost({
+      id: "sample-host-1",
+      nom: "Marie Martin",
+      adresse: "123 Rue de la Paix, Paris",
+      telephone: "+33 6 98 76 54 32",
+      email: "marie.martin@email.com",
+      capacity: 4,
+      role: "hebergement",
+      notes: "Grande maison avec jardin",
+    });
+    
+    // Sample visit (next month)
+    const nextMonth = new Date();
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    const visitDate = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 15, 11, 0);
+    
+    addVisit({
+      visitId: "V-" + Date.now(),
+      nom: "Jean Dupont",
+      congregation: form.name.trim() || "Ma congrégation",
+      visitDate: visitDate.toISOString(),
+      status: "scheduled",
+      locationType: "kingdom_hall",
+      talkNoOrType: "1",
+      talkTheme: "L'amour de Dieu",
+      speakerPhone: "+33 6 12 34 56 78",
+    });
+    
     onComplete();
   };
 

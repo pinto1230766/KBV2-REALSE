@@ -53,7 +53,7 @@ npm run dev
 
 Pour activer la synchronisation cloud, créez un fichier `.env` avec :
 
-```
+```bash
 VITE_SUPABASE_URL=votre_url_supabase
 VITE_SUPABASE_ANON_KEY=votre_cle_anon
 ```

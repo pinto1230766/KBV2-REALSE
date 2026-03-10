@@ -36,8 +36,13 @@ export function SettingsPage() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isCloudSyncing, setIsCloudSyncing] = useState(false);
   const [cloudStatus, setCloudStatus] = useState<"idle" | "syncing" | "done" | "error">("idle");
-  const [sheetUrlInput, setSheetUrlInput] = useState(congregation.googleSheetUrl || "https://docs.google.com/spreadsheets/d/1drIzPPi6AohCroSyUkF1UmMFxuEtMACBF4XATDjBOcg/edit?gid=1530698388#gid=1530698388");
+  const [sheetUrlInput, setSheetUrlInput] = useState(congregation.googleSheetUrl || "");
   const [showSheetConfig, setShowSheetConfig] = useState(false);
+  const [supabaseUrlInput, setSupabaseUrlInput] = useState(import.meta.env.VITE_SUPABASE_URL || "");
+  const [supabaseKeyInput, setSupabaseKeyInput] = useState(import.meta.env.VITE_SUPABASE_ANON_KEY || "");
+  const [showSupabaseConfig, setShowSupabaseConfig] = useState(false);
+  const [showSupabaseGuide, setShowSupabaseGuide] = useState(false);
+  const [showSheetGuide, setShowSheetGuide] = useState(false);
 
   // Reset all data
   const handleResetAllData = () => {
@@ -168,6 +173,23 @@ export function SettingsPage() {
     setTimeout(() => handleSyncGoogleSheet(), 300);
   };
 
+  const handleSaveSupabaseConfig = () => {
+    if (!supabaseUrlInput || !supabaseKeyInput) {
+      toast.error("Veuillez saisir l'URL et la clé Supabase");
+      return;
+    }
+
+    // Save to localStorage (since we can't modify env vars at runtime)
+    localStorage.setItem('VITE_SUPABASE_URL', supabaseUrlInput);
+    localStorage.setItem('VITE_SUPABASE_ANON_KEY', supabaseKeyInput);
+
+    setShowSupabaseConfig(false);
+    toast.success("Configuration Supabase sauvegardée. Rechargez la page pour appliquer les changements.");
+
+    // Reload after a short delay to apply new config
+    setTimeout(() => window.location.reload(), 1000);
+  };
+
   const handleExport = () => {
     const data = { visits, hosts, speakers, exportedAt: new Date().toISOString() };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
@@ -294,7 +316,7 @@ export function SettingsPage() {
 
       {/* General Tab */}
       {activeTab === "general" && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-3xl">
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
           {/* Version Card */}
           <div className="premium-card p-8 text-center">
             <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
@@ -378,7 +400,7 @@ export function SettingsPage() {
 
       {/* Appearance Tab */}
       {activeTab === "appearance" && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-2xl">
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
           <div className="premium-card p-6 space-y-6">
             <h3 className="text-base font-black text-foreground flex items-center gap-2">
               <Globe className="w-5 h-5 text-primary" />
@@ -478,7 +500,7 @@ export function SettingsPage() {
 
       {/* Notifications Tab */}
       {activeTab === "notifications" && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-2xl">
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
           <div className="premium-card p-6 space-y-5">
             {/* Header with toggle */}
             <div className="flex items-center justify-between">
@@ -545,7 +567,7 @@ export function SettingsPage() {
 
       {/* Data / Import-Export Tab */}
       {activeTab === "data" && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-3xl">
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
 
           {/* Google Sheet Config Modal */}
           <AnimatePresence>
@@ -584,9 +606,223 @@ export function SettingsPage() {
                 </motion.div>
               </motion.div>
             )}
-          </AnimatePresence>
+           </AnimatePresence>
 
-          {/* Import / Export Card */}
+           {/* Supabase Config Modal */}
+           <AnimatePresence>
+             {showSupabaseConfig && (
+               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                 <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="w-full max-w-lg bg-background rounded-3xl border border-border shadow-2xl p-6 space-y-5">
+                   <div className="flex items-center gap-3">
+                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                       <Cloud className="w-5 h-5 text-primary" />
+                     </div>
+                     <div>
+                       <h3 className="text-base font-black text-foreground">{t("configure_supabase")}</h3>
+                       <p className="text-xs text-muted-foreground">{t("supabase_config_desc")}</p>
+                     </div>
+                   </div>
+
+                   <div className="space-y-4">
+                     <div className="space-y-2">
+                       <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("supabase_url")}</label>
+                       <input
+                         className="input-soft text-sm w-full"
+                         placeholder="https://votre-projet.supabase.co"
+                         value={supabaseUrlInput}
+                         onChange={(e) => setSupabaseUrlInput(e.target.value)}
+                       />
+                       <p className="text-[10px] text-muted-foreground">{t("supabase_url_hint")}</p>
+                     </div>
+
+                     <div className="space-y-2">
+                       <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("supabase_anon_key")}</label>
+                       <input
+                         type="password"
+                         className="input-soft text-sm w-full"
+                         placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                         value={supabaseKeyInput}
+                         onChange={(e) => setSupabaseKeyInput(e.target.value)}
+                       />
+                       <p className="text-[10px] text-muted-foreground">{t("supabase_key_hint")}</p>
+                     </div>
+                   </div>
+
+                   <div className="flex gap-3 justify-end">
+                     <button onClick={() => setShowSupabaseConfig(false)} className="px-4 py-2 rounded-xl text-sm font-bold text-muted-foreground hover:text-foreground transition-colors">
+                       {t("cancel")}
+                     </button>
+                     <button onClick={handleSaveSupabaseConfig} className="px-5 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 transition-opacity">
+                       {t("save")}
+                     </button>
+                   </div>
+                 </motion.div>
+               </motion.div>
+             )}
+           </AnimatePresence>
+
+           {/* Supabase Guide Modal */}
+           <AnimatePresence>
+             {showSupabaseGuide && (
+               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                 <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="w-full max-w-2xl bg-background rounded-3xl border border-border shadow-2xl p-6 space-y-6 max-h-[90vh] overflow-y-auto">
+                   <div className="flex items-center gap-3">
+                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                       <Cloud className="w-5 h-5 text-primary" />
+                     </div>
+                     <div>
+                       <h3 className="text-lg font-black text-foreground">{t("supabase_guide_title")}</h3>
+                       <p className="text-sm text-muted-foreground">{t("supabase_guide_desc")}</p>
+                     </div>
+                   </div>
+
+                   <div className="space-y-6">
+                     {/* Step 1 */}
+                     <div className="flex gap-4">
+                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                         <span className="text-sm font-bold text-primary">1</span>
+                       </div>
+                       <div className="space-y-2">
+                         <h4 className="font-bold text-foreground">{t("supabase_step1_title")}</h4>
+                         <p className="text-sm text-muted-foreground leading-relaxed">{t("supabase_step1_desc")}</p>
+                       </div>
+                     </div>
+
+                     {/* Step 2 */}
+                     <div className="flex gap-4">
+                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                         <span className="text-sm font-bold text-primary">2</span>
+                       </div>
+                       <div className="space-y-2">
+                         <h4 className="font-bold text-foreground">{t("supabase_step2_title")}</h4>
+                         <p className="text-sm text-muted-foreground leading-relaxed">{t("supabase_step2_desc")}</p>
+                       </div>
+                     </div>
+
+                     {/* Step 3 */}
+                     <div className="flex gap-4">
+                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                         <span className="text-sm font-bold text-primary">3</span>
+                       </div>
+                       <div className="space-y-2">
+                         <h4 className="font-bold text-foreground">{t("supabase_step3_title")}</h4>
+                         <p className="text-sm text-muted-foreground leading-relaxed">{t("supabase_step3_desc")}</p>
+                       </div>
+                     </div>
+
+                     {/* Step 4 */}
+                     <div className="flex gap-4">
+                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                         <span className="text-sm font-bold text-primary">4</span>
+                       </div>
+                       <div className="space-y-2">
+                         <h4 className="font-bold text-foreground">{t("supabase_step4_title")}</h4>
+                         <p className="text-sm text-muted-foreground leading-relaxed">{t("supabase_step4_desc")}</p>
+                       </div>
+                     </div>
+
+                     {/* Note */}
+                     <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20">
+                       <p className="text-sm text-primary font-medium">{t("supabase_note")}</p>
+                     </div>
+                   </div>
+
+                   <div className="flex gap-3 justify-end">
+                     <button onClick={() => setShowSupabaseGuide(false)} className="px-5 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 transition-opacity">
+                       {t("close")}
+                     </button>
+                   </div>
+                 </motion.div>
+               </motion.div>
+             )}
+           </AnimatePresence>
+
+           {/* Google Sheet Guide Modal */}
+           <AnimatePresence>
+             {showSheetGuide && (
+               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                 <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="w-full max-w-2xl bg-background rounded-3xl border border-border shadow-2xl p-6 space-y-6 max-h-[90vh] overflow-y-auto">
+                   <div className="flex items-center gap-3">
+                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                       <FileSpreadsheet className="w-5 h-5 text-primary" />
+                     </div>
+                     <div>
+                       <h3 className="text-lg font-black text-foreground">{t("sheet_guide_title")}</h3>
+                       <p className="text-sm text-muted-foreground">{t("sheet_guide_desc")}</p>
+                     </div>
+                   </div>
+
+                   <div className="space-y-6">
+                     {/* Step 1 */}
+                     <div className="flex gap-4">
+                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                         <span className="text-sm font-bold text-primary">1</span>
+                       </div>
+                       <div className="space-y-2">
+                         <h4 className="font-bold text-foreground">{t("sheet_step1_title")}</h4>
+                         <p className="text-sm text-muted-foreground leading-relaxed">{t("sheet_step1_desc")}</p>
+                       </div>
+                     </div>
+
+                     {/* Step 2 */}
+                     <div className="flex gap-4">
+                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                         <span className="text-sm font-bold text-primary">2</span>
+                       </div>
+                       <div className="space-y-2">
+                         <h4 className="font-bold text-foreground">{t("sheet_step2_title")}</h4>
+                         <p className="text-sm text-muted-foreground leading-relaxed">{t("sheet_step2_desc")}</p>
+                         <div className="p-3 rounded-lg bg-muted/50 border font-mono text-sm">
+                           {t("sheet_columns")}
+                         </div>
+                       </div>
+                     </div>
+
+                     {/* Step 3 */}
+                     <div className="flex gap-4">
+                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                         <span className="text-sm font-bold text-primary">3</span>
+                       </div>
+                       <div className="space-y-2">
+                         <h4 className="font-bold text-foreground">{t("sheet_step3_title")}</h4>
+                         <p className="text-sm text-muted-foreground leading-relaxed">{t("sheet_step3_desc")}</p>
+                         <div className="space-y-2">
+                           <p className="text-sm font-medium text-foreground">{t("sheet_example_title")}</p>
+                           <div className="p-3 rounded-lg bg-muted/50 border font-mono text-sm">
+                             {t("sheet_example_data")}
+                           </div>
+                         </div>
+                       </div>
+                     </div>
+
+                     {/* Step 4 */}
+                     <div className="flex gap-4">
+                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                         <span className="text-sm font-bold text-primary">4</span>
+                       </div>
+                       <div className="space-y-2">
+                         <h4 className="font-bold text-foreground">{t("sheet_step4_title")}</h4>
+                         <p className="text-sm text-muted-foreground leading-relaxed">{t("sheet_step4_desc")}</p>
+                       </div>
+                     </div>
+
+                     {/* Note */}
+                     <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20">
+                       <p className="text-sm text-primary font-medium">{t("sheet_note")}</p>
+                     </div>
+                   </div>
+
+                   <div className="flex gap-3 justify-end">
+                     <button onClick={() => setShowSheetGuide(false)} className="px-5 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 transition-opacity">
+                       {t("close")}
+                     </button>
+                   </div>
+                 </motion.div>
+               </motion.div>
+             )}
+           </AnimatePresence>
+
+           {/* Import / Export Card */}
           <div className="premium-card p-6 space-y-5">
             <h3 className="text-base font-black text-foreground flex items-center gap-2">
               <Database className="w-5 h-5 text-primary" />
@@ -594,22 +830,75 @@ export function SettingsPage() {
             </h3>
 
             {/* Google Sheet Status Banner */}
-            {congregation.googleSheetUrl && (
+            {congregation.googleSheetUrl ? (
               <div className="flex items-center gap-3 p-3 rounded-2xl bg-primary/5 border border-primary/20">
                 <Link2 className="w-4 h-4 text-primary flex-shrink-0" />
+                 <div className="flex-1 min-w-0">
+                   <p className="text-xs font-bold text-primary truncate">Google Sheet {t("connected")}</p>
+                   {congregation.lastSyncAt && (
+                     <p className="text-[10px] text-muted-foreground">{t("last_sync")}: {new Date(congregation.lastSyncAt).toLocaleString("fr-FR")}</p>
+                   )}
+                 </div>
+                 <div className="flex gap-2 flex-shrink-0">
+                   <button onClick={() => setShowSheetGuide(true)} className="text-[10px] font-bold uppercase tracking-widest text-primary/70 hover:text-primary hover:underline">
+                     {t("sheet_guide")}
+                   </button>
+                   <button onClick={() => setShowSheetConfig(true)} className="text-[10px] font-bold uppercase tracking-widest text-primary hover:underline">
+                     {t("modify")}
+                   </button>
+                 </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/50 border border-border">
+                <FileSpreadsheet className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-primary truncate">Google Sheet {t("connected")}</p>
-                  {congregation.lastSyncAt && (
-                    <p className="text-[10px] text-muted-foreground">{t("last_sync")}: {new Date(congregation.lastSyncAt).toLocaleString("fr-FR")}</p>
-                  )}
+                  <p className="text-xs font-bold text-muted-foreground truncate">Google Sheet non configuré</p>
                 </div>
-                <button onClick={() => setShowSheetConfig(true)} className="text-[10px] font-bold uppercase tracking-widest text-primary hover:underline flex-shrink-0">
-                  {t("modify")}
-                </button>
+                <div className="flex gap-2 flex-shrink-0">
+                  <button onClick={() => setShowSheetGuide(true)} className="text-[10px] font-bold uppercase tracking-widest text-primary hover:underline">
+                    {t("sheet_guide")}
+                  </button>
+                  <button onClick={() => setShowSheetConfig(true)} className="text-[10px] font-bold uppercase tracking-widest text-primary hover:underline">
+                    Configurer
+                  </button>
+                </div>
               </div>
             )}
 
-            <div className="grid grid-cols-3 gap-4">
+             {/* Supabase Status Banner */}
+             {import.meta.env.VITE_SUPABASE_URL || localStorage.getItem('VITE_SUPABASE_URL') ? (
+               <div className="flex items-center gap-3 p-3 rounded-2xl bg-primary/5 border border-primary/20">
+                 <Cloud className="w-4 h-4 text-primary flex-shrink-0" />
+                 <div className="flex-1 min-w-0">
+                   <p className="text-xs font-bold text-primary truncate">Supabase {t("connected")}</p>
+                 </div>
+                 <div className="flex gap-2 flex-shrink-0">
+                   <button onClick={() => setShowSupabaseGuide(true)} className="text-[10px] font-bold uppercase tracking-widest text-primary/70 hover:text-primary hover:underline">
+                     {t("supabase_guide")}
+                   </button>
+                   <button onClick={() => setShowSupabaseConfig(true)} className="text-[10px] font-bold uppercase tracking-widest text-primary hover:underline">
+                     {t("modify")}
+                   </button>
+                 </div>
+               </div>
+             ) : (
+               <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/50 border border-border">
+                 <CloudOff className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                 <div className="flex-1 min-w-0">
+                   <p className="text-xs font-bold text-muted-foreground truncate">Supabase non configuré</p>
+                 </div>
+                 <div className="flex gap-2 flex-shrink-0">
+                   <button onClick={() => setShowSupabaseGuide(true)} className="text-[10px] font-bold uppercase tracking-widest text-primary hover:underline">
+                     {t("supabase_guide")}
+                   </button>
+                   <button onClick={() => setShowSupabaseConfig(true)} className="text-[10px] font-bold uppercase tracking-widest text-primary hover:underline">
+                     Configurer
+                   </button>
+                 </div>
+               </div>
+             )}
+
+             <div className="grid grid-cols-3 gap-4">
               {/* Cloud Sync Status */}
               <div className="p-4 rounded-2xl bg-muted/50 border border-border space-y-3">
                 <div className="flex items-center gap-2">
@@ -671,11 +960,18 @@ export function SettingsPage() {
             <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground">{t("quick_access")}</h3>
             <p className="text-sm text-muted-foreground">{t("quick_access_desc")}</p>
             <div className="grid grid-cols-2 gap-3">
-              <a href={congregation.googleSheetUrl || "https://docs.google.com/spreadsheets/d/1drIzPPi6AohCroSyUkF1UmMFxuEtMACBF4XATDjBOcg/edit?gid=1530698388#gid=1530698388"} target="_blank" rel="noopener noreferrer"
-                className="flex items-center justify-between p-4 rounded-2xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors">
-                <span className="text-sm font-bold text-primary">Google Sheet</span>
-                <ExternalLink className="w-4 h-4 text-primary" />
-              </a>
+              {congregation.googleSheetUrl ? (
+                <a href={congregation.googleSheetUrl} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center justify-between p-4 rounded-2xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors">
+                  <span className="text-sm font-bold text-primary">Google Sheet</span>
+                  <ExternalLink className="w-4 h-4 text-primary" />
+                </a>
+              ) : (
+                <div className="flex items-center justify-between p-4 rounded-2xl border border-muted bg-muted/50 cursor-not-allowed">
+                  <span className="text-sm font-bold text-muted-foreground">Google Sheet</span>
+                  <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                </div>
+              )}
               <a href="https://jw.org" target="_blank" rel="noopener noreferrer"
                 className="flex items-center justify-between p-4 rounded-2xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors">
                 <span className="text-sm font-bold text-primary">JW.org</span>

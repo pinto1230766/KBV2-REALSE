@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { Users, Plus, Trash2, Edit3, Phone, ChevronRight, AlertTriangle, Search, Camera, Upload, X, MapPin, UserCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSpeakerStore } from "../store/useSpeakerStore";
+import { useSettingsStore } from "../store/useSettingsStore";
 import { useTranslation } from "../hooks/useTranslation";
 import { toast } from "sonner";
 import type { Speaker, HouseholdType } from "../store/visitTypes";
@@ -49,6 +50,8 @@ export function SpeakerList() {
   const updateSpeaker = useSpeakerStore((s) => s.updateSpeaker);
   const deleteSpeaker = useSpeakerStore((s) => s.deleteSpeaker);
   const { t } = useTranslation();
+  const settings = useSettingsStore((s) => s.settings);
+  const congregationName = settings?.congregation?.name || "";
 
   const [viewSpeaker, setViewSpeaker] = useState<Speaker | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -92,8 +95,11 @@ export function SpeakerList() {
   };
 
   const openAddForm = () => {
-    resetForm();
+    setForm({ nom: "", congregation: congregationName, telephone: "", email: "", notes: "", photoUrl: undefined, spousePhotoUrl: undefined, householdType: "single", spouseName: "" });
+    setEditing(null);
     setShowForm(true);
+    setViewSpeaker(null);
+    setEditingNotes(false);
   };
 
   const handleSave = () => {
@@ -127,6 +133,10 @@ export function SpeakerList() {
           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("repertoire")}</p>
           <p className="text-3xl font-black text-foreground">{speakers.length} <span className="text-sm font-bold text-muted-foreground uppercase">{t("speakers")}</span></p>
         </div>
+        <motion.button whileTap={{ scale: 0.97 }} onClick={openAddForm}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 transition-colors">
+          <Plus className="w-4 h-4" /> {t("add")}
+        </motion.button>
       </div>
 
       {/* Search */}
@@ -333,14 +343,54 @@ export function SpeakerList() {
         {showForm && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={resetForm}>
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="w-full max-w-md bg-card rounded-2xl p-6 space-y-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-              <h3 className="text-sm font-black uppercase tracking-widest text-foreground">{t("add_speaker")}</h3>
+              className="w-full max-w-md bg-card rounded-2xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-sm font-black uppercase tracking-widest text-foreground">{editing ? t("edit") : t("add_speaker")}</h3>
+              
+              {/* Photo */}
+              <div className="flex justify-center">
+                <AvatarUpload photoUrl={form.photoUrl} onPhotoChange={(url) => setForm({ ...form, photoUrl: url })} label={t("photo")} />
+              </div>
+              
               <input className="input-soft text-sm" placeholder={t("speaker_name")} value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} />
               <input className="input-soft text-sm" placeholder={t("congregation")} value={form.congregation} onChange={(e) => setForm({ ...form, congregation: e.target.value })} />
               <input className="input-soft text-sm" placeholder={t("phone")} value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} />
               <input className="input-soft text-sm" placeholder={t("email")} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              
+              {/* Type de foyer */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("household_type")}</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setForm({ ...form, householdType: "single" })}
+                    className={`py-2.5 rounded-xl text-xs font-bold transition-all ${
+                      form.householdType === "single"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {t("brother_alone")}
+                  </button>
+                  <button
+                    onClick={() => setForm({ ...form, householdType: "couple" })}
+                    className={`py-2.5 rounded-xl text-xs font-bold transition-all ${
+                      form.householdType === "couple"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {t("couple")}
+                  </button>
+                </div>
+              </div>
+              
+              {/* Nom du conjoint */}
+              <input className="input-soft text-sm" placeholder={t("spouse_name")} value={form.spouseName} onChange={(e) => setForm({ ...form, spouseName: e.target.value })} />
+              
+              {/* Notes */}
+              <textarea className="input-soft text-sm min-h-[60px] resize-none" placeholder={t("notes")} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+              
               <div className="flex gap-2">
-                <motion.button whileTap={{ scale: 0.97 }} onClick={handleSave} className="flex-1 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold">{t("add")}</motion.button>
+                <motion.button whileTap={{ scale: 0.97 }} onClick={handleSave} className="flex-1 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold">{editing ? t("save") : t("add")}</motion.button>
                 <button onClick={resetForm} className="px-4 py-2.5 rounded-xl bg-muted text-muted-foreground text-xs font-bold">{t("cancel")}</button>
               </div>
             </motion.div>
