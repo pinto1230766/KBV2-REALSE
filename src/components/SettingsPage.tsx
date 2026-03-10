@@ -266,7 +266,7 @@ export function SettingsPage() {
   ];
 
   const ToggleSwitch = ({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) => (
-    <button onClick={onToggle} className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${enabled ? "bg-primary" : "bg-muted"}`}>
+    <button onClick={onToggle} aria-label={enabled ? "Disable" : "Enable"} className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${enabled ? "bg-primary" : "bg-muted"}`}>
       <motion.div layout className="w-5 h-5 rounded-full bg-background shadow-md border border-border absolute top-1"
         style={{ left: enabled ? "calc(100% - 24px)" : "4px" }} />
     </button>
@@ -703,6 +703,7 @@ export function SettingsPage() {
                     <input
                       id={`dup-${dup.ids[0]}`}
                       type="checkbox"
+                      aria-label={`${dup.type === "speaker" ? t("speakers") : t("hosts")} ${dup.name}`}
                       checked={dup.ids.slice(1).some((id) => selectedDuplicates.includes(id))}
                       onChange={(e) => {
                         const extraIds = dup.ids.slice(1);
