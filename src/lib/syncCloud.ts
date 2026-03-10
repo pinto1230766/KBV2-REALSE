@@ -157,6 +157,20 @@ export async function syncCloud(): Promise<SyncResult> {
     pulled: { visits: 0, speakers: 0, hosts: 0 },
   };
 
+  // Check if Supabase is configured
+  if (!supabase) {
+    // Only warn once to avoid console spam
+    if ((syncCloud as any)._warned !== true) {
+      console.warn("Supabase is not configured. Cloud sync is disabled.");
+      console.warn("To enable: create a Supabase project and add credentials to .env");
+      (syncCloud as any)._warned = true;
+    }
+    return result;
+  }
+  
+  // Reset warning flag when Supabase is available
+  (syncCloud as any)._warned = false;
+
   const localVisits = useVisitStore.getState().visits;
   const localSpeakers = useSpeakerStore.getState().speakers;
   const localHosts = useHostStore.getState().hosts;

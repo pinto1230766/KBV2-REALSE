@@ -18,8 +18,8 @@ const defaultSettings: AppSettings = {
     steps: { remindJ7: true, remindJ2: true },
   },
   congregation: {
-    name: "Lyon KBV",
-    city: "Lyon",
+    name: "",
+    city: "",
     day: "Dimanche",
     time: "11:30",
     responsableName: "",

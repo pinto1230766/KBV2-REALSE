@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   Globe, Moon, Sun, Bell, Database, Download, Upload,
   Monitor, User, MessageSquare, CloudOff, Cloud, RefreshCw,
-  FileSpreadsheet, FolderArchive, ExternalLink, Search, Trash2, Check, Link2, Loader2
+  FileSpreadsheet, FolderArchive, ExternalLink, Search, Trash2, Check, Link2, Loader2, AlertTriangle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSettingsStore } from "../store/useSettingsStore";
@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import type { Language, Visit, Speaker } from "../store/visitTypes";
 import { syncCloud, normalizeName } from "../lib/syncCloud";
 import { parseCSV, extractSheetInfo, parseRowsToData } from "../lib/sheetUtils";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
 
 type SettingsTab = "general" | "appearance" | "notifications" | "data";
 type ThemeMode = "light" | "dark" | "system";
@@ -36,6 +37,12 @@ export function SettingsPage() {
   const [cloudStatus, setCloudStatus] = useState<"idle" | "syncing" | "done" | "error">("idle");
   const [sheetUrlInput, setSheetUrlInput] = useState(congregation.googleSheetUrl || "https://docs.google.com/spreadsheets/d/1drIzPPi6AohCroSyUkF1UmMFxuEtMACBF4XATDjBOcg/edit?gid=1530698388#gid=1530698388");
   const [showSheetConfig, setShowSheetConfig] = useState(false);
+
+  // Reset all data
+  const handleResetAllData = () => {
+    localStorage.clear();
+    window.location.reload();
+  };
 
   const themeMode: ThemeMode = settings.darkMode ? "dark" : "light";
 
@@ -744,6 +751,42 @@ export function SettingsPage() {
                 <Trash2 className="w-3.5 h-3.5" />
                 {t("delete_selection")}
               </button>
+            </div>
+
+            {/* Reset All Data */}
+            <div className="mt-8 p-5 rounded-2xl border-2 border-destructive/30 bg-destructive/5 space-y-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="text-base font-black text-destructive">{t("reset_all_data") || "Réinitialiser toutes les données"}</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {t("reset_warning") || "Cela supprimera définitivement toutes les visites, intervenants, hébergeurs et paramètres. Cette action est irréversible."}
+                  </p>
+                </div>
+              </div>
+              
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-destructive text-white text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity w-full justify-center">
+                    <Trash2 className="w-4 h-4" />
+                    {t("reset_button") || "Supprimer toutes les données"}
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{t("reset_confirm_title") || "Êtes-vous sûr?"}</AlertDialogTitle>
+                  </AlertDialogHeader>
+                  <p className="text-sm text-muted-foreground">
+                    {t("reset_confirm_message") || "Cette action supprimera définitivement toutes vos données locales. Cette action ne peut pas être annulée."}
+                  </p>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{t("cancel") || "Annuler"}</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleResetAllData} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      {t("confirm_reset") || "Oui, supprimer tout"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         </motion.div>

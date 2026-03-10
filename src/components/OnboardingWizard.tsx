@@ -1,13 +1,21 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, ChevronLeft, Church, User, Clock, Check, Sparkles } from "lucide-react";
+import { ChevronRight, ChevronLeft, Church, User, Clock, Check, Sparkles, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import type { Language } from "@/store/visitTypes";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+
+const LANGUAGES: { code: Language; name: string; nativeName: string }[] = [
+  { code: "fr", name: "Français", nativeName: "Français" },
+  { code: "pt", name: "Português", nativeName: "Português" },
+  { code: "cv", name: "Cape Verdean Creole", nativeName: "Kriol Kabuverdianu" },
+];
 
 interface OnboardingWizardProps {
   onComplete: () => void;
@@ -15,7 +23,10 @@ interface OnboardingWizardProps {
 
 export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   const updateCongregation = useSettingsStore((s) => s.updateCongregation);
+  const setLanguage = useSettingsStore((s) => s.setLanguage);
+  const { t } = useTranslation();
   const [step, setStep] = useState(0);
+  const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
   const [form, setForm] = useState({
     name: "",
     city: "",
@@ -30,18 +41,53 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
 
   const steps = [
     {
+      id: "language",
+      icon: Globe,
+      title: "Bienvenue / Ben-vindu / Bem-vindo",
+      subtitle: "Choose your language",
+      content: (
+        <div className="space-y-4 text-center">
+          <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto">
+            <Globe className="w-10 h-10 text-primary" />
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
+            Seleccioni sua lingua / Sélectionnez votre langue
+          </p>
+          <div className="grid grid-cols-1 gap-3 pt-4">
+            {LANGUAGES.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => {
+                  setSelectedLanguage(lang.code);
+                  setLanguage(lang.code); // Set immediately so translations work
+                }}
+                className={`p-4 rounded-2xl border-2 transition-all text-left ${
+                  selectedLanguage === lang.code
+                    ? "border-primary bg-primary/10"
+                    : "border-border hover:border-primary/50"
+                }`}
+              >
+                <span className="text-lg font-bold text-foreground">{lang.nativeName}</span>
+                <span className="text-sm text-muted-foreground ml-2">({lang.name})</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ),
+      canNext: selectedLanguage !== null,
+    },
+    {
       id: "welcome",
       icon: Sparkles,
-      title: "Bienvenue sur KBV",
-      subtitle: "Application de coordination des visites de conférenciers",
+      title: t("welcome"),
+      subtitle: t("app_description"),
       content: (
         <div className="space-y-4 text-center">
           <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto">
             <span className="text-4xl font-black text-primary">K</span>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
-            Configurons ensemble votre congrégation en quelques étapes. 
-            Toutes vos données resteront privées sur cet appareil.
+            {selectedLanguage === "cv" ? "Konfigurans jundu bo kongregason em kalker etapas. Tudu bo dadus prienmu这台设备上。" : selectedLanguage === "pt" ? "Vamos configurar sua congregação em algumas etapas. Todos os seus dados permanecerão privados neste dispositivo." : "Configurons ensemble votre congrégation en quelques étapes. Toutes vos données resteront privées sur cet appareil."}
           </p>
         </div>
       ),
@@ -50,13 +96,13 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     {
       id: "congregation",
       icon: Church,
-      title: "Votre congrégation",
-      subtitle: "Identifiez votre congrégation",
+      title: t("congregation_profile"),
+      subtitle: t("congregation"),
       content: (
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Nom de la congrégation
+              {t("congregation_name")}
             </Label>
             <Input
               id="name"
@@ -68,7 +114,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="city" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Ville
+              {t("city")}
             </Label>
             <Input
               id="city"
@@ -85,13 +131,13 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     {
       id: "schedule",
       icon: Clock,
-      title: "Jour et heure de réunion",
-      subtitle: "Quand se tiennent vos réunions publiques ?",
+      title: t("schedule"),
+      subtitle: selectedLanguage === "cv" ? "Koru ta sta reunions publiku?" : selectedLanguage === "pt" ? "Quando se reúnem as reuniões públicas?" : "Quand se tiennent vos réunions publiques ?",
       content: (
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Jour
+              {t("day")}
             </Label>
             <Select value={form.day} onValueChange={(v) => update("day", v)}>
               <SelectTrigger className="bg-muted border-border">
@@ -106,7 +152,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="time" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Heure
+              {t("time")}
             </Label>
             <Input
               id="time"
@@ -123,13 +169,13 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     {
       id: "responsable",
       icon: User,
-      title: "Responsable accueil",
-      subtitle: "Qui coordonne l'accueil des orateurs ? (optionnel)",
+      title: t("reception_manager"),
+      subtitle: selectedLanguage === "cv" ? "Keni ta koordena akolimentu di oradores? (opasonal)" : selectedLanguage === "pt" ? "Quem coordena o acolhimento dos oradores? (opcional)" : "Qui coordonne l'accueil des orateurs ? (optionnel)",
       content: (
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="respName" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Nom du responsable
+              {t("full_name")}
             </Label>
             <Input
               id="respName"
@@ -141,7 +187,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="respPhone" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Téléphone
+              {t("phone")}
             </Label>
             <Input
               id="respPhone"
@@ -232,7 +278,14 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           size="lg"
           className="flex-1 gap-1"
           disabled={!currentStep.canNext}
-          onClick={isLast ? handleFinish : () => setStep((s) => s + 1)}
+          onClick={() => {
+            // Set language when moving from language step
+            if (step === 0 && selectedLanguage) {
+              setLanguage(selectedLanguage);
+            }
+            if (isLast) handleFinish();
+            else setStep((s) => s + 1);
+          }}
         >
           {isLast ? (
             <>
