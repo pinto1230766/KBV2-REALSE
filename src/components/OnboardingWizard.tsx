@@ -11,10 +11,10 @@ import { useTranslation } from "@/hooks/useTranslation";
 
 const DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 
-const LANGUAGES: { code: Language; name: string; nativeName: string }[] = [
-  { code: "fr", name: "Français", nativeName: "Français" },
-  { code: "pt", name: "Português", nativeName: "Português" },
-  { code: "cv", name: "Cape Verdean Creole", nativeName: "Kriol Kabuverdianu" },
+const LANGUAGES: { code: Language; name: string; nativeName: string; flag: string }[] = [
+  { code: "fr", name: "Français", nativeName: "Français", flag: "🇫🇷" },
+  { code: "pt", name: "Português", nativeName: "Português", flag: "🇵🇹" },
+  { code: "cv", name: "Cape Verdean Creole", nativeName: "Kriol Kabuverdianu", flag: "🇨🇻" },
 ];
 
 interface OnboardingWizardProps {
@@ -43,16 +43,13 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     {
       id: "language",
       icon: Globe,
-      title: "Bienvenue / Ben-vindu / Bem-vindo",
-      subtitle: "Choose your language",
+      title: t("welcome"),
+      subtitle: t("app_description"),
       content: (
         <div className="space-y-4 text-center">
           <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto">
             <Globe className="w-10 h-10 text-primary" />
           </div>
-          <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
-            Seleccioni sua lingua / Sélectionnez votre langue
-          </p>
           <div className="grid grid-cols-1 gap-3 pt-4">
             {LANGUAGES.map((lang) => (
               <button
@@ -61,14 +58,14 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                   setSelectedLanguage(lang.code);
                   setLanguage(lang.code); // Set immediately so translations work
                 }}
-                className={`p-4 rounded-2xl border-2 transition-all text-left ${
+                className={`p-4 rounded-2xl border-2 transition-all text-left flex items-center gap-3 ${
                   selectedLanguage === lang.code
                     ? "border-primary bg-primary/10"
                     : "border-border hover:border-primary/50"
                 }`}
               >
+                <span className="text-3xl">{lang.flag}</span>
                 <span className="text-lg font-bold text-foreground">{lang.nativeName}</span>
-                <span className="text-sm text-muted-foreground ml-2">({lang.name})</span>
               </button>
             ))}
           </div>
