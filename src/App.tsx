@@ -269,6 +269,7 @@ function App() {
 
       <Toaster position="top-right" richColors closeButton />
     </div>
+    </>
   );
 }
 
