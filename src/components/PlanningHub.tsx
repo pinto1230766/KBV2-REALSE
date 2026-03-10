@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Plus, Trash2, Check, ChevronRight, Clock, MapPin, Archive, AlertTriangle,
   X, Info, Users, MessageSquare, CreditCard, Star, Phone, Mail, Send,
@@ -190,6 +190,17 @@ export function PlanningHub() {
   const [showArchived, setShowArchived] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
+  // Auto-open visit when clicking from calendar (without scroll)
+  useEffect(() => {
+    if (pendingVisitId) {
+      const visit = visits.find((v) => v.visitId === pendingVisitId);
+      if (visit) {
+        setViewVisit(visit);
+        setPendingVisit(null); // Clear pending after opening
+      }
+    }
+  }, [pendingVisitId, visits, setPendingVisit]);
+
   // Detail form
   const [detailForm, setDetailForm] = useState<Partial<Visit>>({});
   // Messages
@@ -253,7 +264,22 @@ export function PlanningHub() {
 
   const openDetail = (visit: Visit) => {
     setViewVisit(visit);
-    setDetailForm({ ...visit });
+    // Format dates for date inputs (yyyy-MM-dd)
+    const formatDateForInput = (dateStr?: string) => {
+      if (!dateStr) return "";
+      // If already in yyyy-MM-dd format, return as-is
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+      // If ISO format, extract just the date part
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return "";
+      return d.toISOString().split("T")[0];
+    };
+    setDetailForm({ 
+      ...visit,
+      visitDate: formatDateForInput(visit.visitDate),
+      date_arrivee: formatDateForInput(visit.date_arrivee),
+      date_depart: formatDateForInput(visit.date_depart),
+    });
     setDetailTab("infos");
     setMessageText("");
     setSelectedRecipient("orateur");

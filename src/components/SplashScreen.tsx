@@ -24,21 +24,45 @@ export function SplashScreen({ onFinished }: { onFinished: () => void }) {
         {/* Radial glow */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.3)_0%,transparent_70%)]" />
 
-        {/* Logo */}
+        {/* Modern Logo KBV FP */}
         <motion.div
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.1 }}
-          className="relative z-10 w-24 h-24 rounded-3xl bg-primary-foreground/15 backdrop-blur-sm flex items-center justify-center shadow-2xl border border-primary-foreground/20"
+          className="relative z-10"
         >
-          <motion.span
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4, duration: 0.3 }}
-            className="text-5xl font-black text-primary-foreground"
-          >
-            K
-          </motion.span>
+          {/* Logo container with gradient border */}
+          <div className="relative">
+            {/* Gradient border effect */}
+            <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-600 opacity-80 blur-sm" />
+            
+            {/* Main logo box */}
+            <div className="relative w-28 h-28 rounded-3xl bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col items-center justify-center shadow-2xl border border-slate-700/50 overflow-hidden">
+              {/* Subtle pattern overlay */}
+              <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '8px 8px' }} />
+              
+              {/* KBV text with gradient */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4, duration: 0.3 }}
+                className="flex flex-col items-center"
+              >
+                <span className="text-2xl font-black tracking-tight" style={{ 
+                  background: 'linear-gradient(135deg, #fbbf24 0%, #f97316 50%, #fbbf24 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}>
+                  KBV
+                </span>
+                {/* FP with accent color */}
+                <span className="text-lg font-bold tracking-wider text-slate-300 mt-0.5">
+                  FP
+                </span>
+              </motion.div>
+            </div>
+          </div>
         </motion.div>
 
         {/* App name */}

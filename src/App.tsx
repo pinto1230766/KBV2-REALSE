@@ -152,8 +152,17 @@ function App() {
         <header className="px-4 md:px-8 py-3 md:py-4 flex items-center justify-between bg-card shadow-sm transition-colors gap-4 border-b border-border safe-top">
           {/* Logo */}
           <div className="flex items-center gap-3 flex-shrink-0">
-            <div className="w-10 h-10 md:w-11 md:h-11 rounded-2xl bg-primary flex items-center justify-center shadow-lg">
-              <span className="text-lg font-black text-primary-foreground">K</span>
+            <div className="w-10 h-10 md:w-11 md:h-11 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col items-center justify-center shadow-lg border border-slate-700/50">
+              <span className="text-[11px] font-black tracking-tight" style={{ 
+                background: 'linear-gradient(135deg, #fbbf24 0%, #f97316 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}>
+                KBV
+              </span>
+              <span className="text-[7px] font-bold tracking-wider text-slate-400 -mt-0.5">
+                FP
+              </span>
             </div>
             <div className="hidden sm:block">
               <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.35em] text-primary">
