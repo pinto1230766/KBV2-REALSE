@@ -41,7 +41,7 @@ function App() {
   const [showSplash, setShowSplash] = useState(() => {
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches ||
-      (navigator as any).standalone === true;
+      (navigator as Navigator & { standalone?: boolean }).standalone === true;
     return standalone;
   });
   const hideSplash = useCallback(() => setShowSplash(false), []);
@@ -108,7 +108,7 @@ function App() {
     setIsSearchFocused(false);
     setSearchTerm("");
     if (result.type === "visit") {
-      setPendingVisit((result as any).payload.visitId);
+      setPendingVisit((result as { payload: { visitId: string } }).payload.visitId);
       setActiveTab("planning");
       return;
     }
