@@ -88,11 +88,37 @@ export function InstallPage() {
         </button>
         <div>
           <h1 className="text-lg font-black text-foreground">Installer l'application</h1>
-          <p className="text-xs text-muted-foreground">Partagez KBV Lyon avec les hôtes</p>
+          <p className="text-xs text-muted-foreground">Partagez KBV Lyon avec d'autres congrégations</p>
         </div>
       </div>
 
       <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
+        {/* Independence notice */}
+        <Card className="p-5 bg-card border-primary/20 space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Shield className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-foreground">Chaque installation est indépendante</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Vos données restent privées sur votre appareil
+              </p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {[
+              { icon: Database, text: "Chaque utilisateur gère ses propres données : congrégation, orateurs, hôtes et visites" },
+              { icon: Shield, text: "Aucune donnée n'est partagée entre les installations — tout reste sur l'appareil" },
+              { icon: Users, text: "Au premier lancement, un assistant guide le nouvel utilisateur pour configurer sa congrégation" },
+            ].map((item, i) => (
+              <div key={i} className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                <item.icon className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
+                <span>{item.text}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
         {/* QR Code Card */}
         <Card className="p-6 flex flex-col items-center gap-4 bg-card">
           <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
