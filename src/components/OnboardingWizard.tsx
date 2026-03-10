@@ -77,9 +77,6 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       subtitle: selectedLanguage === "cv" ? "Aplicason di koordenamentu di vizitas" : selectedLanguage === "pt" ? "Aplicativo de coordenação de visitas" : "Application de coordination des visites",
       content: (
         <div className="space-y-4 text-center">
-          <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto">
-            <span className="text-4xl font-black text-primary">K</span>
-          </div>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
             {selectedLanguage === "cv" ? "Konfigurans jundu bo kongregason em kalker etapas. Tudu bo dadus prienmu这台设备上。" : selectedLanguage === "pt" ? "Vamos configurar sua congregação em algumas etapas. Todos os seus dados permanecerão privados neste dispositivo." : "Configurons ensemble votre congrégation en quelques étapes. Toutes vos données resteront privées sur cet appareil."}
           </p>
