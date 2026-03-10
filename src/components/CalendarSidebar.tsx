@@ -1,4 +1,5 @@
 import { useMemo, useState, useRef } from "react";
+import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Mail, Bell, User, Send, RefreshCw, Camera } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Visit } from "../store/visitTypes";
@@ -92,6 +93,8 @@ export function CalendarSidebar({ visits, onVisitClick, onSyncNow }: CalendarSid
     if (todayVisits.length > 0) {
       setPendingVisit(todayVisits[0].visitId);
       setActiveTab("planning");
+    } else {
+      toast.info("Aucune visite prévue aujourd'hui");
     }
   };
 
@@ -101,6 +104,8 @@ export function CalendarSidebar({ visits, onVisitClick, onSyncNow }: CalendarSid
       const first = pendingNotifications[0];
       setPendingVisit(first.visitId);
       setActiveTab("planning");
+    } else {
+      toast.info("Aucune notification en attente");
     }
   };
 
@@ -211,6 +216,8 @@ export function CalendarSidebar({ visits, onVisitClick, onSyncNow }: CalendarSid
               accept="image/*"
               onChange={handlePhotoUpload}
               className="hidden"
+              aria-label="Télécharger une photo"
+              title="Télécharger une photo"
             />
           </div>
         </div>
@@ -220,10 +227,10 @@ export function CalendarSidebar({ visits, onVisitClick, onSyncNow }: CalendarSid
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-black text-foreground capitalize">{monthName}</h3>
         <div className="flex items-center gap-1">
-          <button onClick={prev} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+          <button onClick={prev} title="Mois précédent" className="p-1.5 rounded-lg hover:bg-muted transition-colors">
             <ChevronLeft className="w-4 h-4 text-muted-foreground" />
           </button>
-          <button onClick={next} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+          <button onClick={next} title="Mois suivant" className="p-1.5 rounded-lg hover:bg-muted transition-colors">
             <ChevronRight className="w-4 h-4 text-muted-foreground" />
           </button>
           <button onClick={() => setCurrentMonth(new Date())} className="ml-2 text-[10px] font-black text-primary uppercase tracking-widest">
