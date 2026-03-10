@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Toaster } from "sonner";
+import { SplashScreen } from "./components/SplashScreen";
+import { usePWA } from "./hooks/usePWA";
 import {
   Search,
   LayoutGrid,
@@ -31,6 +33,15 @@ import { PWAInstallBanner } from "./components/PWAInstallBanner";
 import { OfflineIndicator } from "./components/OfflineIndicator";
 
 function App() {
+  const { isStandalone } = usePWA();
+  const [showSplash, setShowSplash] = useState(() => {
+    const standalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as any).standalone === true;
+    return standalone;
+  });
+  const hideSplash = useCallback(() => setShowSplash(false), []);
+
   const visits = useVisitStore((s) => s.visits);
   const hosts = useHostStore((s) => s.hosts);
   const speakers = useSpeakerStore((s) => s.speakers);
@@ -108,6 +119,8 @@ function App() {
   ];
 
   return (
+    <>
+      {showSplash && <SplashScreen onFinished={hideSplash} />}
     <div className="flex h-screen w-screen overflow-x-hidden">
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
@@ -256,6 +269,7 @@ function App() {
 
       <Toaster position="top-right" richColors closeButton />
     </div>
+    </>
   );
 }
 
