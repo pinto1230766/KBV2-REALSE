@@ -5,6 +5,62 @@ import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useHostStore } from "../store/useHostStore";
 import { useSettingsStore } from "../store/useSettingsStore";
 
+// ─── Types for Supabase database rows ───
+interface VisitRow {
+  visit_id: string;
+  nom: string;
+  congregation: string;
+  visit_date: string;
+  heure_visite: string | null;
+  location_type: string;
+  status: string;
+  is_event: boolean | null;
+  event_type: string | null;
+  talk_no_or_type: string | null;
+  talk_theme: string | null;
+  speaker_phone: string | null;
+  notes: string | null;
+  feedback: string | null;
+  feedback_rating: number | null;
+  host_assignments: string | null;
+  companions: string | null;
+  date_arrivee: string | null;
+  heure_arrivee: string | null;
+  date_depart: string | null;
+  heure_depart: string | null;
+  updated_at: string;
+}
+
+interface SpeakerRow {
+  id: string;
+  nom: string;
+  congregation: string;
+  telephone: string | null;
+  email: string | null;
+  photo_url: string | null;
+  wife_photo_url: string | null;
+  household_type: string | null;
+  wife_name: string | null;
+  notes: string | null;
+  talk_history: string | null;
+}
+
+interface HostRow {
+  id: string;
+  nom: string;
+  telephone: string | null;
+  email: string | null;
+  adresse: string | null;
+  notes: string | null;
+  role: string | null;
+  photo_url: string | null;
+  tags: string[] | null;
+  capacity: number | null;
+}
+
+// Warning flag for Supabase not configured
+let warnedSupabaseNotConfigured = false;
+
 // ─── Normalize name: remove newlines, extra spaces, lowercase ───
 export function normalizeName(name: string): string {
   return name.replace(/\n/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
@@ -57,29 +113,29 @@ function visitToRow(v: Visit) {
   };
 }
 
-function rowToVisit(r: any): Visit {
+function rowToVisit(r: VisitRow): Visit {
   return {
     visitId: r.visit_id,
     nom: r.nom,
     congregation: r.congregation,
     visitDate: r.visit_date,
     heure_visite: r.heure_visite,
-    locationType: r.location_type,
-    status: r.status,
-    isEvent: r.is_event,
-    eventType: r.event_type,
-    talkNoOrType: r.talk_no_or_type,
-    talkTheme: r.talk_theme,
-    speakerPhone: r.speaker_phone,
-    notes: r.notes,
-    feedback: r.feedback,
-    feedbackRating: r.feedback_rating,
-    hostAssignments: r.host_assignments,
-    companions: r.companions,
-    date_arrivee: r.date_arrivee,
-    heure_arrivee: r.heure_arrivee,
-    date_depart: r.date_depart,
-    heure_depart: r.heure_depart,
+    locationType: r.location_type as Visit["locationType"],
+    status: r.status as Visit["status"],
+    isEvent: r.is_event ?? undefined,
+    eventType: r.event_type as Visit["eventType"],
+    talkNoOrType: r.talk_no_or_type ?? "",
+    talkTheme: r.talk_theme ?? undefined,
+    speakerPhone: r.speaker_phone ?? undefined,
+    notes: r.notes ?? undefined,
+    feedback: r.feedback ?? undefined,
+    feedbackRating: r.feedback_rating ?? undefined,
+    hostAssignments: r.host_assignments ? JSON.parse(r.host_assignments) : undefined,
+    companions: r.companions ? JSON.parse(r.companions) : undefined,
+    date_arrivee: r.date_arrivee ?? undefined,
+    heure_arrivee: r.heure_arrivee ?? undefined,
+    date_depart: r.date_depart ?? undefined,
+    heure_depart: r.heure_depart ?? undefined,
     updatedAt: r.updated_at,
   };
 }
@@ -99,7 +155,7 @@ function speakerToRow(s: Speaker) {
   };
 }
 
-function rowToSpeaker(r: any): Speaker {
+function rowToSpeaker(r: SpeakerRow): Speaker {
   return {
     id: r.id,
     nom: r.nom,
@@ -108,10 +164,10 @@ function rowToSpeaker(r: any): Speaker {
     email: r.email,
     photoUrl: r.photo_url,
     spousePhotoUrl: r.wife_photo_url,
-    householdType: r.household_type,
-    spouseName: r.wife_name,
-    notes: r.notes,
-    talks: r.talk_history || [],
+    householdType: r.household_type as Speaker["householdType"],
+    spouseName: r.wife_name ?? undefined,
+    notes: r.notes ?? undefined,
+    talks: r.talk_history ? JSON.parse(r.talk_history) : [],
   };
 }
 
@@ -129,7 +185,7 @@ function hostToRow(h: Host) {
   };
 }
 
-function rowToHost(r: any): Host {
+function rowToHost(r: HostRow): Host {
   return {
     id: r.id,
     nom: r.nom,
@@ -137,7 +193,7 @@ function rowToHost(r: any): Host {
     email: r.email,
     adresse: r.adresse,
     notes: r.notes,
-    role: r.role,
+    role: r.role as Host["role"] ?? undefined,
     photoUrl: r.photo_url,
     tags: r.tags,
     capacity: r.capacity,
@@ -160,16 +216,16 @@ export async function syncCloud(): Promise<SyncResult> {
   // Check if Supabase is configured
   if (!supabase) {
     // Only warn once to avoid console spam
-    if ((syncCloud as any)._warned !== true) {
+    if (!warnedSupabaseNotConfigured) {
       console.warn("Supabase is not configured. Cloud sync is disabled.");
       console.warn("To enable: create a Supabase project and add credentials to .env");
-      (syncCloud as any)._warned = true;
+      warnedSupabaseNotConfigured = true;
     }
     return result;
   }
   
   // Reset warning flag when Supabase is available
-  (syncCloud as any)._warned = false;
+  warnedSupabaseNotConfigured = false;
 
   const localVisits = useVisitStore.getState().visits;
   const localSpeakers = useSpeakerStore.getState().speakers;
