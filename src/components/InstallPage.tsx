@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Download, Smartphone, Share, Plus, ArrowLeft, Copy, Check, Apple, Monitor } from "lucide-react";
+import { Download, Smartphone, Share, Plus, ArrowLeft, Copy, Check, Apple, Monitor, Shield, Users, Database } from "lucide-react";
 import { usePWA } from "@/hooks/usePWA";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
