@@ -39,7 +39,7 @@ function AvatarUpload({ photoUrl, onPhotoChange, label }: { photoUrl?: string; o
         </div>
       </div>
       <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{label}</span>
-      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} aria-label={label} title={label} />
     </div>
   );
 }
@@ -184,10 +184,10 @@ export function SpeakerList() {
                 )}
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
                   <div className="flex gap-1">
-                    <button onClick={() => openFiche(sp)} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+                    <button onClick={() => openFiche(sp)} className="p-1.5 rounded-lg hover:bg-muted transition-colors" title={t("edit")}>
                       <Edit3 className="w-3.5 h-3.5 text-muted-foreground" />
                     </button>
-                    <button onClick={() => setConfirmDeleteId(sp.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors">
+                    <button onClick={() => setConfirmDeleteId(sp.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors" title={t("delete")}>
                       <Trash2 className="w-3.5 h-3.5 text-destructive" />
                     </button>
                   </div>
@@ -252,14 +252,14 @@ export function SpeakerList() {
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("congregation")}</p>
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                      <input className="input-soft text-sm" value={form.congregation} onChange={(e) => setForm({ ...form, congregation: e.target.value })} />
+                      <input className="input-soft text-sm" placeholder={t("congregation")} value={form.congregation} onChange={(e) => setForm({ ...form, congregation: e.target.value })} />
                     </div>
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("phone")}</p>
                     <div className="flex items-center gap-2">
                       <Phone className="w-4 h-4 text-primary flex-shrink-0" />
-                      <input className="input-soft text-sm" value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} />
+                      <input className="input-soft text-sm" placeholder={t("phone")} value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} />
                     </div>
                   </div>
                 </div>
@@ -313,6 +313,7 @@ export function SpeakerList() {
                   {editingNotes ? (
                     <textarea
                       className="input-soft text-sm min-h-[80px] resize-none w-full"
+                      placeholder={t("notes")}
                       value={form.notes}
                       onChange={(e) => setForm({ ...form, notes: e.target.value })}
                       autoFocus
