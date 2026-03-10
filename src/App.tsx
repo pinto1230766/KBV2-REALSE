@@ -12,6 +12,7 @@ import {
   MapPin,
   User,
   MessageSquare,
+  Download,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { DashboardView } from "./components/DashboardView";
