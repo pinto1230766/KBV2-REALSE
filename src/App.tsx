@@ -33,6 +33,7 @@ import { NotificationCenter } from "./components/NotificationCenter";
 import { useAutoSync } from "./hooks/useAutoSync";
 import { PWAInstallBanner } from "./components/PWAInstallBanner";
 import { OfflineIndicator } from "./components/OfflineIndicator";
+import { OnboardingWizard } from "./components/OnboardingWizard";
 
 function App() {
   const { isStandalone } = usePWA();
@@ -43,6 +44,9 @@ function App() {
     return standalone;
   });
   const hideSplash = useCallback(() => setShowSplash(false), []);
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return !localStorage.getItem("kbv-onboarding-done");
+  });
 
   const visits = useVisitStore((s) => s.visits);
   const hosts = useHostStore((s) => s.hosts);
@@ -120,6 +124,11 @@ function App() {
     { id: "settings", label: t("settings"), icon: Settings },
   ];
 
+  const handleOnboardingComplete = useCallback(() => {
+    localStorage.setItem("kbv-onboarding-done", "true");
+    setShowOnboarding(false);
+  }, []);
+
   if (activeTab === "install") {
     return (
       <>
@@ -132,6 +141,7 @@ function App() {
   return (
     <>
       {showSplash && <SplashScreen onFinished={hideSplash} />}
+      {!showSplash && showOnboarding && <OnboardingWizard onComplete={handleOnboardingComplete} />}
     <div className="flex h-screen w-screen overflow-x-hidden">
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
