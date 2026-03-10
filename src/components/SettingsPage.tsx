@@ -338,7 +338,7 @@ export function SettingsPage() {
               </div>
               <div className="p-3 rounded-xl bg-muted col-span-2">
                 <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Contact / Support</p>
-                <p className="text-sm font-bold text-foreground mt-1">fp123@outlook.fr</p>
+                <p className="text-sm font-bold text-foreground mt-1">pinto12397@gmail.com</p>
               </div>
             </div>
             <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-4">© 2025-2026 Pinto Francisco · Tous droits réservés</p>
@@ -358,7 +358,7 @@ export function SettingsPage() {
                 <strong className="text-foreground">Droit d'accès:</strong> Vous pouvez à tout moment supprimer les données de l'application via les paramètres.
               </p>
               <p>
-                <strong className="text-foreground">Contact:</strong> Pour toute question concernant vos données ou pour obtenir de l'aide, contactez: <a href="mailto:fp123@outlook.fr" className="text-primary hover:underline">fp123@outlook.fr</a>
+                <strong className="text-foreground">Contact:</strong> Pour toute question concernant vos données ou pour obtenir de l'aide, contactez: <a href="mailto:pinto12397@gmail.com" className="text-primary hover:underline">pinto12397@gmail.com</a>
               </p>
             </div>
             <div className="pt-2 border-t border-border">
