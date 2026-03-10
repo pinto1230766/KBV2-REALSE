@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { DashboardView } from "./components/DashboardView";
+import { InstallPage } from "./components/InstallPage";
 import { PlanningHub } from "./components/PlanningHub";
 import { SpeakerList } from "./components/SpeakerList";
 import { GlobalHostList } from "./components/GlobalHostList";
