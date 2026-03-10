@@ -47,25 +47,22 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       subtitle: t("app_description"),
       content: (
         <div className="space-y-4 text-center">
-          <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto">
-            <Globe className="w-10 h-10 text-primary" />
-          </div>
-          <div className="grid grid-cols-1 gap-3 pt-4">
+          <div className="grid grid-cols-3 gap-4 pt-2">
             {LANGUAGES.map((lang) => (
               <button
                 key={lang.code}
                 onClick={() => {
                   setSelectedLanguage(lang.code);
-                  setLanguage(lang.code); // Set immediately so translations work
+                  setLanguage(lang.code);
                 }}
-                className={`p-4 rounded-2xl border-2 transition-all text-left flex items-center gap-3 ${
+                className={`p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${
                   selectedLanguage === lang.code
                     ? "border-primary bg-primary/10"
                     : "border-border hover:border-primary/50"
                 }`}
               >
-                <span className="text-3xl">{lang.flag}</span>
-                <span className="text-lg font-bold text-foreground">{lang.nativeName}</span>
+                <span className="text-5xl">{lang.flag}</span>
+                <span className="text-sm font-bold text-foreground">{lang.nativeName}</span>
               </button>
             ))}
           </div>
@@ -75,9 +72,9 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     },
     {
       id: "welcome",
-      icon: Sparkles,
-      title: t("welcome"),
-      subtitle: t("app_description"),
+      icon: Globe,
+      title: selectedLanguage === "cv" ? "Bun vinda" : selectedLanguage === "pt" ? "Bem-vindo" : "Bienvenue",
+      subtitle: selectedLanguage === "cv" ? "Aplicason di koordenamentu di vizitas" : selectedLanguage === "pt" ? "Aplicativo de coordenação de visitas" : "Application de coordination des visites",
       content: (
         <div className="space-y-4 text-center">
           <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto">
