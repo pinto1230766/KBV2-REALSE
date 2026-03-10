@@ -4,57 +4,7 @@ import { usePWA } from "@/hooks/usePWA";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useUIStore } from "@/store/useUIStore";
-
-function generateQRCodeSVG(url: string, size: number = 200): string {
-  // Simple QR-like visual using the URL — we'll use an SVG pattern approach
-  // For a real QR code we'd need a library, so we use a grid-based visual hash
-  const cells = 25;
-  const cellSize = size / cells;
-  const hash = Array.from(url).reduce((acc, c, i) => {
-    return acc + c.charCodeAt(0) * (i + 1);
-  }, 0);
-
-  let rects = "";
-  const grid: boolean[][] = Array.from({ length: cells }, () => Array(cells).fill(false));
-
-  // Finder patterns (top-left, top-right, bottom-left)
-  const drawFinder = (ox: number, oy: number) => {
-    for (let y = 0; y < 7; y++) {
-      for (let x = 0; x < 7; x++) {
-        const border = x === 0 || x === 6 || y === 0 || y === 6;
-        const inner = x >= 2 && x <= 4 && y >= 2 && y <= 4;
-        if (border || inner) grid[oy + y][ox + x] = true;
-      }
-    }
-  };
-  drawFinder(0, 0);
-  drawFinder(cells - 7, 0);
-  drawFinder(0, cells - 7);
-
-  // Data area — deterministic pseudo-random from URL hash
-  let seed = hash;
-  const nextBit = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed % 3 !== 0; };
-  for (let y = 0; y < cells; y++) {
-    for (let x = 0; x < cells; x++) {
-      if (grid[y][x]) continue;
-      // skip finder zones + margin
-      const inFinder =
-        (x < 8 && y < 8) || (x >= cells - 8 && y < 8) || (x < 8 && y >= cells - 8);
-      if (inFinder) continue;
-      grid[y][x] = nextBit();
-    }
-  }
-
-  for (let y = 0; y < cells; y++) {
-    for (let x = 0; x < cells; x++) {
-      if (grid[y][x]) {
-        rects += `<rect x="${x * cellSize}" y="${y * cellSize}" width="${cellSize}" height="${cellSize}" rx="0.5"/>`;
-      }
-    }
-  }
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}"><rect width="${size}" height="${size}" fill="white" rx="8"/><g fill="currentColor">${rects}</g></svg>`;
-}
+import { QRCodeSVG } from "qrcode.react";
 
 export function InstallPage() {
   const { canInstall, promptInstall, isIOS, isInstalled } = usePWA();
@@ -65,9 +15,7 @@ export function InstallPage() {
   const appUrl = typeof window !== "undefined" ? window.location.origin : "";
 
   useEffect(() => {
-    if (qrRef.current) {
-      qrRef.current.innerHTML = generateQRCodeSVG(appUrl, 200);
-    }
+    // QR code is now rendered directly via QRCodeSVG component
   }, [appUrl]);
 
   const handleCopy = async () => {
@@ -83,6 +31,8 @@ export function InstallPage() {
         <button
           onClick={() => setActiveTab("dashboard")}
           className="p-2 rounded-xl hover:bg-muted transition-colors"
+          aria-label="Retour au tableau de bord"
+          title="Retour"
         >
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
@@ -131,9 +81,17 @@ export function InstallPage() {
             </p>
           </div>
           <div
-            ref={qrRef}
             className="p-4 bg-background rounded-2xl border border-border text-primary"
-          />
+          >
+            <QRCodeSVG
+              value={appUrl}
+              size={180}
+              level="M"
+              includeMargin={false}
+              bgColor="#ffffff"
+              fgColor="#000000"
+            />
+          </div>
           <div className="flex items-center gap-2 w-full">
             <div className="flex-1 px-3 py-2 bg-muted rounded-xl text-xs font-mono text-muted-foreground truncate border border-border">
               {appUrl}
