@@ -119,6 +119,15 @@ function App() {
     { id: "settings", label: t("settings"), icon: Settings },
   ];
 
+  if (activeTab === "install") {
+    return (
+      <>
+        {showSplash && <SplashScreen onFinished={hideSplash} />}
+        <InstallPage />
+      </>
+    );
+  }
+
   return (
     <>
       {showSplash && <SplashScreen onFinished={hideSplash} />}
