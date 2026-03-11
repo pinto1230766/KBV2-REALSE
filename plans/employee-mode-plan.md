@@ -1,6 +1,7 @@
 # Plan: Mode d'emploi (Guide Utilisateur)
 
 ## Objectif
+
 Créer une page d'aide complète accessible depuis les Paramètres, avec un bouton dans l'Onboarding (fin étape 5) pour aider les utilisateurs non-techniques.
 
 ## Structure du Plan
@@ -24,15 +25,19 @@ Créer une page d'aide complète accessible depuis les Paramètres, avec un bout
 ### 3. Intégrations Requises
 
 #### A. Paramètres (SettingsPage.tsx)
+
 - Ajouter une nouvelle option "Mode Employé / Aide"
 - Icône: HelpCircle ou BookOpen
 
 #### B. OnboardingWizard (étape 5)
+
 - Ajouter un bouton "Consulter le guide complet"
 - Lien vers la nouvelle page EmployeeModePage
 
 ### 4. Traductions (useTranslation.ts)
+
 Ajouter les nouvelles clés:
+
 ```typescript
 employee_mode: { fr: "Mode d'emploi", cv: "Modu di Usu", pt: "Modo de Uso" },
 employee_mode_desc: { fr: "Guide complet pour les utilisateurs", ... },
@@ -41,6 +46,7 @@ create_speaker_title: { fr: "Créer un orateur", ... },
 ```
 
 ### 5. Design UI
+
 - Utiliser des composants UI existants (Accordion, Card, Button)
 - Sections dépliables pour chaque fonction
 - Instructions étape par étape

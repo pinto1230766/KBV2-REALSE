@@ -15,9 +15,9 @@ import { useTranslation } from "@/hooks/useTranslation";
 const DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 
 const LANGUAGES: { code: Language; name: string; nativeName: string; flag: string }[] = [
-  { code: "fr", name: "Français", nativeName: "Français", flag: "/images/flags/france.svg" },
-  { code: "pt", name: "Português", nativeName: "Português", flag: "/images/flags/portugal.svg" },
-  { code: "cv", name: "Cape Verdean Creole", nativeName: "Kriol Kabuverdianu", flag: "/images/flags/cape_verde.svg" },
+  { code: "fr", name: "Français", nativeName: "Français", flag: "/images/flags/france.png" },
+  { code: "pt", name: "Português", nativeName: "Português", flag: "/images/flags/portugal.png" },
+  { code: "cv", name: "Cape Verdean Creole", nativeName: "Kriol Kabuverdianu", flag: "/images/flags/cape_verde.png" },
 ];
 
 interface OnboardingWizardProps {
