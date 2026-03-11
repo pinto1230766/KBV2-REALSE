@@ -280,7 +280,7 @@ export function OnboardingWizard({ onComplete, onShowUserManual }: OnboardingWiz
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col px-6 overflow-y-auto">
+      <div className="flex-1 flex flex-col px-6 overflow-y-auto min-h-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep.id}
@@ -288,7 +288,7 @@ export function OnboardingWizard({ onComplete, onShowUserManual }: OnboardingWiz
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -30 }}
             transition={{ duration: 0.25 }}
-            className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full"
+            className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full py-4"
           >
             <div className="mb-6">
               <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
@@ -303,10 +303,10 @@ export function OnboardingWizard({ onComplete, onShowUserManual }: OnboardingWiz
       </div>
 
       {/* Navigation */}
-      <div className="px-6 pb-6 safe-bottom flex flex-col items-center gap-3">
+      <div className="px-6 pb-4 safe-bottom flex flex-col items-center gap-2">
         <Button
-          size="lg"
-          className="w-full gap-1"
+          size="default"
+          className="w-full max-w-xs gap-1"
           disabled={!currentStep.canNext}
           onClick={() => {
             // Set language when moving from language step
