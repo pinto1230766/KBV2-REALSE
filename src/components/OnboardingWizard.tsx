@@ -303,10 +303,10 @@ export function OnboardingWizard({ onComplete, onShowUserManual }: OnboardingWiz
       </div>
 
       {/* Navigation */}
-      <div className="px-6 pb-6 safe-bottom flex flex-col items-center gap-3">
+      <div className="px-6 pb-4 safe-bottom flex flex-col items-center gap-2">
         <Button
-          size="lg"
-          className="w-full gap-1"
+          size="default"
+          className="w-full max-w-xs gap-1"
           disabled={!currentStep.canNext}
           onClick={() => {
             // Set language when moving from language step
