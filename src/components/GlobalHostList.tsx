@@ -58,25 +58,25 @@ export function GlobalHostList() {
   const filtered = hosts.filter((h) => h.nom.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="py-6 space-y-4">
+    <div className="py-4 md:py-6 space-y-4">
       {/* Header */}
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-center gap-3 md:gap-4">
         <div className="mr-auto">
-          <h2 className="text-xl font-black text-foreground">{t("hosts")}</h2>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          <h2 className="text-2xl md:text-3xl font-black text-foreground">{t("hosts")}</h2>
+          <p className="text-xs md:text-sm font-bold uppercase tracking-wider text-muted-foreground">
             {t("global_repertoire")} <span className="text-primary">{hosts.length}/{hosts.length}</span>
           </p>
         </div>
         <motion.button whileTap={{ scale: 0.97 }} onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 transition-colors">
-          <Plus className="w-4 h-4" /> {t("add")}
+          className="flex items-center gap-2 px-5 py-3 rounded-xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 transition-colors touch-manipulation">
+          <Plus className="w-5 h-5" /> {t("add")}
         </motion.button>
       </div>
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <input className="input-soft text-sm pl-10" placeholder={t("search_host")} value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+        <input className="input-soft text-base pl-11 py-3" placeholder={t("search_host")} value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
 
       {/* Grid */}
@@ -122,15 +122,15 @@ export function GlobalHostList() {
                 )}
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
                   <div className="flex gap-1">
-                    <button onClick={() => openEdit(h)} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
-                      <Edit3 className="w-3.5 h-3.5 text-muted-foreground" />
+                    <button onClick={() => openEdit(h)} className="p-2 rounded-lg hover:bg-muted transition-colors" title={t("edit")}>
+                      <Edit3 className="w-4 h-4 text-muted-foreground" />
                     </button>
-                    <button onClick={() => setConfirmDeleteId(h.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors">
-                      <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                    <button onClick={() => setConfirmDeleteId(h.id)} className="p-2 rounded-lg hover:bg-destructive/10 transition-colors" title={t("delete")}>
+                      <Trash2 className="w-4 h-4 text-destructive" />
                     </button>
                   </div>
-                  <button onClick={() => openEdit(h)} className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1 hover:underline">
-                    {t("view")} <ChevronRight className="w-3 h-3" />
+                  <button onClick={() => openEdit(h)} className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1 hover:underline">
+                    {t("view")} <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
               </motion.div>
@@ -144,28 +144,28 @@ export function GlobalHostList() {
         {showForm && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={resetForm}>
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="w-full max-w-md bg-card rounded-2xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              <h3 className="text-sm font-black uppercase tracking-widest text-foreground">{editing ? t("edit") : t("add_host")}</h3>
+              className="w-full max-w-md bg-card rounded-2xl p-5 md:p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-base font-black uppercase tracking-wider text-foreground">{editing ? t("edit") : t("add_host")}</h3>
               <PhotoUpload photoUrl={form.photoUrl} onPhotoChange={(url) => setForm({ ...form, photoUrl: url })} />
-              <input className="input-soft text-sm" placeholder={t("name")} value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} />
-              <input className="input-soft text-sm" placeholder={t("phone")} value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} />
-              <input className="input-soft text-sm" placeholder={t("email")} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-              <input className="input-soft text-sm" placeholder={t("address")} value={form.adresse} onChange={(e) => setForm({ ...form, adresse: e.target.value })} />
+              <input className="input-soft text-base" placeholder={t("name")} value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} />
+              <input className="input-soft text-base" placeholder={t("phone")} value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} />
+              <input className="input-soft text-base" placeholder={t("email")} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              <input className="input-soft text-base" placeholder={t("address")} value={form.adresse} onChange={(e) => setForm({ ...form, adresse: e.target.value })} />
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("capacity")}</label>
-                  <input className="input-soft text-sm" type="number" min={1} value={form.capacity} onChange={(e) => setForm({ ...form, capacity: +e.target.value })} />
+                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("capacity")}</label>
+                  <input className="input-soft text-base" type="number" min={1} value={form.capacity} onChange={(e) => setForm({ ...form, capacity: +e.target.value })} title={t("capacity")} />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("role")}</label>
-                  <select className="input-soft text-sm" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Host["role"] })}>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("role")}</label>
+                  <select className="input-soft text-base" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Host["role"] })} title={t("role")}>
                     <option value="hebergement">{t("hebergement")}</option>
                     <option value="transport">{t("transport")}</option>
                     <option value="repas">{t("repas")}</option>
                   </select>
                 </div>
               </div>
-              <textarea className="input-soft text-sm min-h-[60px] resize-none" placeholder={t("notes")} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+              <textarea className="input-soft text-base min-h-[60px] resize-none" placeholder={t("notes")} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
               <div className="flex gap-2">
                 <motion.button whileTap={{ scale: 0.97 }} onClick={handleSubmit} className="flex-1 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold">{editing ? t("save") : t("add")}</motion.button>
                 <button onClick={resetForm} className="px-4 py-2.5 rounded-xl bg-muted text-muted-foreground text-xs font-bold">{t("cancel")}</button>

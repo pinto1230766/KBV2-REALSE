@@ -34,6 +34,7 @@ import { useAutoSync } from "./hooks/useAutoSync";
 import { PWAInstallBanner } from "./components/PWAInstallBanner";
 import { OfflineIndicator } from "./components/OfflineIndicator";
 import { OnboardingWizard } from "./components/OnboardingWizard";
+import { UserManualPage } from "./components/UserManualPage";
 
 function App() {
   const { isStandalone } = usePWA();
@@ -52,10 +53,12 @@ function App() {
   const hosts = useHostStore((s) => s.hosts);
   const speakers = useSpeakerStore((s) => s.speakers);
   const activeTab = useUIStore((s) => s.activeTab);
+  const showUserManual = useUIStore((s) => s.showUserManual);
   const settings = useSettingsStore((s) => s.settings);
   const congregationName = settings?.congregation?.name || "";
   const setActiveTab = useUIStore((s) => s.setActiveTab);
   const setPendingVisit = useUIStore((s) => s.setPendingVisit);
+  const setShowUserManual = useUIStore((s) => s.setShowUserManual);
   const setIsOnline = useUIStore((s) => s.setIsOnline);
   const { t } = useTranslation();
   const { pendingCount } = useReminderEngine();
@@ -143,7 +146,7 @@ function App() {
   return (
     <>
       {showSplash && <SplashScreen onFinished={hideSplash} />}
-      {!showSplash && showOnboarding && <OnboardingWizard onComplete={handleOnboardingComplete} />}
+      {!showSplash && showOnboarding && <OnboardingWizard onComplete={handleOnboardingComplete} onShowUserManual={() => setShowUserManual(true)} />}
     <div className="flex h-screen w-screen overflow-x-hidden">
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
@@ -172,20 +175,23 @@ function App() {
           </div>
 
           {/* Desktop Nav — hidden on phone, shown on tablet+ */}
-          <nav className="hidden md:flex items-center gap-4 overflow-x-auto scrollbar-hide">
+          <nav className="hidden md:flex items-center gap-2 lg:gap-4 overflow-x-auto scrollbar-hide">
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`relative py-2 px-1 text-[10px] uppercase tracking-widest font-black transition-all whitespace-nowrap ${
+                className={`relative py-3 px-2 lg:px-3 text-xs lg:text-sm uppercase tracking-wider font-bold transition-all whitespace-nowrap rounded-lg hover:bg-muted/50 ${
                   activeTab === item.id
-                    ? "text-primary"
+                    ? "text-primary bg-primary/5"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {item.label}
+                <span className="flex items-center gap-2">
+                  <item.icon className="w-4 h-4" />
+                  {item.label}
+                </span>
                 {activeTab === item.id && (
-                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-1 bg-primary rounded-full" />
+                  <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 bg-primary rounded-full" />
                 )}
               </button>
             ))}
@@ -200,8 +206,8 @@ function App() {
             >
               <Download className="w-4 h-4 text-muted-foreground" />
             </button>
-            <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <div className="relative flex-1 max-w-[200px] md:max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
               placeholder={t("search")}
@@ -209,12 +215,12 @@ function App() {
               onChange={(e) => setSearchTerm(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)}
-              className="w-full pl-10 pr-4 py-2.5 bg-muted rounded-full border border-border text-[10px] font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase tracking-widest text-foreground placeholder:text-muted-foreground"
+              className="w-full pl-9 pr-4 py-2.5 md:py-3 bg-muted rounded-full border border-border text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase tracking-wider text-foreground placeholder:text-muted-foreground"
             />
             {isSearchFocused && trimmedTerm && (
               <div className="absolute z-20 mt-2 w-full rounded-2xl bg-card border border-border shadow-xl">
                 {searchResults.length === 0 ? (
-                  <p className="text-xs text-muted-foreground p-4">{t("no_results")}</p>
+                  <p className="text-sm text-muted-foreground p-4">{t("no_results")}</p>
                 ) : (
                   <ul className="divide-y divide-border/50">
                     {searchResults.map((result) => (
@@ -222,24 +228,24 @@ function App() {
                         <button
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={() => handleResultClick(result)}
-                          className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-muted/50 transition-colors"
+                          className="w-full flex items-center gap-3 px-4 py-3 md:py-4 text-left hover:bg-muted/50 transition-colors"
                         >
                           <span className="p-2 rounded-xl bg-primary/10 text-primary">
                             {result.type === "visit" ? (
-                              <MapPin className="w-4 h-4" />
+                              <MapPin className="w-5 h-5" />
                             ) : result.type === "speaker" ? (
-                              <User className="w-4 h-4" />
+                              <User className="w-5 h-5" />
                             ) : (
-                              <Home className="w-4 h-4" />
+                              <Home className="w-5 h-5" />
                             )}
                           </span>
                           <div className="flex-1">
-                            <p className="text-sm font-bold text-foreground">{result.label}</p>
-                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                            <p className="text-base font-semibold text-foreground">{result.label}</p>
+                            <p className="text-sm text-muted-foreground uppercase tracking-wider">
                               {result.sublabel}
                             </p>
                           </div>
-                          <MessageSquare className="w-4 h-4 text-muted-foreground/30" />
+                          <MessageSquare className="w-5 h-5 text-muted-foreground/30" />
                         </button>
                       </li>
                     ))}
@@ -264,6 +270,12 @@ function App() {
             <SpeakerList />
           ) : activeTab === "hosts" ? (
             <GlobalHostList />
+          ) : activeTab === "settings" ? (
+            showUserManual ? (
+              <UserManualPage onBack={() => setShowUserManual(false)} />
+            ) : (
+              <SettingsPage onShowUserManual={() => setShowUserManual(true)} />
+            )
           ) : (
             <SettingsPage />
           )}
@@ -284,19 +296,19 @@ function App() {
 
       {/* Mobile Bottom Navigation — phone only */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-card border-t border-border safe-bottom">
-        <div className="flex items-center justify-around px-2 py-1">
+        <div className="flex items-center justify-around px-1 py-2">
           {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl min-w-[56px] transition-colors ${
+              className={`flex flex-col items-center gap-1 py-2 px-3 rounded-xl min-w-[64px] transition-colors ${
                 activeTab === item.id
-                  ? "text-primary"
+                  ? "text-primary bg-primary/10"
                   : "text-muted-foreground"
               }`}
             >
-              <item.icon className={`w-5 h-5 ${activeTab === item.id ? "text-primary" : ""}`} />
-              <span className="text-[9px] font-bold uppercase tracking-wider">{item.label}</span>
+              <item.icon className={`w-6 h-6 ${activeTab === item.id ? "text-primary" : ""}`} />
+              <span className="text-[10px] font-semibold uppercase tracking-wider">{item.label}</span>
             </button>
           ))}
         </div>

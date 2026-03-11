@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, ChevronLeft, Church, User, Clock, Check, Sparkles, Globe, MapPin } from "lucide-react";
+import { ChevronRight, ChevronLeft, Church, User, Clock, Check, Sparkles, Globe, MapPin, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,9 +22,10 @@ const LANGUAGES: { code: Language; name: string; nativeName: string; flag: strin
 
 interface OnboardingWizardProps {
   onComplete: () => void;
+  onShowUserManual?: () => void;
 }
 
-export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
+export function OnboardingWizard({ onComplete, onShowUserManual }: OnboardingWizardProps) {
   const updateCongregation = useSettingsStore((s) => s.updateCongregation);
   const setLanguage = useSettingsStore((s) => s.setLanguage);
   const { t } = useTranslation();
@@ -302,21 +303,10 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       </div>
 
       {/* Navigation */}
-      <div className="px-6 pb-6 safe-bottom flex items-center gap-3">
-        {step > 0 && (
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={() => setStep((s) => s - 1)}
-            className="gap-1"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Retour
-          </Button>
-        )}
+      <div className="px-6 pb-6 safe-bottom flex flex-col items-center gap-3">
         <Button
           size="lg"
-          className="flex-1 gap-1"
+          className="w-full gap-1"
           disabled={!currentStep.canNext}
           onClick={() => {
             // Set language when moving from language step

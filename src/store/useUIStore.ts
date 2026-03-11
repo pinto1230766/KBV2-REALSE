@@ -11,6 +11,8 @@ interface UIState {
   setPendingSpeaker: (speakerId: string | null) => void;
   isOnline: boolean;
   setIsOnline: (isOnline: boolean) => void;
+  showUserManual: boolean;
+  setShowUserManual: (show: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -22,4 +24,6 @@ export const useUIStore = create<UIState>((set) => ({
   setPendingSpeaker: (pendingSpeakerId) => set({ pendingSpeakerId }),
   isOnline: navigator.onLine,
   setIsOnline: (isOnline) => set({ isOnline }),
+  showUserManual: false,
+  setShowUserManual: (showUserManual) => set({ showUserManual }),
 }));

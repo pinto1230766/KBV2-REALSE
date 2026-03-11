@@ -4,6 +4,7 @@ import {
   X, Info, Users, MessageSquare, CreditCard, Star, Phone, Mail, Send,
   Copy, Home, Utensils, Car, Building2, Pencil
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useVisitStore } from "../store/useVisitStore";
 import { useSettingsStore } from "../store/useSettingsStore";
@@ -223,6 +224,7 @@ export function PlanningHub() {
   const now = new Date();
 
   const { upcomingVisits, archivedVisits } = useMemo(() => {
+    const now = new Date();
     const sorted = [...visits].sort((a, b) => new Date(a.visitDate).getTime() - new Date(b.visitDate).getTime());
     const upcoming = sorted.filter((v) => new Date(v.visitDate) >= now || v.status === "scheduled" || v.status === "confirmed");
     const archived = sorted.filter((v) => v.status === "completed" || v.status === "cancelled");
@@ -546,7 +548,7 @@ export function PlanningHub() {
     return result;
   };
 
-  const detailTabs: Array<{ id: DetailTab; label: string; icon: any }> = [
+  const detailTabs: Array<{ id: DetailTab; label: string; icon: LucideIcon }> = [
     { id: "infos", label: t("infos"), icon: Info },
     { id: "hosts", label: t("hosts"), icon: Users },
     { id: "messages", label: t("messages_tab"), icon: MessageSquare },
@@ -606,11 +608,11 @@ export function PlanningHub() {
                     </div>
                     <div className="flex flex-col gap-1">
                       {visit.status !== "confirmed" && visit.status !== "completed" && (
-                        <button onClick={(e) => { e.stopPropagation(); updateVisit(visit.visitId, { status: "confirmed" }); toast.success(t("visit_confirmed")); }} className="p-1.5 rounded-lg hover:bg-emerald-500/10 transition-colors">
+                        <button onClick={(e) => { e.stopPropagation(); updateVisit(visit.visitId, { status: "confirmed" }); toast.success(t("visit_confirmed")); }} className="p-1.5 rounded-lg hover:bg-emerald-500/10 transition-colors" title="Confirmer">
                           <Check className="w-3.5 h-3.5 text-emerald-500" />
                         </button>
                       )}
-                      <button onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(visit.visitId); }} className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors">
+                      <button onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(visit.visitId); }} className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors" title="Supprimer">
                         <Trash2 className="w-3.5 h-3.5 text-destructive" />
                       </button>
                     </div>
@@ -656,7 +658,7 @@ export function PlanningHub() {
                             {detailForm.date_depart && <p>{t("departure")} : {detailForm.date_depart} · {detailForm.heure_depart || "--:--"}</p>}
                           </div>
                         </div>
-                        <button onClick={closeDetail} className="p-2 rounded-xl hover:bg-muted transition-colors"><X className="w-5 h-5 text-muted-foreground" /></button>
+                        <button onClick={closeDetail} className="p-2 rounded-xl hover:bg-muted transition-colors" title="Fermer"><X className="w-5 h-5 text-muted-foreground" /></button>
                       </div>
                       <div className="flex gap-1 mt-5 overflow-x-auto scrollbar-hide border-b border-border pb-0">
                         {detailTabs.map((tab) => (
@@ -677,41 +679,41 @@ export function PlanningHub() {
                           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">{t("visit_details")}</p>
                           <div className="space-y-1">
                             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("talk_theme")}</p>
-                            <input className="input-soft text-base font-bold" value={detailForm.talkTheme || ""} onChange={(e) => setDetailForm({ ...detailForm, talkTheme: e.target.value })} />
+                            <input className="input-soft text-base font-bold" value={detailForm.talkTheme || ""} onChange={(e) => setDetailForm({ ...detailForm, talkTheme: e.target.value })} placeholder={t("talk_theme")} />
                           </div>
                           <div className="space-y-1">
                             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("talk_number")}</p>
-                            <input className="input-soft text-2xl font-black w-32" value={detailForm.talkNoOrType || ""} onChange={(e) => setDetailForm({ ...detailForm, talkNoOrType: e.target.value })} />
+                            <input className="input-soft text-2xl font-black w-32" value={detailForm.talkNoOrType || ""} onChange={(e) => setDetailForm({ ...detailForm, talkNoOrType: e.target.value })} placeholder={t("talk_number")} />
                           </div>
                           <div className="space-y-1">
                             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("speaker_phone")}</p>
                             <div className="flex items-center gap-2">
                               <Phone className="w-4 h-4 text-primary flex-shrink-0" />
-                              <input className="input-soft text-sm" value={detailForm.speakerPhone || ""} onChange={(e) => setDetailForm({ ...detailForm, speakerPhone: e.target.value })} />
+                              <input className="input-soft text-sm" value={detailForm.speakerPhone || ""} onChange={(e) => setDetailForm({ ...detailForm, speakerPhone: e.target.value })} placeholder={t("phone")} />
                             </div>
                             <p className="text-[10px] text-muted-foreground">{t("phone_whatsapp_hint")}</p>
                           </div>
                           <div className="grid grid-cols-3 gap-3">
-                            <div className="space-y-1"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("arrival_date")}</p><input className="input-soft text-sm" type="date" value={detailForm.date_arrivee || ""} onChange={(e) => setDetailForm({ ...detailForm, date_arrivee: e.target.value })} /></div>
-                            <div className="space-y-1"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("meeting_date")}</p><input className="input-soft text-sm" type="date" value={detailForm.visitDate || ""} onChange={(e) => setDetailForm({ ...detailForm, visitDate: e.target.value })} /></div>
-                            <div className="space-y-1"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("departure_date")}</p><input className="input-soft text-sm" type="date" value={detailForm.date_depart || ""} onChange={(e) => setDetailForm({ ...detailForm, date_depart: e.target.value })} /></div>
+                            <div className="space-y-1"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("arrival_date")}</p><input className="input-soft text-sm" type="date" value={detailForm.date_arrivee || ""} onChange={(e) => setDetailForm({ ...detailForm, date_arrivee: e.target.value })} title={t("arrival_date")} /></div>
+                            <div className="space-y-1"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("meeting_date")}</p><input className="input-soft text-sm" type="date" value={detailForm.visitDate || ""} onChange={(e) => setDetailForm({ ...detailForm, visitDate: e.target.value })} title={t("meeting_date")} /></div>
+                            <div className="space-y-1"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("departure_date")}</p><input className="input-soft text-sm" type="date" value={detailForm.date_depart || ""} onChange={(e) => setDetailForm({ ...detailForm, date_depart: e.target.value })} title={t("departure_date")} /></div>
                           </div>
                           <div className="grid grid-cols-3 gap-3">
-                            <div className="space-y-1"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("arrival_time")}</p><input className="input-soft text-sm" type="time" value={detailForm.heure_arrivee || ""} onChange={(e) => setDetailForm({ ...detailForm, heure_arrivee: e.target.value })} /></div>
-                            <div className="space-y-1"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("meeting_time")}</p><input className="input-soft text-sm" type="time" value={detailForm.heure_visite || ""} onChange={(e) => setDetailForm({ ...detailForm, heure_visite: e.target.value })} /></div>
-                            <div className="space-y-1"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("departure_time")}</p><input className="input-soft text-sm" type="time" value={detailForm.heure_depart || ""} onChange={(e) => setDetailForm({ ...detailForm, heure_depart: e.target.value })} /></div>
+                            <div className="space-y-1"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("arrival_time")}</p><input className="input-soft text-sm" type="time" value={detailForm.heure_arrivee || ""} onChange={(e) => setDetailForm({ ...detailForm, heure_arrivee: e.target.value })} title={t("arrival_time")} /></div>
+                            <div className="space-y-1"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("meeting_time")}</p><input className="input-soft text-sm" type="time" value={detailForm.heure_visite || ""} onChange={(e) => setDetailForm({ ...detailForm, heure_visite: e.target.value })} title={t("meeting_time")} /></div>
+                            <div className="space-y-1"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("departure_time")}</p><input className="input-soft text-sm" type="time" value={detailForm.heure_depart || ""} onChange={(e) => setDetailForm({ ...detailForm, heure_depart: e.target.value })} title={t("departure_time")} /></div>
                           </div>
                           <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-1">
                               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("location")}</p>
-                              <select className="input-soft text-sm" value={detailForm.locationType || "kingdom_hall"} onChange={(e) => setDetailForm({ ...detailForm, locationType: e.target.value as Visit["locationType"] })}>
+                              <select className="input-soft text-sm" value={detailForm.locationType || "kingdom_hall"} onChange={(e) => setDetailForm({ ...detailForm, locationType: e.target.value as Visit["locationType"] })} title={t("location")}>
                                 <option value="kingdom_hall">{t("in_person")}</option><option value="zoom">Zoom</option><option value="streaming">Streaming</option><option value="other">{t("other")}</option>
                               </select>
                               <p className="text-[10px] text-muted-foreground">{t("location_hint")}</p>
                             </div>
                             <div className="space-y-1">
                               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("status")}</p>
-                              <select className="input-soft text-sm" value={detailForm.status || "scheduled"} onChange={(e) => setDetailForm({ ...detailForm, status: e.target.value as VisitStatus })}>
+                              <select className="input-soft text-sm" value={detailForm.status || "scheduled"} onChange={(e) => setDetailForm({ ...detailForm, status: e.target.value as VisitStatus })} title={t("status")}>
                                 <option value="scheduled">{t("scheduled")}</option><option value="confirmed">{t("confirmed")}</option><option value="completed">{t("completed")}</option><option value="cancelled">{t("cancelled")}</option>
                               </select>
                             </div>
@@ -817,11 +819,11 @@ export function PlanningHub() {
                                   </button>
                                   {!isEditing && ha.hostPhone && (
                                     <>
-                                      <button onClick={() => sendWhatsApp(ha.hostPhone!, "")} className="p-1.5 rounded-lg hover:bg-emerald-500/10 transition-colors"><MessageSquare className="w-4 h-4 text-emerald-600" /></button>
-                                      <a href={`tel:${ha.hostPhone}`} className="p-1.5 rounded-lg hover:bg-primary/10 transition-colors"><Phone className="w-4 h-4 text-primary" /></a>
+                                      <button onClick={() => sendWhatsApp(ha.hostPhone!, "")} className="p-1.5 rounded-lg hover:bg-emerald-500/10 transition-colors" title="Envoyer WhatsApp"><MessageSquare className="w-4 h-4 text-emerald-600" /></button>
+                                      <a href={`tel:${ha.hostPhone}`} className="p-1.5 rounded-lg hover:bg-primary/10 transition-colors" title="Appeler"><Phone className="w-4 h-4 text-primary" /></a>
                                     </>
                                   )}
-                                  <button onClick={() => removeHostAssignment(origIdx)} className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors"><X className="w-4 h-4 text-muted-foreground" /></button>
+                                  <button onClick={() => removeHostAssignment(origIdx)} className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors" title="Retirer"><X className="w-4 h-4 text-muted-foreground" /></button>
                                 </div>
                               </div>
                               {isEditing && (
@@ -829,7 +831,7 @@ export function PlanningHub() {
                                   <div className="grid grid-cols-3 gap-2">
                                     <div>
                                       <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t("role")}</label>
-                                      <select className="input-soft text-sm" value={ha.role} onChange={(e) => updateHostAssignment(origIdx, "role", e.target.value)}>
+                                      <select className="input-soft text-sm" value={ha.role} onChange={(e) => updateHostAssignment(origIdx, "role", e.target.value)} title={t("role")}>
                                         <option value="hebergement">{t("hebergement")}</option>
                                         <option value="transport">{t("transport")}</option>
                                         <option value="repas">{t("repas")}</option>
@@ -837,16 +839,16 @@ export function PlanningHub() {
                                     </div>
                                     <div>
                                       <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t("date")}</label>
-                                      <input type="date" className="input-soft text-sm" value={ha.day || ""} onChange={(e) => updateHostAssignment(origIdx, "day", e.target.value)} />
+                                      <input type="date" className="input-soft text-sm" value={ha.day || ""} onChange={(e) => updateHostAssignment(origIdx, "day", e.target.value)} title={t("date")} />
                                     </div>
                                     <div>
                                       <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t("time")}</label>
-                                      <input type="time" className="input-soft text-sm" value={ha.time || ""} onChange={(e) => updateHostAssignment(origIdx, "time", e.target.value)} />
+                                      <input type="time" className="input-soft text-sm" value={ha.time || ""} onChange={(e) => updateHostAssignment(origIdx, "time", e.target.value)} title={t("time")} />
                                     </div>
                                   </div>
                                   <div>
                                     <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Origine</label>
-                                    <select className="input-soft text-sm" value={ha.origin || "host"} onChange={(e) => updateHostAssignment(origIdx, "origin", e.target.value)}>
+                                    <select className="input-soft text-sm" value={ha.origin || "host"} onChange={(e) => updateHostAssignment(origIdx, "origin", e.target.value)} title="Origine">
                                       <option value="host">{t("hosts")}</option>
                                       <option value="kingdom_hall">Salle du Royaume</option>
                                       <option value="restaurant">Restaurant</option>
@@ -881,11 +883,11 @@ export function PlanningHub() {
                             {showAssignHost && (
                               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="premium-card p-4 space-y-3 overflow-hidden">
                                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">{t("assign_host")}</p>
-                                <select className="input-soft text-sm" value={assignHostId} onChange={(e) => setAssignHostId(e.target.value)}>
+                                <select className="input-soft text-sm" value={assignHostId} onChange={(e) => setAssignHostId(e.target.value)} title={t("select_host")}>
                                   <option value="">{t("select_host")}</option>
                                   {allHosts.map((h) => <option key={h.id} value={h.id}>{h.nom}</option>)}
                                 </select>
-                                <select className="input-soft text-sm" value={assignRole} onChange={(e) => setAssignRole(e.target.value as HostAssignment["role"])}>
+                                <select className="input-soft text-sm" value={assignRole} onChange={(e) => setAssignRole(e.target.value as HostAssignment["role"])} title={t("role")}>
                                   <option value="hebergement">{t("hebergement")}</option>
                                   <option value="transport">{t("transport")}</option>
                                   <option value="repas">{t("repas")}</option>
@@ -958,7 +960,7 @@ export function PlanningHub() {
                           <div className="space-y-3">
                             <div className="flex items-center justify-between">
                               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("templates_by_step")}</p>
-                              <select className="input-soft text-xs w-28" value={templateLang} onChange={(e) => setTemplateLang(e.target.value as any)}>
+                              <select className="input-soft text-xs w-28" value={templateLang} onChange={(e) => setTemplateLang(e.target.value as "fr" | "cv" | "pt")} title="Langue">
                                 <option value="fr">FR Français</option>
                                 <option value="cv">CV Kriolu</option>
                                 <option value="pt">PT Português</option>
@@ -1041,7 +1043,7 @@ export function PlanningHub() {
                                     <span className="text-sm font-bold text-foreground">{exp.label}</span>
                                     <div className="flex items-center gap-3">
                                       <span className="text-sm font-black text-foreground">{exp.amount.toFixed(2)} €</span>
-                                      <button onClick={() => removeExpense(exp.id)} className="p-1 hover:text-destructive transition-colors"><X className="w-4 h-4" /></button>
+                                      <button onClick={() => removeExpense(exp.id)} className="p-1 hover:text-destructive transition-colors" title="Supprimer"><X className="w-4 h-4" /></button>
                                     </div>
                                   </div>
                                 ))}
@@ -1057,7 +1059,7 @@ export function PlanningHub() {
                           {/* Add expense with category */}
                           <div className="border-2 border-dashed border-border rounded-2xl p-4 space-y-3">
                             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Nouvelle dépense (H-8)</p>
-                            <select className="input-soft text-sm" value={newExpenseCategory} onChange={(e) => setNewExpenseCategory(e.target.value)}>
+                            <select className="input-soft text-sm" value={newExpenseCategory} onChange={(e) => setNewExpenseCategory(e.target.value)} title="Catégorie">
                               <option value="carburant">⛽ Carburant</option>
                               <option value="peage">🛣️ Péage</option>
                               <option value="parking">🅿️ Parking</option>
@@ -1087,7 +1089,7 @@ export function PlanningHub() {
                             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">{t("talk_quality")}</p>
                             <div className="flex gap-2">
                               {[1, 2, 3, 4, 5, 6].map((n) => (
-                                <button key={n} onClick={() => setDetailForm({ ...detailForm, feedbackRating: n })} className="transition-transform hover:scale-110">
+                                <button key={n} onClick={() => setDetailForm({ ...detailForm, feedbackRating: n })} className="transition-transform hover:scale-110" title={`Note ${n}`}>
                                   <Star className={`w-8 h-8 ${(detailForm.feedbackRating || 0) >= n ? "text-amber-400" : "text-muted-foreground/30"}`}
                                     fill={(detailForm.feedbackRating || 0) >= n ? "currentColor" : "none"} />
                                 </button>
@@ -1125,15 +1127,15 @@ export function PlanningHub() {
               <input className="input-soft text-sm" placeholder={t("speaker_name")} value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} />
               <input className="input-soft text-sm" placeholder={t("congregation")} value={form.congregation} onChange={(e) => setForm({ ...form, congregation: e.target.value })} />
               <div className="grid grid-cols-2 gap-3">
-                <div><label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">{t("visit_date")}</label><input className="input-soft text-sm" type="date" value={form.visitDate} onChange={(e) => setForm({ ...form, visitDate: e.target.value })} /></div>
-                <div><label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">{t("time")}</label><input className="input-soft text-sm" type="time" value={form.heure_visite} onChange={(e) => setForm({ ...form, heure_visite: e.target.value })} /></div>
+                <div><label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">{t("visit_date")}</label><input className="input-soft text-sm" type="date" value={form.visitDate} onChange={(e) => setForm({ ...form, visitDate: e.target.value })} title={t("visit_date")} /></div>
+                <div><label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">{t("time")}</label><input className="input-soft text-sm" type="time" value={form.heure_visite} onChange={(e) => setForm({ ...form, heure_visite: e.target.value })} title={t("time")} /></div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <input className="input-soft text-sm" placeholder={t("talk_number")} value={form.talkNoOrType} onChange={(e) => setForm({ ...form, talkNoOrType: e.target.value })} />
                 <input className="input-soft text-sm" placeholder={t("talk_theme")} value={form.talkTheme} onChange={(e) => setForm({ ...form, talkTheme: e.target.value })} />
               </div>
               <input className="input-soft text-sm" placeholder={t("phone")} value={form.speakerPhone} onChange={(e) => setForm({ ...form, speakerPhone: e.target.value })} />
-              <select className="input-soft text-sm" value={form.locationType} onChange={(e) => setForm({ ...form, locationType: e.target.value as Visit["locationType"] })}>
+              <select className="input-soft text-sm" value={form.locationType} onChange={(e) => setForm({ ...form, locationType: e.target.value as Visit["locationType"] })} title={t("location")}>
                 <option value="kingdom_hall">{t("kingdom_hall")}</option><option value="zoom">Zoom</option><option value="streaming">Streaming</option><option value="other">{t("other")}</option>
               </select>
               <textarea className="input-soft text-sm min-h-[60px] resize-none" placeholder={t("notes")} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />

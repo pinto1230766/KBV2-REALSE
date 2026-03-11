@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   Globe, Moon, Sun, Bell, Database, Download, Upload,
   Monitor, User, MessageSquare, CloudOff, Cloud, RefreshCw,
-  FileSpreadsheet, FolderArchive, ExternalLink, Search, Trash2, Check, Link2, Loader2, AlertTriangle, Shield
+  FileSpreadsheet, FolderArchive, ExternalLink, Search, Trash2, Check, Link2, Loader2, AlertTriangle, Shield, BookOpen
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,7 +20,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 type SettingsTab = "general" | "appearance" | "notifications" | "data";
 type ThemeMode = "light" | "dark" | "system";
 
-export function SettingsPage() {
+export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => void }) {
   const { settings, setLanguage, setDarkMode, updateNotifications, updateCongregation } = useSettingsStore();
   const congregation = settings.congregation || { name: "", city: "", day: "Dimanche", time: "11:30", responsableName: "", responsablePhone: "", whatsappGroup: "", whatsappInviteId: "", googleSheetUrl: "", lastSyncAt: "" };
   const notifications = settings.notifications || { enabled: false, steps: { remindJ7: true, remindJ2: true } };
@@ -295,20 +295,20 @@ export function SettingsPage() {
   );
 
   return (
-    <div className="py-6 space-y-6">
+    <div className="py-4 md:py-6 space-y-5 md:space-y-6">
       {/* Tabs */}
-      <div className="flex gap-1 overflow-x-auto scrollbar-hide border-b border-border pb-0">
+      <div className="flex gap-1 md:gap-2 overflow-x-auto scrollbar-hide border-b border-border pb-0">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-colors border-b-2 -mb-[1px] ${
+            className={`flex items-center gap-2 px-4 md:px-5 py-3 text-sm font-semibold uppercase tracking-wider whitespace-nowrap transition-colors border-b-2 -mb-[1px] rounded-t-lg touch-manipulation ${
               activeTab === tab.id
-                ? "text-foreground border-primary"
-                : "text-muted-foreground border-transparent hover:text-foreground"
+                ? "text-foreground border-primary bg-primary/5"
+                : "text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/50"
             }`}
           >
-            <tab.icon className="w-4 h-4" />
+            <tab.icon className="w-5 h-5" />
             {tab.label}
           </button>
         ))}
@@ -316,57 +316,73 @@ export function SettingsPage() {
 
       {/* General Tab */}
       {activeTab === "general" && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5 md:space-y-6">
           {/* Version Card */}
-          <div className="premium-card p-8 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
-              <Monitor className="w-7 h-7 text-primary-foreground" />
+          <div className="premium-card p-5 md:p-8 text-center">
+            <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
+              <Monitor className="w-7 h-7 md:w-8 md:h-8 text-primary-foreground" />
             </div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">KBV Manager</p>
-            <h2 className="text-xl font-black text-foreground mt-1">Version 1.20.7-build 2403</h2>
-            <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
+            <p className="text-xs md:text-sm font-bold uppercase tracking-wider text-muted-foreground">KBV Manager</p>
+            <h2 className="text-xl md:text-2xl font-black text-foreground mt-1">Version 1.20.7-build 2403</h2>
+            <p className="text-sm md:text-base text-muted-foreground mt-2 max-w-md mx-auto">
               {t("app_description")}
             </p>
-            <div className="grid grid-cols-2 gap-4 mt-6 max-w-md mx-auto">
+            <div className="grid grid-cols-2 gap-3 md:gap-4 mt-5 md:mt-6 max-w-md mx-auto">
               <div className="p-3 rounded-xl bg-muted">
-                <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t("developer")}</p>
-                <p className="text-sm font-bold text-foreground mt-1">Pinto Francisco</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("developer")}</p>
+                <p className="text-base font-bold text-foreground mt-1">Pinto Francisco</p>
               </div>
               <div className="p-3 rounded-xl bg-muted">
-                <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t("last_update")}</p>
-                <p className="text-sm font-bold text-foreground mt-1">Mars 2026</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("last_update")}</p>
+                <p className="text-base font-bold text-foreground mt-1">Mars 2026</p>
               </div>
               <div className="p-3 rounded-xl bg-muted col-span-2">
-                <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Contact / Support</p>
-                <p className="text-sm font-bold text-foreground mt-1">pinto12397@gmail.com</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Contact / Support</p>
+                <p className="text-base font-bold text-foreground mt-1">pinto12397@gmail.com</p>
               </div>
             </div>
-            <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-4">© 2025-2026 Pinto Francisco · Tous droits réservés</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wider mt-4">© 2025-2026 Pinto Francisco · Tous droits réservés</p>
           </div>
 
+          {/* User Manual Button */}
+          {onShowUserManual && (
+            <button
+              onClick={onShowUserManual}
+              className="w-full premium-card p-4 md:p-5 flex items-center gap-4 hover:bg-accent transition-colors touch-manipulation"
+            >
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                <BookOpen className="w-6 h-6 text-primary" />
+              </div>
+              <div className="text-left">
+                <h3 className="text-base font-bold text-foreground">{t("user_manual")}</h3>
+                <p className="text-sm text-muted-foreground">{t("user_manual_desc")}</p>
+              </div>
+            </button>
+          )}
+
           {/* RGPD & Legal Info */}
-          <div className="premium-card p-6 space-y-4">
-            <h3 className="text-sm font-black text-foreground flex items-center gap-2">
-              <Shield className="w-4 h-4 text-primary" />
-              {t("legal_info") || "Informations légales"}
+          <div className="premium-card p-5 md:p-6 space-y-4">
+            <h3 className="text-base md:text-lg font-black text-foreground flex items-center gap-2">
+              <Shield className="w-5 h-5 text-primary" />
+              {t("legal_info")}
             </h3>
-            <div className="space-y-3 text-xs text-muted-foreground">
+            <div className="space-y-3 text-sm text-muted-foreground">
               <p>
-                <strong className="text-foreground">Protection des données (RGPD):</strong> Cette application stocke toutes les données localement sur votre appareil. Aucune donnée personnelle n'est transmise à des serveurs tiers. Vous êtes responsable de la sauvegarde de vos données.
+                <strong className="text-foreground">{t("rgpd_protection")}:</strong> {t("rgpd_desc")}
               </p>
               <p>
-                <strong className="text-foreground">Droit d'accès:</strong> Vous pouvez à tout moment supprimer les données de l'application via les paramètres.
+                <strong className="text-foreground">{t("right_access")}:</strong> {t("right_access_desc")}
               </p>
               <p>
-                <strong className="text-foreground">Contact:</strong> Pour toute question concernant vos données ou pour obtenir de l'aide, contactez: <a href="mailto:pinto12397@gmail.com" className="text-primary hover:underline">pinto12397@gmail.com</a>
+                <strong className="text-foreground">{t("contact_info")}:</strong> {t("contact_rgpd")} <a href="mailto:pinto12397@gmail.com" className="text-primary hover:underline">pinto12397@gmail.com</a>
               </p>
             </div>
             <div className="pt-2 border-t border-border">
               <button 
-                onClick={() => alert("Fonctionnalité d'exportation des données à venir. Vos données sont stockées localement sur votre appareil.")}
+                onClick={() => alert(t("export_coming_soon"))}
                 className="text-xs text-primary hover:underline"
               >
-                Exporter mes données (JSON)
+                {t("export_data_rgpd")}
               </button>
             </div>
           </div>

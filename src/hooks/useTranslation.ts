@@ -340,6 +340,79 @@ const dictionary: Record<string, TranslationEntry> = {
   sheet_step4_title: { fr: "Étape 4 : Partager l'URL", cv: "Pasu 4: Partilhâ URL", pt: "Passo 4: Compartilhar URL" },
   sheet_step4_desc: { fr: "Copiez l'URL complète de votre feuille et collez-la dans l'app.", cv: "Kopia URL kompletu di bo folha i kola li na aplikason.", pt: "Copie a URL completa da sua planilha e cole no app." },
   sheet_note: { fr: "Note : La synchronisation importe seulement les lignes avec une date valide.", cv: "Nota: Sinkronizason importâ sô linhas ku data validu.", pt: "Nota: A sincronização importa apenas linhas com data válida." },
+
+  // User Manual / Mode d'emploi
+  user_manual: { fr: "Mode d'emploi", cv: "Modu di Usu", pt: "Modo de Uso" },
+  user_manual_desc: { fr: "Guide complet pour utiliser l'application", cv: "Gid kompletu pa uzâ aplikason", pt: "Guia completo para usar o aplicativo" },
+  user_manual_welcome: { fr: "Bienvenue dans le guide d'utilisation de KBV FP", cv: "Ben-vindu na gid di uzus di KBV FP", pt: "Bem-vindo ao guia de uso do KBV FP" },
+  user_manual_intro: { fr: "Ce guide vous explique toutes les fonctionnalités de l'application de manière simple et illustrée.", cv: "Es gid expika tudu funcionalidades di aplikason na manera simples i ilustradu.", pt: "Este guia explica todas as funcionalidades do aplicativo de forma simples e ilustrada." },
+
+  // Section 1: Create Speaker
+  section1_title: { fr: "1. Créer un orateur", cv: "1. Kria un orador", pt: "1. Criar um orador" },
+  section1_desc: { fr: "Ajoutez un nouvel orateur à votre répertoire", cv: "Ajunta un orador novu na bo repertóriu", pt: "Adicione um novo orador ao seu repertório" },
+  section1_step1: { fr: "Allez dans le menu 'Orateurs' en bas de l'écran", cv: "Bai na meni 'Irmons' na partiba di ekran", pt: "Vá para o menu 'Oradores' na parte inferior da tela" },
+  section1_step2: { fr: "Cliquez sur le bouton '+' en haut à droite", cv: "Klik na botão '+' na partiba a mainha riba", pt: "Clique no botão '+' no canto superior direito" },
+  section1_step3: { fr: "Remplissez les informations : nom, téléphone, congrégation", cv: "Preenxi infus: nomi, telefoni, kongregason", pt: "Preencha as informações: nome, telefone, congregação" },
+  section1_step4: { fr: "Cliquez sur 'Enregistrer' pour sauvegarder", cv: "Klik na 'Gravâ' pa guarda", pt: "Clique em 'Guardar' para salvar" },
+  section1_tip: { fr: "Conseil : Ajoutez une photo pour reconnaître facilement l'orateur", cv: "Konsedju: Ajunta un foto pa identifikâ orador fácily", pt: "Dica: Adicione uma foto para reconhecer o orador facilmente" },
+
+  // Section 2: Create Host
+  section2_title: { fr: "2. Créer un hôte", cv: "2. Kria un anfitrion", pt: "2. Criar um anfitrião" },
+  section2_desc: { fr: "Ajoutez un hôte pour l'hébergement, transport ou repas", cv: "Ajunta un anfitrion pa alojamentu, transporti ou kumida", pt: "Adicione um anfitrião para hospedagem, transporte ou refeição" },
+  section2_step1: { fr: "Allez dans le menu 'Hôtes' en bas de l'écran", cv: "Bai na meni 'Anfitrions' na partiba di ekran", pt: "Vá para o menu 'Anfitriões' na parte inferior da tela" },
+  section2_step2: { fr: "Cliquez sur le bouton '+' en haut à droite", cv: "Klik na botão '+' na partiba a mainha riba", pt: "Clique no botão '+' no canto superior direito" },
+  section2_step3: { fr: "Remplissez : nom, téléphone, adresse et rôle (hébergement/transport/repas)", cv: "Preenxi: nomi, telefoni, enderesu i papel (alojamentu/transporti/kumida)", pt: "Preencha: nome, telefone, endereço e função (hospedagem/transporte/refeição)" },
+  section2_step4: { fr: "Cliquez sur 'Enregistrer' pour sauvegarder", cv: "Klik na 'Gravâ' pa guarda", pt: "Clique em 'Guardar' para salvar" },
+  section2_tip: { fr: "Conseil : Précisez la capacité d'hébergement si applicable", cv: "Konsedju: Especifica kapasidadi di alojamentu si aplicável", pt: "Dica: Especifique a capacidade de hospedagem se aplicável" },
+
+  // Section 3: Planning without Google Sheet
+  section3_title: { fr: "3. Gérer le planning (sans Google Sheet)", cv: "3. Jestionâ planifikason (sem Google Sheet)", pt: "3. Gerenciar planejamento (sem Google Sheet)" },
+  section3_desc: { fr: "Créez et gérez vos visites manuellement", cv: "Kria i jestionâ bo vizitas manualmente", pt: "Crie e gerencie suas visitas manualmente" },
+  section3_step1: { fr: "Allez dans le menu 'Planning' en bas de l'écran", cv: "Bai na meni 'Planifikason' na partiba di ekran", pt: "Vá para o menu 'Planeamento' na parte inferior da tela" },
+  section3_step2: { fr: "Cliquez sur 'Programmer une visite' ou sur le bouton '+'", cv: "Klik na 'Programâ un vizita' ou na botão '+'", pt: "Clique em 'Programar uma visita' ou no botão '+'" },
+  section3_step3: { fr: "Sélectionnez l'orateur dans la liste déroulante", cv: "Skodje orador na lista suspensa", pt: "Selecione o orador na lista suspensa" },
+  section3_step4: { fr: "Choisissez la date, l'heure et le lieu de la réunion", cv: "Skodje data, ora i lugar di reunion", pt: "Escolha a data, hora e local da reunião" },
+  section3_step5: { fr: "Cliquez sur 'Enregistrer' pour créer la visite", cv: "Klik na 'Gravâ' pa kria vizita", pt: "Clique em 'Guardar' para criar a visita" },
+  section3_tip: { fr: "Vous pouvez aussi importer depuis Google Sheet si vous préférez", cv: "Bo tamem pode inportâ di Google Sheet si bo prefere", pt: "Você também pode importar do Google Sheet se preferir" },
+
+  // Section 4: Host Management for Visits
+  section4_title: { fr: "4. Assigner des hôtes à une visite", cv: "4. Atribuir anfitrions a un vizita", pt: "4. Atribuir anfitriões a uma visita" },
+  section4_desc: { fr: "Gérez l'hébergement, transport et repas pour vos visiteurs", cv: "Jestionâ alojamentu, transporti i kumida pa bo vizitantes", pt: "Gerencie hospedagem, transporte e refeição para seus visitantes" },
+  section4_step1: { fr: "Ouvrez une visite depuis le Planning", cv: "Abrî un vizita desde Planifikason", pt: "Abra uma visita desde o Planeamento" },
+  section4_step2: { fr: "Allez dans l'onglet 'Accueil & Logistique'", cv: "Bai na aba 'Akolimentu & Lojistika'", pt: "Vá para a aba 'Acolhimento & Logística'" },
+  section4_step3: { fr: "Cliquez sur 'Assigner un hôte'", cv: "Klik na 'Atribuí un anfitrion'", pt: "Clique em 'Atribuir um anfitrião'" },
+  section4_step4: { fr: "Choisissez le rôle : hébergement, transport ou repas", cv: "Skodje papel: alojamentu, transporti ou kumida", pt: "Escolha a função: hospedagem, transporte ou refeição" },
+  section4_step5: { fr: "Sélectionnez l'hôte dans la liste et cliquez sur 'Assigner'", cv: "Skodje anfitrion na lista i klik na 'Atribuí'", pt: "Selecione o anfitrião na lista e clique em 'Atribuir'" },
+  section4_tip: { fr: "Vous pouvez assigner plusieurs hôtes pour la même visite", cv: "Bo pode atribuir varios anfitrion pa es mesma vizita", pt: "Você pode atribuir vários anfitriões para a mesma visita" },
+
+  // Section 5: WhatsApp Messages
+  section5_title: { fr: "5. Envoyer des messages WhatsApp", cv: "5. Manda mensajens WhatsApp", pt: "5. Enviar mensagens WhatsApp" },
+  section5_desc: { fr: "Contactez facilement orateurs et hôtes par WhatsApp", cv: "Kontakta fácily oradors i anfitrion via WhatsApp", pt: "Contate facilmente oradores e anfitriões via WhatsApp" },
+  section5_step1: { fr: "Ouvrez une visite ou un contact (orateur/hôte)", cv: "Abrî un vizita ou un kontaktu (orador/anfitrion)", pt: "Abra uma visita ou um contato (orador/anfitrião)" },
+  section5_step2: { fr: "Allez dans l'onglet 'Messages'", cv: "Bai na aba 'Mensajens'", pt: "Vá para a aba 'Mensagens'" },
+  section5_step3: { fr: "Vous verrez des modèles de messages prêts à envoyer", cv: "Bo ta odja modelos di mensajens prontu pa manda", pt: "Você verá modelos de mensagens prontos para enviar" },
+  section5_step4: { fr: "Cliquez sur le message souhaité, puis sur 'Envoyer via WhatsApp'", cv: "Klik na mensajen ki bu kere, dipôs na 'Manda via WhatsApp'", pt: "Clique na mensagem desejada, depois em 'Enviar via WhatsApp'" },
+  section5_step5: { fr: "WhatsApp s'ouvrira automatiquement avec le message", cv: "WhatsApp ta abrî automaticamenti ku mensajen", pt: "WhatsApp abrirá automaticamente com a mensagem" },
+  section5_tip: { fr: "Conseil : Assurez-vous d'avoir WhatsApp installé sur votre téléphone", cv: "Konsedju: Garanti ki bo ten WhatsApp instaladu na bo telefon", pt: "Dica: Certifique-se de ter o WhatsApp instalado no seu telefone" },
+
+  // Additional help
+  need_help: { fr: "Besoin d'aide ?", cv: "Preciza axuda?", pt: "Precisa de ajuda?" },
+  contact_support: { fr: "Contacter le support", cv: "Kontakta suporti", pt: "Contactar suporte" },
+  contact_support_emergency: { fr: "Pour toute question urgente concernant l'application, contactez:", cv: "Pa tudu pregunta urjenti sobri aplikason, kontakta:", pt: "Para qualquer questão urgente sobre o aplicativo, contacte:" },
+  back_to_settings: { fr: "Retour aux paramètres", cv: "Bolta pa configurasons", pt: "Voltar às configurações" },
+  next_section: { fr: "Section suivante", cv: "Próximu sekson", pt: "Próxima seção" },
+  previous_section: { fr: "Section précédente", cv: "Seksón anterior", pt: "Seção anterior" },
+
+  // Legal / RGPD
+  legal_info: { fr: "Informations légales", cv: "Infus legalis", pt: "Informações legais" },
+  rgpd_protection: { fr: "Protection des données (RGPD)", cv: "Proteyson di dadus (RGPD)", pt: "Proteção de dados (RGPD)" },
+  rgpd_desc: { fr: "Cette application stocke toutes les données localement sur votre appareil. Aucune donnée personnelle n'est transmise à des serveurs tiers. Vous êtes responsable de la sauvegarde de vos données.", cv: "Es aplikason guarda tudu dadus lokalamenti na bo aparélhu. Ninhun dadu pessoal ta transmítidu pa servidors terseiru. Bo ta responsable pa backup di bo dadus.", pt: "Este aplicativo armazena todos os dados localmente no seu dispositivo. Nenhum dado pessoal é transmitido para servidores terceiros. Você é responsável pelo backup dos seus dados." },
+  right_access: { fr: "Droit d'accès", cv: "Direitu di asesu", pt: "Direito de acesso" },
+  right_access_desc: { fr: "Vous pouvez à tout moment supprimer les données de l'application via les paramètres.", cv: "Bo pode cualker momentu apagâ dadus di aplikason li na configurasons.", pt: "Você pode a qualquer momento excluir os dados do aplicativo através das configurações." },
+  contact_info: { fr: "Contact", cv: "Kontaktu", pt: "Contacto" },
+  contact_rgpd: { fr: "Pour toute question concernant vos données ou pour obtenir de l'aide, contactez:", cv: "Pa tudu pregunta sobri bo dadus ou pa obtê axuda, kontakta:", pt: "Para qualquer questão sobre os seus dados ou para obter ajuda, contacte:" },
+  export_data_rgpd: { fr: "Exporter mes données (JSON)", cv: "Esportâ bo dadus (JSON)", pt: "Exportar os meus dados (JSON)" },
+  export_coming_soon: { fr: "Fonctionnalité d'exportation des données à venir. Vos données sont stockées localement sur votre appareil.", cv: "Funsionalidadi di esportason di dadus sta pa txiga. Bo dadus ta guarda lokalamenti na bo aparélhu.", pt: "Funcionalidade de exportação de dados a caminho. Os seus dados são armazenados localmente no seu dispositivo." },
 };
 
 export function useTranslation() {

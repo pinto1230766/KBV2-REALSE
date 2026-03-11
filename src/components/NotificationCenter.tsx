@@ -131,6 +131,7 @@ export function NotificationCenter() {
                   <button
                     onClick={() => setOpen(false)}
                     className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+                    title="Fermer"
                   >
                     <X className="w-3.5 h-3.5 text-muted-foreground" />
                   </button>
@@ -281,6 +282,7 @@ function NotificationCard({
                     onDismiss();
                   }}
                   className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-muted-foreground text-[10px] font-bold hover:bg-muted transition-colors ml-auto"
+                  title="Dismiss"
                 >
                   <X className="w-3 h-3" />
                 </button>

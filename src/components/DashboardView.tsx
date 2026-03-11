@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Calendar, Users, Home, TrendingUp, ChevronRight, Download, Upload } from "lucide-react";
+import { Calendar, Users, Home, TrendingUp, ChevronRight, Download, Upload, BookOpen } from "lucide-react";
 import { motion } from "framer-motion";
 import { useVisitStore } from "../store/useVisitStore";
 import { useHostStore } from "../store/useHostStore";
@@ -8,12 +8,14 @@ import { useSettingsStore } from "../store/useSettingsStore";
 import { useUIStore } from "../store/useUIStore";
 import { useTranslation } from "../hooks/useTranslation";
 import { toast } from "sonner";
+import type { Visit, Host, Speaker } from "../store/visitTypes";
 
 export function DashboardView() {
   const visits = useVisitStore((s) => s.visits);
   const hosts = useHostStore((s) => s.hosts);
   const speakers = useSpeakerStore((s) => s.speakers);
   const setActiveTab = useUIStore((s) => s.setActiveTab);
+  const setShowUserManual = useUIStore((s) => s.setShowUserManual);
   const { t, language } = useTranslation();
 
   const stats = useMemo(() => {
@@ -59,9 +61,9 @@ export function DashboardView() {
       try {
         const text = await file.text();
         const data = JSON.parse(text);
-        if (data.visits) data.visits.forEach((v: any) => useVisitStore.getState().addVisit(v));
-        if (data.hosts) data.hosts.forEach((h: any) => useHostStore.getState().addHost(h));
-        if (data.speakers) data.speakers.forEach((s: any) => useSpeakerStore.getState().addSpeaker(s));
+        if (data.visits) data.visits.forEach((v: Visit) => useVisitStore.getState().addVisit(v));
+        if (data.hosts) data.hosts.forEach((h: Host) => useHostStore.getState().addHost(h));
+        if (data.speakers) data.speakers.forEach((s: Speaker) => useSpeakerStore.getState().addSpeaker(s));
         toast.success(t("import_success"));
       } catch {
         toast.error(t("import_error"));
@@ -74,52 +76,62 @@ export function DashboardView() {
   const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="py-6 space-y-6">
+    <motion.div variants={container} initial="hidden" animate="show" className="py-4 md:py-6 space-y-5 md:space-y-6">
       {/* Title */}
-      <div>
-        <h2 className="text-xl font-black text-foreground">{t("dashboard")}</h2>
-        <p className="text-sm text-muted-foreground">{t("welcome_back")}</p>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h2 className="text-2xl md:text-3xl font-black text-foreground">{t("dashboard")}</h2>
+          <p className="text-base text-muted-foreground mt-0.5">{t("welcome_back")}</p>
+        </div>
+        <button
+          onClick={() => setShowUserManual(true)}
+          className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-primary bg-primary/10 hover:bg-primary/20 rounded-xl transition-colors touch-manipulation"
+          title={t("user_manual") || "Mode d'emploi"}
+        >
+          <BookOpen className="w-5 h-5" />
+          <span className="hidden sm:inline">{t("user_manual") || "Guide"}</span>
+        </button>
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {/* À venir */}
         <motion.button variants={item} whileHover={{ y: -2 }} onClick={() => setActiveTab("planning")}
-          className="premium-card p-5 text-left">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("upcoming")}</p>
+          className="premium-card p-4 md:p-5 text-left">
+          <p className="text-xs md:text-sm font-bold uppercase tracking-wider text-muted-foreground">{t("upcoming")}</p>
           <div className="flex items-center gap-2 mt-2">
-            <p className="text-3xl font-black text-foreground">{stats.upcoming}</p>
-            <TrendingUp className="w-5 h-5 text-primary" />
+            <p className="text-3xl md:text-4xl font-black text-foreground">{stats.upcoming}</p>
+            <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-primary" />
           </div>
         </motion.button>
 
         {/* Confirmées */}
         <motion.button variants={item} whileHover={{ y: -2 }} onClick={() => setActiveTab("planning")}
-          className="rounded-2xl p-5 text-left bg-amber-400 dark:bg-amber-500 text-white shadow-lg">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-white/80">{t("confirmed_count")}</p>
-          <p className="text-3xl font-black mt-2">{stats.confirmed}</p>
+          className="rounded-2xl p-4 md:p-5 text-left bg-amber-400 dark:bg-amber-500 text-white shadow-lg">
+          <p className="text-xs md:text-sm font-bold uppercase tracking-wider text-white/80">{t("confirmed_count")}</p>
+          <p className="text-3xl md:text-4xl font-black mt-2">{stats.confirmed}</p>
         </motion.button>
 
         {/* Orateurs */}
         <motion.button variants={item} whileHover={{ y: -2 }} onClick={() => setActiveTab("speakers")}
-          className="premium-card p-5 text-left">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("speakers")}</p>
-          <p className="text-3xl font-black text-foreground mt-2">{speakers.length}</p>
+          className="premium-card p-4 md:p-5 text-left">
+          <p className="text-xs md:text-sm font-bold uppercase tracking-wider text-muted-foreground">{t("speakers")}</p>
+          <p className="text-3xl md:text-4xl font-black text-foreground mt-2">{speakers.length}</p>
         </motion.button>
 
         {/* Ce mois-ci */}
         <motion.button variants={item} whileHover={{ y: -2 }} onClick={() => setActiveTab("planning")}
-          className="premium-card p-5 text-left">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-primary">{t("this_month")}</p>
-          <p className="text-3xl font-black text-foreground mt-2">{stats.thisMonth}</p>
+          className="premium-card p-4 md:p-5 text-left">
+          <p className="text-xs md:text-sm font-bold uppercase tracking-wider text-primary">{t("this_month")}</p>
+          <p className="text-3xl md:text-4xl font-black text-foreground mt-2">{stats.thisMonth}</p>
         </motion.button>
       </div>
 
       {/* Recent Activities */}
       <motion.div variants={item}>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-black text-foreground">{t("recent_activities")}</h3>
-          <button onClick={() => setActiveTab("planning")} className="text-xs font-bold text-primary hover:underline">
+          <h3 className="text-base md:text-lg font-black text-foreground">{t("recent_activities")}</h3>
+          <button onClick={() => setActiveTab("planning")} className="text-sm font-semibold text-primary hover:underline">
             {t("see_all")}
           </button>
         </div>

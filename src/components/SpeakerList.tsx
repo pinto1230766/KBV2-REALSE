@@ -28,17 +28,17 @@ function AvatarUpload({ photoUrl, onPhotoChange, label }: { photoUrl?: string; o
           <>
             <img src={photoUrl} alt="" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <Camera className="w-4 h-4 text-white" />
+              <Camera className="w-5 h-5 text-white" />
             </div>
           </>
         ) : (
-          <UserCircle className="w-8 h-8 text-muted-foreground" />
+          <UserCircle className="w-10 h-10 text-muted-foreground" />
         )}
-        <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-primary flex items-center justify-center translate-x-1 translate-y-1">
-          <Upload className="w-2.5 h-2.5 text-primary-foreground" />
+        <div className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-primary flex items-center justify-center translate-x-1 translate-y-1">
+          <Upload className="w-3 h-3 text-primary-foreground" />
         </div>
       </div>
-      <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{label}</span>
+      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} aria-label={label} title={label} />
     </div>
   );
@@ -126,30 +126,30 @@ export function SpeakerList() {
   );
 
   return (
-    <div className="py-6 space-y-4">
+    <div className="py-4 md:py-6 space-y-4">
       {/* Header */}
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-center gap-3 md:gap-4">
         <div className="mr-auto">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("repertoire")}</p>
-          <p className="text-3xl font-black text-foreground">{speakers.length} <span className="text-sm font-bold text-muted-foreground uppercase">{t("speakers")}</span></p>
+          <p className="text-xs md:text-sm font-bold uppercase tracking-wider text-muted-foreground">{t("repertoire")}</p>
+          <p className="text-2xl md:text-3xl font-black text-foreground">{speakers.length} <span className="text-base md:text-lg font-bold text-muted-foreground uppercase">{t("speakers")}</span></p>
         </div>
         <motion.button whileTap={{ scale: 0.97 }} onClick={openAddForm}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 transition-colors">
-          <Plus className="w-4 h-4" /> {t("add")}
+          className="flex items-center gap-2 px-5 py-3 rounded-xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 transition-colors touch-manipulation">
+          <Plus className="w-5 h-5" /> {t("add")}
         </motion.button>
       </div>
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <input className="input-soft text-sm pl-10" placeholder={t("search_speaker")} value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+        <input className="input-soft text-base pl-11 py-3" placeholder={t("search_speaker")} value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
 
       {/* Grid */}
       {filtered.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">{t("no_results")}</p>
+          <p className="text-base">{t("no_results")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
@@ -165,19 +165,19 @@ export function SpeakerList() {
               >
                 <div className="flex items-center gap-3">
                   {sp.photoUrl ? (
-                    <img src={sp.photoUrl} alt={sp.nom} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                    <img src={sp.photoUrl} alt={sp.nom} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Users className="w-4 h-4 text-primary" />
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Users className="w-5 h-5 text-primary" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-black text-foreground truncate">{sp.nom}</p>
-                    <p className="text-[10px] text-muted-foreground flex items-center gap-1">📍 {sp.congregation}</p>
+                    <p className="text-base md:text-lg font-black text-foreground truncate">{sp.nom}</p>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">📍 {sp.congregation}</p>
                   </div>
                 </div>
                 {sp.telephone && (
-                  <div className="flex items-center gap-2 mt-3 text-[11px] text-muted-foreground">
+                  <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
                     <Phone className="w-3.5 h-3.5" />
                     <a href={`tel:${sp.telephone}`} className="hover:text-primary transition-colors">{sp.telephone}</a>
                   </div>
