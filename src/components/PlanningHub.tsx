@@ -644,9 +644,7 @@ export function PlanningHub() {
                         {speaker?.photoUrl ? (
                           <img src={speaker.photoUrl} alt={viewVisit.nom} className="w-16 h-16 rounded-full object-cover flex-shrink-0" />
                         ) : (
-                          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <Users className="w-7 h-7 text-primary" />
-                          </div>
+                          <img src="/images/speakers/speakers.jpg" alt={viewVisit.nom} className="w-16 h-16 rounded-full object-cover flex-shrink-0" />
                         )}
                         <div className="flex-1 min-w-0">
                           <h2 className="text-2xl font-black text-foreground">{viewVisit.nom}</h2>
@@ -801,7 +799,7 @@ export function PlanningHub() {
                                 ) : ha.origin === "restaurant" ? (
                                   <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center flex-shrink-0"><Utensils className="w-5 h-5 text-orange-600" /></div>
                                 ) : (
-                                  <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center flex-shrink-0"><Users className="w-5 h-5 text-muted-foreground" /></div>
+                                  <img src="/images/hosts/host.jpg" alt={ha.hostName || ""} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
                                 )}
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm font-black text-foreground uppercase">{ha.hostName}</p>

@@ -167,9 +167,7 @@ export function SpeakerList() {
                   {sp.photoUrl ? (
                     <img src={sp.photoUrl} alt={sp.nom} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
                   ) : (
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Users className="w-5 h-5 text-primary" />
-                    </div>
+                    <img src="/images/speakers/speakers.jpg" alt={sp.nom} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-base md:text-lg font-black text-foreground truncate">{sp.nom}</p>

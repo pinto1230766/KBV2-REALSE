@@ -99,11 +99,9 @@ export function GlobalHostList() {
               >
                 <div className="flex items-center gap-3">
                   {h.photoUrl ? (
-                    <img src={h.photoUrl} alt={h.nom} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                    <img src={h.photoUrl} alt={h.nom} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Home className="w-4 h-4 text-primary" />
-                    </div>
+                    <img src="/images/hosts/host.jpg" alt={h.nom} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-black text-foreground truncate uppercase">{h.nom}</p>
