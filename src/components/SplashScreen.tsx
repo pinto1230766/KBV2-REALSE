@@ -16,13 +16,15 @@ export function SplashScreen({ onFinished }: { onFinished: () => void }) {
       {phase !== "exit" ? null : null}
       <motion.div
         key="splash"
-        className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-primary"
+        className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
         initial={{ opacity: 1 }}
         animate={{ opacity: phase === "exit" ? 0 : 1 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Radial glow */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.3)_0%,transparent_70%)]" />
+        {/* Cape Verde flag background */}
+        <div className="absolute inset-0" style={{
+          background: 'linear-gradient(to bottom, #003893 33.33%, #ffffff 33.33%, #ffffff 66.66%, #ce1126 66.66%)'
+        }} />
 
         {/* Modern Logo KBV FP */}
         <motion.div
@@ -31,33 +33,29 @@ export function SplashScreen({ onFinished }: { onFinished: () => void }) {
           transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.1 }}
           className="relative z-10"
         >
-          {/* Logo container with gradient border */}
+          {/* Logo container with white border */}
           <div className="relative">
-            {/* Gradient border effect */}
-            <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-600 opacity-80 blur-sm" />
+            {/* White border effect */}
+            <div className="absolute -inset-1 rounded-3xl bg-white opacity-50 blur-sm" />
             
             {/* Main logo box */}
-            <div className="relative w-28 h-28 rounded-3xl bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col items-center justify-center shadow-2xl border border-slate-700/50 overflow-hidden">
-              {/* Subtle pattern overlay */}
-              <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '8px 8px' }} />
+            <div className="relative w-28 h-28 rounded-3xl flex flex-col items-center justify-center shadow-2xl border-4 border-white overflow-hidden" style={{
+              background: 'linear-gradient(to bottom, #003893 33.33%, #ffffff 33.33%, #ffffff 66.66%, #ce1126 66.66%)'
+            }}>
+              {/* No pattern overlay - clean flag background */}
               
-              {/* KBV text with gradient */}
+              {/* KBV text - white with dark shadow */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.4, duration: 0.3 }}
                 className="flex flex-col items-center"
               >
-                <span className="text-2xl font-black tracking-tight" style={{ 
-                  background: 'linear-gradient(135deg, #fbbf24 0%, #f97316 50%, #fbbf24 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}>
+                <span className="text-2xl font-black tracking-tight text-white drop-shadow-md">
                   KBV
                 </span>
-                {/* FP with accent color */}
-                <span className="text-lg font-bold tracking-wider text-slate-300 mt-0.5">
+                {/* FP with white color */}
+                <span className="text-lg font-bold tracking-wider text-white mt-0.5 drop-shadow-md">
                   FP
                 </span>
               </motion.div>
@@ -72,10 +70,10 @@ export function SplashScreen({ onFinished }: { onFinished: () => void }) {
           transition={{ duration: 0.4 }}
           className="relative z-10 mt-8 text-center"
         >
-          <h1 className="text-3xl font-black text-primary-foreground tracking-tight">
+          <h1 className="text-3xl font-black text-white drop-shadow-md tracking-tight">
             KBV LYON
           </h1>
-          <p className="mt-2 text-xs font-bold uppercase tracking-[0.4em] text-primary-foreground/70">
+          <p className="mt-2 text-xs font-bold uppercase tracking-[0.4em] text-white/80 drop-shadow-md">
             Coordination
           </p>
         </motion.div>
