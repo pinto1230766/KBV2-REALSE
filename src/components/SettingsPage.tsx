@@ -297,19 +297,19 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
   return (
     <div className="py-4 md:py-6 space-y-5 md:space-y-6">
       {/* Tabs */}
-      <div className="flex gap-1 md:gap-2 overflow-x-auto scrollbar-hide border-b border-border pb-0">
+      <div className="flex gap-0.5 md:gap-2 overflow-x-auto scrollbar-hide border-b border-border pb-0">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 md:px-5 py-3 text-sm font-semibold uppercase tracking-wider whitespace-nowrap transition-colors border-b-2 -mb-[1px] rounded-t-lg touch-manipulation ${
+            className={`flex items-center gap-1.5 px-2.5 md:px-5 py-2.5 text-[11px] md:text-sm font-semibold uppercase tracking-wide whitespace-nowrap transition-colors border-b-2 -mb-[1px] rounded-t-lg touch-manipulation ${
               activeTab === tab.id
                 ? "text-foreground border-primary bg-primary/5"
                 : "text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/50"
             }`}
           >
-            <tab.icon className="w-5 h-5" />
-            {tab.label}
+            <tab.icon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+            <span className="truncate">{tab.label}</span>
           </button>
         ))}
       </div>
