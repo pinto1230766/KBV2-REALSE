@@ -15,9 +15,9 @@ import { useTranslation } from "@/hooks/useTranslation";
 const DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 
 const LANGUAGES: { code: Language; name: string; nativeName: string; flag: string }[] = [
-  { code: "fr", name: "Français", nativeName: "Français", flag: "🇫🇷" },
-  { code: "pt", name: "Português", nativeName: "Português", flag: "🇵🇹" },
-  { code: "cv", name: "Cape Verdean Creole", nativeName: "Kriol Kabuverdianu", flag: "🇨🇻" },
+  { code: "fr", name: "Français", nativeName: "Français", flag: "/images/flags/france.svg" },
+  { code: "pt", name: "Português", nativeName: "Português", flag: "/images/flags/portugal.svg" },
+  { code: "cv", name: "Cape Verdean Creole", nativeName: "Kriol Kabuverdianu", flag: "/images/flags/cape_verde.svg" },
 ];
 
 interface OnboardingWizardProps {
@@ -65,7 +65,7 @@ export function OnboardingWizard({ onComplete, onShowUserManual }: OnboardingWiz
                     : "border-border hover:border-primary/50"
                 }`}
               >
-                <span className="text-5xl">{lang.flag}</span>
+                <img src={lang.flag} alt={lang.name} className="w-16 h-12 object-contain" />
                 <span className="text-sm font-bold text-foreground">{lang.nativeName}</span>
               </button>
             ))}
