@@ -1,0 +1,26 @@
+{
+  "appId": "com.kbv.lyon",
+  "productName": "KBV Lyon",
+  "directories": {
+    "output": "release"
+  },
+  "files": [
+    "dist/**/*",
+    "electron/**/*"
+  ],
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ],
+    "icon": "public/icon.png"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "installerIcon": "public/icon.png",
+    "uninstallerIcon": "public/icon.png"
+  }
+}
