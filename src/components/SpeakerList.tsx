@@ -172,17 +172,17 @@ export function SpeakerList() {
               >
                 <div className="flex items-start gap-3">
                   {/* Photos/Avatars avec support couple */}
-                  <div className="flex -space-x-4 overflow-hidden flex-shrink-0">
+                  <div className="flex gap-1.5 flex-shrink-0">
                     {sp.householdType === "couple" ? (
                       <>
-                        <div className="w-12 h-14 rounded-xl ring-2 ring-background bg-muted overflow-hidden flex-shrink-0 shadow-sm">
+                        <div className="w-12 h-14 rounded-xl bg-muted overflow-hidden flex-shrink-0 shadow-sm border border-border/50">
                           {sp.photoUrl ? (
                             <img src={sp.photoUrl} alt={sp.nom} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center"><Users className="w-6 h-6 text-muted-foreground/30" /></div>
                           )}
                         </div>
-                        <div className="w-12 h-14 rounded-xl ring-2 ring-background bg-muted overflow-hidden flex-shrink-0 shadow-sm">
+                        <div className="w-12 h-14 rounded-xl bg-muted overflow-hidden flex-shrink-0 shadow-sm border border-border/50">
                           {sp.spousePhotoUrl ? (
                             <img src={sp.spousePhotoUrl} alt={sp.spouseName} className="w-full h-full object-cover" />
                           ) : (
