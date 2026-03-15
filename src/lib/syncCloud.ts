@@ -130,8 +130,8 @@ function rowToVisit(r: VisitRow): Visit {
     notes: r.notes ?? undefined,
     feedback: r.feedback ?? undefined,
     feedbackRating: r.feedback_rating ?? undefined,
-    hostAssignments: r.host_assignments ? JSON.parse(r.host_assignments) : undefined,
-    companions: r.companions ? JSON.parse(r.companions) : undefined,
+    hostAssignments: (() => { try { return r.host_assignments ? JSON.parse(r.host_assignments) : undefined; } catch { return undefined; } })(),
+    companions: (() => { try { return r.companions ? JSON.parse(r.companions) : undefined; } catch { return undefined; } })(),
     date_arrivee: r.date_arrivee ?? undefined,
     heure_arrivee: r.heure_arrivee ?? undefined,
     date_depart: r.date_depart ?? undefined,
@@ -167,7 +167,7 @@ function rowToSpeaker(r: SpeakerRow): Speaker {
     householdType: r.household_type as Speaker["householdType"],
     spouseName: r.wife_name ?? undefined,
     notes: r.notes ?? undefined,
-    talks: r.talk_history ? JSON.parse(r.talk_history) : [],
+    talks: (() => { try { return r.talk_history ? JSON.parse(r.talk_history) : []; } catch { return []; } })(),
   };
 }
 

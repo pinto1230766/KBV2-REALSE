@@ -73,10 +73,16 @@ export function GlobalHostList() {
         </motion.button>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-        <input className="input-soft text-base pl-11 py-3" placeholder={t("search_host")} value={search} onChange={(e) => setSearch(e.target.value)} />
+      <div className="relative group/search">
+        <input 
+          className="input-soft text-base py-2 pl-4 pr-12" 
+          placeholder={t("search_host")} 
+          value={search} 
+          onChange={(e) => setSearch(e.target.value)} 
+        />
+        <div className="absolute right-0 top-0 bottom-0 px-4 flex items-center bg-muted/50 rounded-r-xl border-l border-border/50">
+          <Search className="w-4 h-4 text-muted-foreground/50" />
+        </div>
       </div>
 
       {/* Grid */}
@@ -88,48 +94,44 @@ export function GlobalHostList() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           <AnimatePresence>
-            {filtered.map((h, i) => (
+            {filtered.map((h) => (
               <motion.div
-                key={h.id}
+                key={`host-${h.id}`}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ delay: i * 0.02 }}
-                className="premium-card p-4"
+                transition={{ duration: 0.2 }}
+                className="premium-card p-3 cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all group relative"
+                onClick={() => openEdit(h)}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-start gap-3">
                   {h.photoUrl ? (
-                    <img src={h.photoUrl} alt={h.nom} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+                    <img src={h.photoUrl} alt={h.nom} className="w-12 h-14 rounded-xl object-cover flex-shrink-0 shadow-sm" />
                   ) : (
-                    <img src="/images/hosts/host.jpg" alt={h.nom} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+                    <div className="w-12 h-14 rounded-xl bg-muted flex items-center justify-center flex-shrink-0">
+                      <Home className="w-6 h-6 text-muted-foreground/30" />
+                    </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-black text-foreground truncate uppercase">{h.nom}</p>
+                    <p className="text-sm font-black text-foreground truncate">{h.nom}</p>
                     {(h.adresse || h.address) && (
-                      <p className="text-[10px] text-muted-foreground flex items-center gap-1 truncate">
-                        <MapPin className="w-3 h-3 flex-shrink-0" /> {h.adresse || h.address}
+                      <p className="text-xs text-muted-foreground flex items-center gap-1.5 truncate mt-1">
+                        <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-primary/50" /> {h.adresse || h.address}
                       </p>
                     )}
+                    {h.telephone && (
+                      <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+                        <Phone className="w-3.5 h-3.5 text-primary/50" />
+                        <span className="font-medium text-foreground/80">{h.telephone}</span>
+                      </div>
+                    )}
                   </div>
-                </div>
-                {h.telephone && (
-                  <div className="flex items-center gap-2 mt-3 text-[11px] text-muted-foreground">
-                    <Phone className="w-3.5 h-3.5" />
-                    <a href={`tel:${h.telephone}`} className="hover:text-primary transition-colors">{h.telephone}</a>
-                  </div>
-                )}
-                <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-                  <div className="flex gap-1">
-                    <button onClick={() => openEdit(h)} className="p-2 rounded-lg hover:bg-muted transition-colors" title={t("edit")}>
-                      <Edit3 className="w-4 h-4 text-muted-foreground" />
+                  <div className="flex flex-col items-end justify-between">
+                    <button onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(h.id); }} className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive/70 transition-colors" title={t("delete")}>
+                      <Trash2 className="w-4 h-4" />
                     </button>
-                    <button onClick={() => setConfirmDeleteId(h.id)} className="p-2 rounded-lg hover:bg-destructive/10 transition-colors" title={t("delete")}>
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </button>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground/30" />
                   </div>
-                  <button onClick={() => openEdit(h)} className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1 hover:underline">
-                    {t("view")} <ChevronRight className="w-4 h-4" />
-                  </button>
                 </div>
               </motion.div>
             ))}
@@ -149,7 +151,7 @@ export function GlobalHostList() {
               <input className="input-soft text-base" placeholder={t("phone")} value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} />
               <input className="input-soft text-base" placeholder={t("email")} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               <input className="input-soft text-base" placeholder={t("address")} value={form.adresse} onChange={(e) => setForm({ ...form, adresse: e.target.value })} />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("capacity")}</label>
                   <input className="input-soft text-base" type="number" min={1} value={form.capacity} onChange={(e) => setForm({ ...form, capacity: +e.target.value })} title={t("capacity")} />

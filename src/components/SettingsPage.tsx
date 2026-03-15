@@ -21,7 +21,7 @@ type SettingsTab = "general" | "appearance" | "notifications" | "data";
 type ThemeMode = "light" | "dark" | "system";
 
 export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => void }) {
-  const { settings, setLanguage, setDarkMode, updateNotifications, updateCongregation } = useSettingsStore();
+  const { settings, setLanguage, setDarkMode, updateNotifications, updateCongregation, setSoundEnabled, setVibrationEnabled } = useSettingsStore();
   const congregation = settings.congregation || { name: "", city: "", day: "Dimanche", time: "11:30", responsableName: "", responsablePhone: "", whatsappGroup: "", whatsappInviteId: "", googleSheetUrl: "", lastSyncAt: "" };
   const notifications = settings.notifications || { enabled: false, steps: { remindJ7: true, remindJ2: true } };
   const visits = useVisitStore((s) => s.visits);
@@ -29,8 +29,8 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
   const speakers = useSpeakerStore((s) => s.speakers);
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<SettingsTab>("general");
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [vibrationEnabled, setVibrationEnabled] = useState(true);
+  const soundEnabled = settings.soundEnabled;
+  const vibrationEnabled = settings.vibrationEnabled;
   const [duplicates, setDuplicates] = useState<Array<{ type: string; name: string; ids: string[] }>>([]);
   const [selectedDuplicates, setSelectedDuplicates] = useState<string[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -297,19 +297,19 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
   return (
     <div className="py-4 md:py-6 space-y-5 md:space-y-6">
       {/* Tabs */}
-      <div className="flex gap-0.5 md:gap-2 overflow-x-auto scrollbar-hide border-b border-border pb-0">
+      <div className="flex justify-around items-stretch border-b border-border pb-0 px-0">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-1.5 px-2.5 md:px-5 py-2.5 text-[11px] md:text-sm font-semibold uppercase tracking-wide whitespace-nowrap transition-colors border-b-2 -mb-[1px] rounded-t-lg touch-manipulation ${
+            className={`flex flex-col items-center justify-center gap-1 py-3 px-1 min-w-0 flex-1 transition-colors border-b-2 -mb-[1px] touch-manipulation ${
               activeTab === tab.id
-                ? "text-foreground border-primary bg-primary/5"
-                : "text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/50"
+                ? "text-primary border-primary bg-primary/5"
+                : "text-muted-foreground border-transparent hover:text-foreground"
             }`}
           >
-            <tab.icon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
-            <span className="truncate">{tab.label}</span>
+            <tab.icon className={`w-5 h-5 flex-shrink-0 ${activeTab === tab.id ? "text-primary" : ""}`} />
+            <span className="text-[10px] md:text-sm font-bold uppercase tracking-tight leading-none text-center">{tab.label}</span>
           </button>
         ))}
       </div>
@@ -318,27 +318,27 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
       {activeTab === "general" && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5 md:space-y-6">
           {/* Version Card */}
-          <div className="premium-card p-5 md:p-8 text-center">
-            <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
-              <Monitor className="w-7 h-7 md:w-8 md:h-8 text-primary-foreground" />
+          <div className="premium-card p-4 md:p-8 text-center">
+            <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
+              <Monitor className="w-6 h-6 md:w-8 md:h-8 text-primary-foreground" />
             </div>
             <p className="text-xs md:text-sm font-bold uppercase tracking-wider text-muted-foreground">KBV Manager</p>
-            <h2 className="text-xl md:text-2xl font-black text-foreground mt-1">Version 1.20.7-build 2403</h2>
+            <h2 className="text-xl md:text-2xl font-black text-foreground mt-1">Version 2.0.0</h2>
             <p className="text-sm md:text-base text-muted-foreground mt-2 max-w-md mx-auto">
               {t("app_description")}
             </p>
-            <div className="grid grid-cols-2 gap-3 md:gap-4 mt-5 md:mt-6 max-w-md mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mt-5 md:mt-6 max-w-md mx-auto">
               <div className="p-3 rounded-xl bg-muted">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("developer")}</p>
-                <p className="text-base font-bold text-foreground mt-1">Pinto Francisco</p>
+                <p className="text-sm md:text-base font-bold text-foreground mt-1">Pinto Francisco</p>
               </div>
               <div className="p-3 rounded-xl bg-muted">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("last_update")}</p>
-                <p className="text-base font-bold text-foreground mt-1">Mars 2026</p>
+                <p className="text-sm md:text-base font-bold text-foreground mt-1">Mars 2026</p>
               </div>
-              <div className="p-3 rounded-xl bg-muted col-span-2">
+              <div className="p-3 rounded-xl bg-muted sm:col-span-2">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Contact / Support</p>
-                <p className="text-base font-bold text-foreground mt-1">pinto12397@gmail.com</p>
+                <p className="text-sm md:text-base font-bold text-foreground mt-1">pinto12397@gmail.com</p>
               </div>
             </div>
             <p className="text-xs text-muted-foreground uppercase tracking-wider mt-4">© 2025-2026 Pinto Francisco · Tous droits réservés</p>
@@ -361,10 +361,10 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
           )}
 
           {/* RGPD & Legal Info */}
-          <div className="premium-card p-5 md:p-6 space-y-4">
+          <div className="premium-card p-4 md:p-6 space-y-4">
             <h3 className="text-base md:text-lg font-black text-foreground flex items-center gap-2">
-              <Shield className="w-5 h-5 text-primary" />
-              {t("legal_info")}
+              <Shield className="w-5 h-5 text-primary flex-shrink-0" />
+              <span>{t("legal_info")}</span>
             </h3>
             <div className="space-y-3 text-sm text-muted-foreground">
               <p>
@@ -388,12 +388,12 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
           </div>
 
           {/* Congregation Profile */}
-          <div className="premium-card p-6 space-y-4">
+          <div className="premium-card p-4 md:p-6 space-y-4">
             <h3 className="text-sm font-black text-foreground flex items-center gap-2">
-              <User className="w-4 h-4 text-primary" />
-              {t("congregation_profile")}
+              <User className="w-4 h-4 text-primary flex-shrink-0" />
+              <span>{t("congregation_profile")}</span>
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="cong-name" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("congregation_name")}</label>
                 <input id="cong-name" className="input-soft text-sm mt-1" value={congregation.name} onChange={(e) => updateCongregation({ name: e.target.value })} />
@@ -418,12 +418,12 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
           </div>
 
           {/* Responsable Accueil */}
-          <div className="premium-card p-6 space-y-4">
+          <div className="premium-card p-4 md:p-6 space-y-4">
             <h3 className="text-sm font-black text-foreground flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-primary" />
-              {t("reception_manager")}
+              <MessageSquare className="w-4 h-4 text-primary flex-shrink-0" />
+              <span>{t("reception_manager")}</span>
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="resp-name" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("full_name")}</label>
                 <input id="resp-name" className="input-soft text-sm mt-1" value={congregation.responsableName} onChange={(e) => updateCongregation({ responsableName: e.target.value })} />
@@ -432,11 +432,11 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
                 <label htmlFor="resp-phone" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("phone")}</label>
                 <input id="resp-phone" className="input-soft text-sm mt-1" value={congregation.responsablePhone} onChange={(e) => updateCongregation({ responsablePhone: e.target.value })} />
               </div>
-              <div>
+              <div className="sm:col-span-2">
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("whatsapp_group")}</label>
                 <input className="input-soft text-sm mt-1" placeholder="Numéro du groupe ou admin" value={congregation.whatsappGroup} onChange={(e) => updateCongregation({ whatsappGroup: e.target.value })} />
               </div>
-              <div>
+              <div className="sm:col-span-2">
                 <label htmlFor="whatsapp-invite" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("whatsapp_invite_id")}</label>
                 <input id="whatsapp-invite" className="input-soft text-sm mt-1" value={congregation.whatsappInviteId} onChange={(e) => updateCongregation({ whatsappInviteId: e.target.value })} />
               </div>
@@ -448,16 +448,16 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
       {/* Appearance Tab */}
       {activeTab === "appearance" && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-          <div className="premium-card p-6 space-y-6">
+          <div className="premium-card p-4 md:p-6 space-y-6">
             <h3 className="text-base font-black text-foreground flex items-center gap-2">
-              <Globe className="w-5 h-5 text-primary" />
-              {t("appearance")}
+              <Globe className="w-5 h-5 text-primary flex-shrink-0" />
+              <span>{t("appearance")}</span>
             </h3>
 
             {/* Theme selector */}
             <div className="space-y-3">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("theme")}</p>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {/* Light */}
                 <button
                   onClick={() => setThemeMode("light")}
@@ -595,7 +595,7 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
                   </div>
 
                   {/* Sons & Vibreur */}
-                  <div className="grid grid-cols-2 gap-3 pt-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                     <div className="flex items-center justify-between p-4 rounded-2xl border border-border bg-muted/30">
                       <span className="text-sm font-bold text-foreground">{t("sounds")}</span>
                       <ToggleSwitch enabled={soundEnabled} onToggle={() => setSoundEnabled(!soundEnabled)} />
@@ -878,7 +878,7 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
 
             {/* Google Sheet Status Banner */}
             {congregation.googleSheetUrl ? (
-              <div className="flex items-center gap-3 p-3 rounded-2xl bg-primary/5 border border-primary/20">
+              <div className="flex items-center gap-3 p-2 md:p-3 rounded-2xl bg-primary/5 border border-primary/20">
                 <Link2 className="w-4 h-4 text-primary flex-shrink-0" />
                  <div className="flex-1 min-w-0">
                    <p className="text-xs font-bold text-primary truncate">Google Sheet {t("connected")}</p>
@@ -896,7 +896,7 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
                  </div>
               </div>
             ) : (
-              <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/50 border border-border">
+              <div className="flex items-center gap-3 p-2 md:p-3 rounded-2xl bg-muted/50 border border-border">
                 <FileSpreadsheet className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-muted-foreground truncate">Google Sheet non configuré</p>
@@ -914,7 +914,7 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
 
              {/* Supabase Status Banner */}
              {import.meta.env.VITE_SUPABASE_URL || localStorage.getItem('VITE_SUPABASE_URL') ? (
-               <div className="flex items-center gap-3 p-3 rounded-2xl bg-primary/5 border border-primary/20">
+               <div className="flex items-center gap-3 p-2 md:p-3 rounded-2xl bg-primary/5 border border-primary/20">
                  <Cloud className="w-4 h-4 text-primary flex-shrink-0" />
                  <div className="flex-1 min-w-0">
                    <p className="text-xs font-bold text-primary truncate">Supabase {t("connected")}</p>
@@ -929,7 +929,7 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
                  </div>
                </div>
              ) : (
-               <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/50 border border-border">
+               <div className="flex items-center gap-3 p-2 md:p-3 rounded-2xl bg-muted/50 border border-border">
                  <CloudOff className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                  <div className="flex-1 min-w-0">
                    <p className="text-xs font-bold text-muted-foreground truncate">Supabase non configuré</p>
@@ -945,9 +945,9 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
                </div>
              )}
 
-             <div className="grid grid-cols-3 gap-4">
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
               {/* Cloud Sync Status */}
-              <div className="p-4 rounded-2xl bg-muted/50 border border-border space-y-3">
+              <div className="p-2.5 md:p-4 rounded-2xl bg-muted/50 border border-border space-y-2 md:space-y-3">
                 <div className="flex items-center gap-2">
                   <Cloud className={`w-4 h-4 ${cloudStatus === "done" ? "text-emerald-400" : cloudStatus === "error" ? "text-destructive" : "text-cyan-400"}`} />
                   <p className={`text-[10px] font-bold uppercase tracking-widest ${cloudStatus === "done" ? "text-emerald-400" : cloudStatus === "error" ? "text-destructive" : "text-cyan-400"}`}>Cloud Sync</p>
@@ -955,14 +955,14 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
                 <p className="text-base font-black text-foreground">
                   {cloudStatus === "syncing" ? "Syncing..." : cloudStatus === "done" ? "✓ Synced" : cloudStatus === "error" ? "✗ Error" : "Idle"}
                 </p>
-                <div>
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t("last_sync")}</p>
-                  <p className="text-xs font-bold text-foreground mt-0.5">
-                    {congregation.lastSyncAt ? new Date(congregation.lastSyncAt).toLocaleString("fr-FR") : "—"}
+                <div className="flex items-center justify-between gap-2 border-t border-border pt-2 mt-1">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">{t("last_sync")}</p>
+                  <p className="text-[10px] font-bold text-foreground">
+                    {congregation.lastSyncAt ? new Date(congregation.lastSyncAt).toLocaleString("fr-FR", { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : "—"}
                   </p>
                 </div>
-                <button onClick={handleCloudSync} disabled={isCloudSyncing}
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-primary/20 text-primary text-xs font-bold hover:bg-primary/30 transition-colors disabled:opacity-50">
+                 <button onClick={handleCloudSync} disabled={isCloudSyncing}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-1.5 md:py-2 rounded-xl bg-primary/20 text-primary text-xs font-bold hover:bg-primary/30 transition-colors disabled:opacity-50">
                   {isCloudSyncing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
                   {isCloudSyncing ? "SYNCING..." : "SYNC CLOUD"}
                 </button>
@@ -971,21 +971,21 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
               {/* Middle column: Sync Google Sheet + Import JSON */}
               <div className="flex flex-col gap-3">
                 <button onClick={handleSyncGoogleSheet} disabled={isSyncing}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity disabled:opacity-50">
+                  className="flex-1 flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity disabled:opacity-50">
                   {isSyncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
                   {isSyncing ? "Syncing..." : "Sync Google Sheet"}
                 </button>
-                <button onClick={handleImport} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gradient-to-r from-emerald-600/80 to-teal-600/80 text-white text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity">
+                <button onClick={handleImport} className="flex-1 flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-3 rounded-2xl bg-gradient-to-r from-emerald-600/80 to-teal-600/80 text-white text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity">
                   <Upload className="w-4 h-4" /> {t("import_json")}
                 </button>
               </div>
 
               {/* Right column: Sauvegarde + Répertoire */}
               <div className="flex flex-col gap-3">
-                <button onClick={handleExport} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 text-white text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity">
+                <button onClick={handleExport} className="flex-1 flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-3 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 text-white text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity">
                   <Download className="w-4 h-4" /> {t("full_backup")}
                 </button>
-                <button onClick={handleExportRepertoire} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-500 text-white text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity">
+                <button onClick={handleExportRepertoire} className="flex-1 flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-3 rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-500 text-white text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity">
                   <FolderArchive className="w-4 h-4" /> {t("repertoire_speakers_hosts")}
                 </button>
               </div>
@@ -1028,13 +1028,13 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
           </div>
 
           {/* Duplicate Detection */}
-          <div className="premium-card p-6 space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="premium-card p-4 md:p-6 space-y-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <h3 className="text-base font-black text-foreground">{t("duplicate_detection")}</h3>
                 <p className="text-sm text-muted-foreground mt-1">{t("duplicate_desc")}</p>
               </div>
-              <button onClick={findDuplicates} className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 text-white text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity">
+              <button onClick={findDuplicates} className="flex items-center justify-center gap-2 px-5 py-2 md:py-2.5 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 text-white text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity w-full md:w-auto">
                 <Search className="w-4 h-4" /> {t("search_duplicates")}
               </button>
             </div>

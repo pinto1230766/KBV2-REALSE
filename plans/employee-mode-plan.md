@@ -15,7 +15,7 @@ Créer une page d'aide complète accessible depuis les Paramètres, avec un bout
 ### 2. Sections d'Aide à Créer
 
 | # | Section | Description |
-|---|---------|-------------|
+| --- | --- | --- |
 | 1 | **Créer un orateur** | Comment ajouter un nouvel orateur avec nom, téléphone, congrégation |
 | 2 | **Créer un hôte** | Comment ajouter un hôte pour hébergement/transport/repas |
 | 3 | **Planning sans Google Sheet** | Comment créer et gérer les visites manuellement |
@@ -54,7 +54,7 @@ create_speaker_title: { fr: "Créer un orateur", ... },
 
 ## Étapes d'Implémentation
 
-```
+```markdown
 1. [ ] Ajouter traductions dans useTranslation.ts
 2. [ ] Créer EmployeeModePage.tsx avec toutes les sections
 3. [ ] Intégrer dans SettingsPage.tsx
@@ -65,7 +65,7 @@ create_speaker_title: { fr: "Créer un orateur", ... },
 ## Fichiers à Modifier
 
 | Fichier | Action |
-|---------|--------|
+| --- | --- |
 | `src/hooks/useTranslation.ts` | Ajouter traductions |
 | `src/components/UserManualPage.tsx` | **Créer** - nouvelle page |
 | `src/components/SettingsPage.tsx` | Ajouter lien vers EmployeeModePage |

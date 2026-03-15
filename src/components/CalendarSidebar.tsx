@@ -146,17 +146,7 @@ export function CalendarSidebar({ visits, onVisitClick, onSyncNow }: CalendarSid
     <div className="p-5 h-full flex flex-col overflow-y-auto">
       {/* ─── Admin Header ─── */}
       <div className="flex items-center justify-between mb-5">
-        {/* Logo KBV FP */}
-        <div className="w-10 h-10 rounded-xl flex flex-col items-center justify-center shadow-md border-2 border-white overflow-hidden" style={{
-          background: 'linear-gradient(to bottom, #003893 33.33%, #ffffff 33.33%, #ffffff 66.66%, #ce1126 66.66%)'
-        }}>
-          <span className="text-[11px] font-black tracking-tight text-white drop-shadow-md">
-            KBV
-          </span>
-          <span className="text-[8px] font-bold tracking-wider text-white -mt-0.5 drop-shadow-md">
-            FP
-          </span>
-        </div>
+        {/* Icônes alignées à gauche */}
         <div className="flex items-center gap-2">
           {/* Mail: opens today's visit messages */}
           <button

@@ -78,52 +78,52 @@ export function DashboardView() {
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="py-4 md:py-6 space-y-5 md:space-y-6">
       {/* Title */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-3 px-1">
         <div>
-          <h2 className="text-2xl md:text-3xl font-black text-foreground">{t("dashboard")}</h2>
-          <p className="text-base text-muted-foreground mt-0.5">{t("welcome_back")}</p>
+          <h2 className="text-xl xs:text-2xl md:text-3xl font-black text-foreground leading-tight">{t("dashboard")}</h2>
+          <p className="text-sm md:text-base text-muted-foreground mt-0.5">{t("welcome_back")}</p>
         </div>
         <button
           onClick={() => setShowUserManual(true)}
-          className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-primary bg-primary/10 hover:bg-primary/20 rounded-xl transition-colors touch-manipulation"
+          className="flex items-center gap-2 px-3 xs:px-4 py-2 text-xs xs:text-sm font-bold text-primary bg-primary/10 hover:bg-primary/20 rounded-xl transition-colors touch-manipulation"
           title={t("user_manual") || "Mode d'emploi"}
         >
-          <BookOpen className="w-5 h-5" />
-          <span className="hidden sm:inline">{t("user_manual") || "Guide"}</span>
+          <BookOpen className="w-4 h-4 xs:w-5 xs:h-5 flex-shrink-0" />
+          <span>{t("user_manual") || "Guide"}</span>
         </button>
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {/* À venir */}
         <motion.button variants={item} whileHover={{ y: -2 }} onClick={() => setActiveTab("planning")}
-          className="premium-card p-4 md:p-5 text-left">
-          <p className="text-xs md:text-sm font-bold uppercase tracking-wider text-muted-foreground">{t("upcoming")}</p>
-          <div className="flex items-center gap-2 mt-2">
-            <p className="text-3xl md:text-4xl font-black text-foreground">{stats.upcoming}</p>
-            <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-primary" />
+          className="premium-card p-2.5 xs:p-4 md:p-5 text-left min-h-[90px] flex flex-col justify-between">
+          <p className="text-[10px] xs:text-xs md:text-sm font-bold uppercase tracking-wider text-muted-foreground">{t("upcoming")}</p>
+          <div className="flex items-center gap-2 mt-1 xs:mt-2">
+            <p className="text-2xl xs:text-3xl md:text-4xl font-black text-foreground">{stats.upcoming}</p>
+            <TrendingUp className="w-4 h-4 xs:w-5 xs:h-5 md:w-6 md:h-6 text-primary" />
           </div>
         </motion.button>
 
         {/* Confirmées */}
         <motion.button variants={item} whileHover={{ y: -2 }} onClick={() => setActiveTab("planning")}
-          className="rounded-2xl p-4 md:p-5 text-left bg-amber-400 dark:bg-amber-500 text-white shadow-lg">
-          <p className="text-xs md:text-sm font-bold uppercase tracking-wider text-white/80">{t("confirmed_count")}</p>
-          <p className="text-3xl md:text-4xl font-black mt-2">{stats.confirmed}</p>
+          className="rounded-2xl p-2.5 xs:p-4 md:p-5 text-left bg-amber-400 dark:bg-amber-500 text-white shadow-lg min-h-[90px] flex flex-col justify-between">
+          <p className="text-[10px] xs:text-xs md:text-sm font-bold uppercase tracking-wider text-white/80">{t("confirmed_count")}</p>
+          <p className="text-2xl xs:text-3xl md:text-4xl font-black">{stats.confirmed}</p>
         </motion.button>
 
         {/* Orateurs */}
         <motion.button variants={item} whileHover={{ y: -2 }} onClick={() => setActiveTab("speakers")}
-          className="premium-card p-4 md:p-5 text-left">
-          <p className="text-xs md:text-sm font-bold uppercase tracking-wider text-muted-foreground">{t("speakers")}</p>
-          <p className="text-3xl md:text-4xl font-black text-foreground mt-2">{speakers.length}</p>
+          className="premium-card p-2.5 xs:p-4 md:p-5 text-left min-h-[90px] flex flex-col justify-between">
+          <p className="text-[10px] xs:text-xs md:text-sm font-bold uppercase tracking-wider text-muted-foreground">{t("speakers")}</p>
+          <p className="text-2xl xs:text-3xl md:text-4xl font-black text-foreground">{speakers.length}</p>
         </motion.button>
 
         {/* Ce mois-ci */}
         <motion.button variants={item} whileHover={{ y: -2 }} onClick={() => setActiveTab("planning")}
-          className="premium-card p-4 md:p-5 text-left">
-          <p className="text-xs md:text-sm font-bold uppercase tracking-wider text-primary">{t("this_month")}</p>
-          <p className="text-3xl md:text-4xl font-black text-foreground mt-2">{stats.thisMonth}</p>
+          className="premium-card p-2.5 xs:p-4 md:p-5 text-left min-h-[90px] flex flex-col justify-between">
+          <p className="text-[10px] xs:text-xs md:text-sm font-bold uppercase tracking-wider text-primary">{t("this_month")}</p>
+          <p className="text-2xl xs:text-3xl md:text-4xl font-black text-foreground">{stats.thisMonth}</p>
         </motion.button>
       </div>
 
@@ -140,6 +140,11 @@ export function DashboardView() {
         ) : (
           <div className="space-y-2">
             {upcomingVisits.map((visit, i) => {
+              // Recherche de l'orateur pour enrichir l'affichage
+              const speaker = speakers.find((s) => s.nom === visit.nom);
+              const isCouple = speaker?.householdType === "couple";
+              const displayName = isCouple && speaker?.spouseName ? `${speaker.nom} & ${speaker.spouseName}` : visit.nom;
+
               const d = new Date(visit.visitDate);
               const monthShort = d.toLocaleDateString(locale, { month: "short" }).toUpperCase().replace(".", "");
               const dayNum = d.getDate();
@@ -160,11 +165,42 @@ export function DashboardView() {
                     <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">{monthShort}</span>
                     <span className="text-lg font-black text-foreground leading-tight">{dayNum}</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-foreground truncate">{visit.nom}</p>
-                    <p className="text-[10px] text-muted-foreground">📍 {visit.congregation}</p>
+
+                  {/* Photos/Avatar */}
+                  <div className="flex -space-x-3 overflow-hidden">
+                    {isCouple ? (
+                      <>
+                        <div className="w-9 h-9 rounded-full ring-2 ring-background bg-muted overflow-hidden flex-shrink-0">
+                          {speaker?.photoUrl ? (
+                            <img src={speaker.photoUrl} alt={speaker.nom} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center"><Users className="w-4 h-4 text-muted-foreground/50" /></div>
+                          )}
+                        </div>
+                        <div className="w-9 h-9 rounded-full ring-2 ring-background bg-muted overflow-hidden flex-shrink-0">
+                          {speaker?.spousePhotoUrl ? (
+                            <img src={speaker.spousePhotoUrl} alt={speaker.spouseName} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center"><Users className="w-4 h-4 text-muted-foreground/50" /></div>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-muted overflow-hidden flex-shrink-0">
+                        {speaker?.photoUrl && !speaker.photoUrl.includes("speakers.jpg") ? (
+                          <img src={speaker.photoUrl} alt={visit.nom} className="w-full h-full object-cover" />
+                        ) : (
+                           <div className="w-full h-full flex items-center justify-center"><Users className="w-4 h-4 text-muted-foreground/50" /></div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <span className={`px-2 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider ${
+
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-foreground truncate">{displayName}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">📍 {visit.congregation}</p>
+                  </div>
+                  <span className={`px-2 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider flex-shrink-0 ${
                     visit.status === "confirmed" ? "status-confirmed" : visit.status === "completed" ? "status-completed" : visit.status === "cancelled" ? "status-cancelled" : "status-scheduled"
                   }`}>
                     {t(visit.status === "confirmed" ? "confirmed" : visit.status)}
@@ -178,21 +214,21 @@ export function DashboardView() {
       </motion.div>
 
       {/* KBV Premium Card */}
-      <motion.div variants={item} className="rounded-2xl bg-card dark:bg-[hsl(220,30%,10%)] p-6 border border-border">
-        <h3 className="text-lg font-black text-foreground">KBV v2 – Premium</h3>
-        <p className="text-sm text-muted-foreground mt-1">
+      <motion.div variants={item} className="rounded-2xl bg-card dark:bg-[hsl(220,30%,10%)] p-4 xs:p-6 border border-border">
+        <h3 className="text-base font-black text-foreground">KBV v2 – Premium</h3>
+        <p className="text-xs xs:text-sm text-muted-foreground mt-1">
           {language === "cv" ? "Bo ferramenta di planifikason lokal, otimizadu pa un esperiénsia fásil i fluidu." :
-           language === "pt" ? "A sua ferramenta de planificação local, otimizada para uma experiência fácil e fluida." :
+           language === "pt" ? "A sua ferramenta de planificação local, otimizada para une experiência fácil e fluida." :
            "Votre outil de planification locale, optimisé pour une expérience tactile fluide."}
         </p>
-        <div className="flex gap-3 mt-4">
+        <div className="flex flex-col sm:flex-row gap-2 xs:gap-3 mt-4">
           <motion.button whileTap={{ scale: 0.97 }} onClick={handleExport}
-            className="px-5 py-2.5 rounded-xl bg-muted text-foreground text-xs font-bold hover:bg-muted/80 transition-colors flex items-center gap-2">
-            <Download className="w-4 h-4" /> {t("backup")}
+            className="w-full sm:w-auto px-5 py-2.5 justify-center rounded-xl bg-muted text-foreground text-xs font-bold hover:bg-muted/80 transition-colors flex items-center gap-2">
+            <Download className="w-4 h-4 flex-shrink-0" /> {t("backup")}
           </motion.button>
           <motion.button whileTap={{ scale: 0.97 }} onClick={handleImport}
-            className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity flex items-center gap-2">
-            <Upload className="w-4 h-4" /> Import
+            className="w-full sm:w-auto px-5 py-2.5 justify-center rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity flex items-center gap-2">
+            <Upload className="w-4 h-4 flex-shrink-0" /> Import
           </motion.button>
         </div>
       </motion.div>

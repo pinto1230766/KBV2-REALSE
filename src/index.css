@@ -225,12 +225,6 @@ html, body {
   }
 }
 
-/* Focus ring */
-:focus-visible {
-  outline: 2px solid hsl(var(--primary));
-  outline-offset: 2px;
-}
-
 /* Premium Card */
 .premium-card {
   background: hsl(var(--card));
@@ -240,6 +234,18 @@ html, body {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
   color: hsl(var(--card-foreground));
+  
+  /* Text and container safety */
+  box-sizing: border-box;
+  max-width: 100%;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .premium-card:active {
@@ -282,7 +288,7 @@ html, body {
 
 /* Scrollbar */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
-.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide { -ms-overflow-style: none; }
 
 /* Toast animation */
 @keyframes slide-up {
@@ -304,6 +310,57 @@ html, body {
 .dark .status-confirmed { @apply bg-emerald-900/30 text-emerald-300; }
 .dark .status-completed { @apply bg-gray-800 text-gray-400; }
 .dark .status-cancelled { @apply bg-red-900/30 text-red-300; }
+
+/* Global helper classes for text overflow */
+.text-wrap-safe {
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+}
+
+.ellipsis-single {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Base button and card responsiveness adjustments */
+@media (max-width: 480px) {
+  body {
+    font-size: 15px;
+  }
+  
+  h1 { font-size: 1.4rem; }
+  h2 { font-size: 1.2rem; }
+  h3 { font-size: 1.05rem; }
+  
+  .premium-card {
+    padding: 0.4rem !important;
+  }
+  
+  button, .btn, .input-soft {
+    font-size: 0.85rem !important;
+    padding: 0.5rem 0.6rem !important;
+    min-height: 44px !important;
+  }
+}
+
+/* Specific portrait fixes for very narrow phones (< 380px) */
+@media (max-width: 380px) {
+  .safe-top { padding-top: 0.5rem; }
+  .safe-bottom { padding-bottom: 0.5rem; }
+  
+  .premium-card {
+    padding: 0.5rem !important;
+  }
+  
+  h1 { font-size: 1.25rem; }
+  h2 { font-size: 1.15rem; }
+  
+  .grid-cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 
 /* Print */
 @media print {

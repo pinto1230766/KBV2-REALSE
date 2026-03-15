@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Users, Plus, Trash2, Edit3, Phone, ChevronRight, AlertTriangle, Search, Camera, Upload, X, MapPin, UserCircle } from "lucide-react";
+import { Users, Plus, Trash2, Edit3, Phone, ChevronRight, AlertTriangle, Search, Camera, Upload, X, MapPin, UserCircle, Home } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useSettingsStore } from "../store/useSettingsStore";
@@ -139,10 +139,16 @@ export function SpeakerList() {
         </motion.button>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-        <input className="input-soft text-base pl-11 py-3" placeholder={t("search_speaker")} value={search} onChange={(e) => setSearch(e.target.value)} />
+      <div className="relative group/search">
+        <input 
+          className="input-soft text-base py-2 pl-4 pr-12" 
+          placeholder={t("search_speaker")} 
+          value={search} 
+          onChange={(e) => setSearch(e.target.value)} 
+        />
+        <div className="absolute right-0 top-0 bottom-0 px-4 flex items-center bg-muted/50 rounded-r-xl border-l border-border/50">
+          <Search className="w-4 h-4 text-muted-foreground/50" />
+        </div>
       </div>
 
       {/* Grid */}
@@ -154,44 +160,69 @@ export function SpeakerList() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           <AnimatePresence>
-            {filtered.map((sp, i) => (
+            {filtered.map((sp) => (
               <motion.div
-                key={sp.id}
+                key={`speaker-${sp.id}`}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ delay: i * 0.02 }}
-                className="premium-card p-4"
+                transition={{ duration: 0.2 }}
+                className="premium-card p-3 cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all group relative"
+                onClick={() => openFiche(sp)}
               >
-                <div className="flex items-center gap-3">
-                  {sp.photoUrl ? (
-                    <img src={sp.photoUrl} alt={sp.nom} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
-                  ) : (
-                    <img src="/images/speakers/speakers.jpg" alt={sp.nom} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
-                  )}
+                <div className="flex items-start gap-3">
+                  {/* Photos/Avatars avec support couple */}
+                  <div className="flex -space-x-4 overflow-hidden flex-shrink-0">
+                    {sp.householdType === "couple" ? (
+                      <>
+                        <div className="w-12 h-14 rounded-xl ring-2 ring-background bg-muted overflow-hidden flex-shrink-0 shadow-sm">
+                          {sp.photoUrl ? (
+                            <img src={sp.photoUrl} alt={sp.nom} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center"><Users className="w-6 h-6 text-muted-foreground/30" /></div>
+                          )}
+                        </div>
+                        <div className="w-12 h-14 rounded-xl ring-2 ring-background bg-muted overflow-hidden flex-shrink-0 shadow-sm">
+                          {sp.spousePhotoUrl ? (
+                            <img src={sp.spousePhotoUrl} alt={sp.spouseName} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center"><Users className="w-6 h-6 text-muted-foreground/30" /></div>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-12 h-14 rounded-xl bg-muted overflow-hidden flex-shrink-0 shadow-sm">
+                        {sp.photoUrl ? (
+                          <img src={sp.photoUrl} alt={sp.nom} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center"><Users className="w-6 h-6 text-muted-foreground/30" /></div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                   <div className="flex-1 min-w-0">
-                    <p className="text-base md:text-lg font-black text-foreground truncate">{sp.nom}</p>
-                    <p className="text-sm text-muted-foreground flex items-center gap-1">📍 {sp.congregation}</p>
+                    <p className="text-sm font-black text-foreground truncate">{sp.nom}</p>
+                    {sp.householdType === "couple" && sp.spouseName && (
+                      <p className="text-[11px] font-bold text-primary/80 -mt-0.5">{t("with")} {sp.spouseName}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 truncate mt-1">
+                      <Home className="w-3.5 h-3.5 flex-shrink-0 text-primary/50" /> {sp.congregation}
+                    </p>
+                    {sp.telephone && (
+                      <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+                        <Phone className="w-3.5 h-3.5 text-primary/50" />
+                        <span className="font-medium">{sp.telephone}</span>
+                      </div>
+                    )}
                   </div>
-                </div>
-                {sp.telephone && (
-                  <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
-                    <Phone className="w-3.5 h-3.5" />
-                    <a href={`tel:${sp.telephone}`} className="hover:text-primary transition-colors">{sp.telephone}</a>
-                  </div>
-                )}
-                <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-                  <div className="flex gap-1">
-                    <button onClick={() => openFiche(sp)} className="p-1.5 rounded-lg hover:bg-muted transition-colors" title={t("edit")}>
-                      <Edit3 className="w-3.5 h-3.5 text-muted-foreground" />
+
+                  <div className="flex flex-col items-end justify-between">
+                    <button onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(sp.id); }} className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive/70 transition-colors" title={t("delete")}>
+                      <Trash2 className="w-4 h-4" />
                     </button>
-                    <button onClick={() => setConfirmDeleteId(sp.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors" title={t("delete")}>
-                      <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                    </button>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground/30" />
                   </div>
-                  <button onClick={() => openFiche(sp)} className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1 hover:underline">
-                    {t("view")} <ChevronRight className="w-3 h-3" />
-                  </button>
                 </div>
               </motion.div>
             ))}
@@ -245,7 +276,7 @@ export function SpeakerList() {
                 </div>
 
                 {/* Congrégation + Téléphone */}
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 xs:grid-cols-2 gap-4 xs:gap-6">
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("congregation")}</p>
                     <div className="flex items-center gap-2">

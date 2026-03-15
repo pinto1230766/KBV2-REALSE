@@ -122,5 +122,7 @@ export interface AppSettings {
       remindJ2: boolean;
     };
   };
+  soundEnabled: boolean;
+  vibrationEnabled: boolean;
   congregation: CongregationProfile;
 }

@@ -8,6 +8,8 @@ interface SettingsState {
   setDarkMode: (dark: boolean) => void;
   updateNotifications: (notif: Partial<AppSettings["notifications"]>) => void;
   updateCongregation: (data: Partial<CongregationProfile>) => void;
+  setSoundEnabled: (enabled: boolean) => void;
+  setVibrationEnabled: (enabled: boolean) => void;
 }
 
 const defaultSettings: AppSettings = {
@@ -17,6 +19,8 @@ const defaultSettings: AppSettings = {
     enabled: false,
     steps: { remindJ7: true, remindJ2: true },
   },
+  soundEnabled: true,
+  vibrationEnabled: true,
   congregation: {
     name: "",
     city: "",
@@ -59,6 +63,10 @@ export const useSettingsStore = create<SettingsState>()(
             congregation: { ...s.settings.congregation, ...data },
           },
         })),
+      setSoundEnabled: (soundEnabled) =>
+        set((s) => ({ settings: { ...s.settings, soundEnabled } })),
+      setVibrationEnabled: (vibrationEnabled) =>
+        set((s) => ({ settings: { ...s.settings, vibrationEnabled } })),
     }),
     {
       name: "kbv-settings",

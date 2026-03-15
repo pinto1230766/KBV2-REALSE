@@ -366,9 +366,9 @@ export function PlanningHub() {
   const sendWhatsApp = (phone: string, text: string) => {
     // Always copy message first
     navigator.clipboard.writeText(text);
-    if (phone === WHATSAPP_GROUP_ID || phone.length < 6) {
+    if (phone === WHATSAPP_INVITE_ID || phone.length < 6) {
       // For group: open invite link, user pastes message
-      const link = `https://chat.whatsapp.com/${WHATSAPP_GROUP_ID}`;
+      const link = `https://chat.whatsapp.com/${WHATSAPP_INVITE_ID}`;
       const a = document.createElement("a");
       a.href = link; a.target = "_blank"; a.rel = "noopener noreferrer";
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
@@ -389,7 +389,8 @@ export function PlanningHub() {
     toast.success(t("copied"));
   };
 
-  const WHATSAPP_GROUP_ID = "Di5J5Jl4VjU4e9QURFHsrf";
+  const { settings } = useSettingsStore();
+  const WHATSAPP_INVITE_ID = settings.congregation.whatsappInviteId || "Di5J5Jl4VjU4e9QURFHsrf";
 
   // Get recipients for messages
   const getRecipients = () => {
@@ -403,7 +404,7 @@ export function PlanningHub() {
         recipients.push({ label: `${roleEmoji} ${ha.hostName || ""} (${t(ha.role)})`, phone: ha.hostPhone, type: `host_${i}`, hostName: ha.hostName });
       }
     });
-    recipients.push({ label: "👥 Groupe WhatsApp", phone: WHATSAPP_GROUP_ID, type: "groupe" });
+    recipients.push({ label: "👥 Groupe WhatsApp", phone: WHATSAPP_INVITE_ID, type: "groupe" });
     return recipients;
   };
 
@@ -564,9 +565,9 @@ export function PlanningHub() {
           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("upcoming")}</p>
           <p className="text-3xl font-black text-foreground">{upcomingVisits.length}</p>
         </div>
-        <motion.button whileTap={{ scale: 0.97 }} onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-dashed border-border text-sm font-bold text-muted-foreground hover:border-primary hover:text-primary transition-colors">
-          <Plus className="w-4 h-4" /> {t("schedule")}
+        <motion.button whileTap={{ scale: 0.97 }} onClick={() => setShowForm(true)}
+          className="flex items-center gap-2 px-5 py-3 rounded-xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 transition-colors shadow-lg active:scale-95">
+          <Plus className="w-5 h-5 flex-shrink-0" /> {t("add")}
         </motion.button>
         <button onClick={() => setShowArchived(!showArchived)}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-colors ${showArchived ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
@@ -586,7 +587,7 @@ export function PlanningHub() {
               const dayNum = d.getDate();
               return (
                 <motion.div key={visit.visitId} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ delay: i * 0.02 }}
-                  className="premium-card p-4 cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all" onClick={() => openDetail(visit)}>
+                  className="premium-card p-3 cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all" onClick={() => openDetail(visit)}>
                   <div className="flex items-start gap-3">
                     <div className="w-12 h-14 rounded-xl bg-muted flex flex-col items-center justify-center flex-shrink-0">
                       <span className="text-[8px] font-bold uppercase tracking-wider text-primary">{monthShort}</span>
@@ -644,24 +645,22 @@ export function PlanningHub() {
                         {speaker?.photoUrl ? (
                           <img src={speaker.photoUrl} alt={viewVisit.nom} className="w-16 h-16 rounded-full object-cover flex-shrink-0" />
                         ) : (
-                          <img src="/images/speakers/speakers.jpg" alt={viewVisit.nom} className="w-16 h-16 rounded-full object-cover flex-shrink-0" />
+                          <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                            <Users className="w-8 h-8 text-muted-foreground/30" />
+                          </div>
                         )}
                         <div className="flex-1 min-w-0">
                           <h2 className="text-2xl font-black text-foreground">{viewVisit.nom}</h2>
                           {speaker?.spouseName && <p className="text-sm text-primary font-medium">& {speaker.spouseName}</p>}
                           <p className="text-sm font-medium text-foreground mt-1">{dayLabel}</p>
-                          <div className="text-[10px] text-muted-foreground space-y-0.5 mt-1">
-                            {detailForm.date_arrivee && <p>{t("arrival")} : {detailForm.date_arrivee} · {detailForm.heure_arrivee || "--:--"}</p>}
-                            <p>{t("meeting")} : {viewVisit.visitDate} · {viewVisit.heure_visite || "11:30"}</p>
-                            {detailForm.date_depart && <p>{t("departure")} : {detailForm.date_depart} · {detailForm.heure_depart || "--:--"}</p>}
-                          </div>
+
                         </div>
                         <button onClick={closeDetail} className="p-2 rounded-xl hover:bg-muted transition-colors" title="Fermer"><X className="w-5 h-5 text-muted-foreground" /></button>
                       </div>
-                      <div className="flex gap-1 mt-5 overflow-x-auto scrollbar-hide border-b border-border pb-0">
+                      <div className="flex gap-1 mt-5 overflow-x-auto scrollbar-hide border-b border-border pb-0 px-1">
                         {detailTabs.map((tab) => (
                           <button key={tab.id} onClick={() => setDetailTab(tab.id)}
-                            className={`flex items-center gap-1.5 px-3 py-2 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-colors border-b-2 -mb-[1px] ${
+                            className={`flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold uppercase tracking-wider transition-colors border-b-2 flex-shrink-0 -mb-[1px] ${
                               detailTab === tab.id ? "text-primary border-primary" : "text-muted-foreground border-transparent hover:text-foreground"
                             }`}>
                             <tab.icon className="w-3.5 h-3.5" />{tab.label}
@@ -691,29 +690,60 @@ export function PlanningHub() {
                             </div>
                             <p className="text-[10px] text-muted-foreground">{t("phone_whatsapp_hint")}</p>
                           </div>
-                          <div className="grid grid-cols-3 gap-3">
-                            <div className="space-y-1"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("arrival_date")}</p><input className="input-soft text-sm" type="date" value={detailForm.date_arrivee || ""} onChange={(e) => setDetailForm({ ...detailForm, date_arrivee: e.target.value })} title={t("arrival_date")} /></div>
-                            <div className="space-y-1"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("meeting_date")}</p><input className="input-soft text-sm" type="date" value={detailForm.visitDate || ""} onChange={(e) => setDetailForm({ ...detailForm, visitDate: e.target.value })} title={t("meeting_date")} /></div>
-                            <div className="space-y-1"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("departure_date")}</p><input className="input-soft text-sm" type="date" value={detailForm.date_depart || ""} onChange={(e) => setDetailForm({ ...detailForm, date_depart: e.target.value })} title={t("departure_date")} /></div>
-                          </div>
-                          <div className="grid grid-cols-3 gap-3">
-                            <div className="space-y-1"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("arrival_time")}</p><input className="input-soft text-sm" type="time" value={detailForm.heure_arrivee || ""} onChange={(e) => setDetailForm({ ...detailForm, heure_arrivee: e.target.value })} title={t("arrival_time")} /></div>
-                            <div className="space-y-1"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("meeting_time")}</p><input className="input-soft text-sm" type="time" value={detailForm.heure_visite || ""} onChange={(e) => setDetailForm({ ...detailForm, heure_visite: e.target.value })} title={t("meeting_time")} /></div>
-                            <div className="space-y-1"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("departure_time")}</p><input className="input-soft text-sm" type="time" value={detailForm.heure_depart || ""} onChange={(e) => setDetailForm({ ...detailForm, heure_depart: e.target.value })} title={t("departure_time")} /></div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1">
-                              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("location")}</p>
-                              <select className="input-soft text-sm" value={detailForm.locationType || "kingdom_hall"} onChange={(e) => setDetailForm({ ...detailForm, locationType: e.target.value as Visit["locationType"] })} title={t("location")}>
-                                <option value="kingdom_hall">{t("in_person")}</option><option value="zoom">Zoom</option><option value="streaming">Streaming</option><option value="other">{t("other")}</option>
-                              </select>
-                              <p className="text-[10px] text-muted-foreground">{t("location_hint")}</p>
+                          <div className="space-y-4">
+                            {/* Arrivée */}
+                            <div className="space-y-2">
+                              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 mb-1">{t("arrival")}</p>
+                              <div className="flex flex-col xs:flex-row gap-2">
+                                <div className="flex-1">
+                                  <input className="input-soft text-sm" type="date" value={detailForm.date_arrivee || ""} onChange={(e) => setDetailForm({ ...detailForm, date_arrivee: e.target.value })} title={t("arrival_date")} />
+                                </div>
+                                <div className="xs:w-32">
+                                  <input className="input-soft text-sm" type="time" value={detailForm.heure_arrivee || ""} onChange={(e) => setDetailForm({ ...detailForm, heure_arrivee: e.target.value })} title={t("arrival_time")} />
+                                </div>
+                              </div>
                             </div>
-                            <div className="space-y-1">
-                              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("status")}</p>
-                              <select className="input-soft text-sm" value={detailForm.status || "scheduled"} onChange={(e) => setDetailForm({ ...detailForm, status: e.target.value as VisitStatus })} title={t("status")}>
-                                <option value="scheduled">{t("scheduled")}</option><option value="confirmed">{t("confirmed")}</option><option value="completed">{t("completed")}</option><option value="cancelled">{t("cancelled")}</option>
-                              </select>
+
+                            {/* Réunion */}
+                            <div className="space-y-2">
+                              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 mb-1">{t("meeting")}</p>
+                              <div className="flex flex-col xs:flex-row gap-2">
+                                <div className="flex-1">
+                                  <input className="input-soft text-sm" type="date" value={detailForm.visitDate || ""} onChange={(e) => setDetailForm({ ...detailForm, visitDate: e.target.value })} title={t("meeting_date")} />
+                                </div>
+                                <div className="xs:w-32">
+                                  <input className="input-soft text-sm" type="time" value={detailForm.heure_visite || ""} onChange={(e) => setDetailForm({ ...detailForm, heure_visite: e.target.value })} title={t("meeting_time")} />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Départ */}
+                            <div className="space-y-2">
+                              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 mb-1">{t("departure")}</p>
+                              <div className="flex flex-col xs:flex-row gap-2">
+                                <div className="flex-1">
+                                  <input className="input-soft text-sm" type="date" value={detailForm.date_depart || ""} onChange={(e) => setDetailForm({ ...detailForm, date_depart: e.target.value })} title={t("departure_date")} />
+                                </div>
+                                <div className="xs:w-32">
+                                  <input className="input-soft text-sm" type="time" value={detailForm.heure_depart || ""} onChange={(e) => setDetailForm({ ...detailForm, heure_depart: e.target.value })} title={t("departure_time")} />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Lieu & Statut */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                              <div className="space-y-1">
+                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("location")}</p>
+                                <select className="input-soft text-sm" value={detailForm.locationType || "kingdom_hall"} onChange={(e) => setDetailForm({ ...detailForm, locationType: e.target.value as Visit["locationType"] })} title={t("location")}>
+                                  <option value="kingdom_hall">{t("in_person")}</option><option value="zoom">Zoom</option><option value="streaming">Streaming</option><option value="other">{t("other")}</option>
+                                </select>
+                              </div>
+                              <div className="space-y-1">
+                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("status")}</p>
+                                <select className="input-soft text-sm" value={detailForm.status || "scheduled"} onChange={(e) => setDetailForm({ ...detailForm, status: e.target.value as VisitStatus })} title={t("status")}>
+                                  <option value="scheduled">{t("scheduled")}</option><option value="confirmed">{t("confirmed")}</option><option value="completed">{t("completed")}</option><option value="cancelled">{t("cancelled")}</option>
+                                </select>
+                              </div>
                             </div>
                           </div>
                           <div className="space-y-3">
@@ -751,7 +781,7 @@ export function PlanningHub() {
                           <div className="premium-card p-4 space-y-3 border-2 border-dashed border-amber-300/30">
                             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-600">{t("group_meal")}</p>
                             <p className="text-sm text-muted-foreground">{t("group_meal_desc")}</p>
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
                               <button onClick={() => {
                                 const newAssignment: HostAssignment = {
                                   hostName: "Repas Salle du Royaume", role: "repas",
@@ -761,7 +791,7 @@ export function PlanningHub() {
                               }}
                                 className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${detailForm.groupMealType === "salle_du_royaume" ? "border-amber-500 bg-amber-50 dark:bg-amber-500/10" : "border-border"}`}>
                                 <Building2 className="w-5 h-5 text-amber-600 flex-shrink-0" />
-                                <div className="text-left"><p className="text-sm font-bold text-foreground">{t("kingdom_hall")}</p><p className="text-[10px] text-muted-foreground">{t("meal_kingdom_hall_desc")}</p></div>
+                                <div className="text-left"><p className="text-sm font-bold text-foreground">{t("kingdom_hall")}</p><p className="text-[10px] text-muted-foreground line-clamp-1">{t("meal_kingdom_hall_desc")}</p></div>
                               </button>
                               <button onClick={() => {
                                 const newAssignment: HostAssignment = {
@@ -772,7 +802,7 @@ export function PlanningHub() {
                               }}
                                 className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${detailForm.groupMealType === "restaurant" ? "border-amber-500 bg-amber-50 dark:bg-amber-500/10" : "border-border"}`}>
                                 <Utensils className="w-5 h-5 text-amber-600 flex-shrink-0" />
-                                <div className="text-left"><p className="text-sm font-bold text-foreground">{t("meal_restaurant")}</p><p className="text-[10px] text-muted-foreground">{t("meal_restaurant_desc")}</p></div>
+                                <div className="text-left"><p className="text-sm font-bold text-foreground">{t("meal_restaurant")}</p><p className="text-[10px] text-muted-foreground line-clamp-1">{t("meal_restaurant_desc")}</p></div>
                               </button>
                             </div>
                           </div>
@@ -799,7 +829,9 @@ export function PlanningHub() {
                                 ) : ha.origin === "restaurant" ? (
                                   <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center flex-shrink-0"><Utensils className="w-5 h-5 text-orange-600" /></div>
                                 ) : (
-                                  <img src="/images/hosts/host.jpg" alt={ha.hostName || ""} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+                                  <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                                    <Home className="w-6 h-6 text-muted-foreground/30" />
+                                  </div>
                                 )}
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm font-black text-foreground uppercase">{ha.hostName}</p>
@@ -826,7 +858,7 @@ export function PlanningHub() {
                               </div>
                               {isEditing && (
                                 <div className="space-y-2 pt-1">
-                                  <div className="grid grid-cols-3 gap-2">
+                                  <div className="grid grid-cols-1 xs:grid-cols-3 gap-2">
                                     <div>
                                       <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t("role")}</label>
                                       <select className="input-soft text-sm" value={ha.role} onChange={(e) => updateHostAssignment(origIdx, "role", e.target.value)} title={t("role")}>
@@ -853,7 +885,7 @@ export function PlanningHub() {
                                     </select>
                                   </div>
                                   {(ha.origin === "restaurant") && (
-                                    <div className="grid grid-cols-2 gap-2">
+                                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
                                       <div>
                                         <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Nom restaurant</label>
                                         <input type="text" className="input-soft text-sm" placeholder="Ex: La Brasserie" value={ha.hostName || ""} onChange={(e) => updateHostAssignment(origIdx, "hostName", e.target.value)} />
@@ -1124,11 +1156,11 @@ export function PlanningHub() {
               <h3 className="text-sm font-black uppercase tracking-widest text-foreground">{t("add_visit")}</h3>
               <input className="input-soft text-sm" placeholder={t("speaker_name")} value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} />
               <input className="input-soft text-sm" placeholder={t("congregation")} value={form.congregation} onChange={(e) => setForm({ ...form, congregation: e.target.value })} />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
                 <div><label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">{t("visit_date")}</label><input className="input-soft text-sm" type="date" value={form.visitDate} onChange={(e) => setForm({ ...form, visitDate: e.target.value })} title={t("visit_date")} /></div>
                 <div><label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">{t("time")}</label><input className="input-soft text-sm" type="time" value={form.heure_visite} onChange={(e) => setForm({ ...form, heure_visite: e.target.value })} title={t("time")} /></div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
                 <input className="input-soft text-sm" placeholder={t("talk_number")} value={form.talkNoOrType} onChange={(e) => setForm({ ...form, talkNoOrType: e.target.value })} />
                 <input className="input-soft text-sm" placeholder={t("talk_theme")} value={form.talkTheme} onChange={(e) => setForm({ ...form, talkTheme: e.target.value })} />
               </div>

@@ -13,7 +13,6 @@ export function SplashScreen({ onFinished }: { onFinished: () => void }) {
 
   return (
     <AnimatePresence>
-      {phase !== "exit" ? null : null}
       <motion.div
         key="splash"
         className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
@@ -39,27 +38,11 @@ export function SplashScreen({ onFinished }: { onFinished: () => void }) {
             <div className="absolute -inset-1 rounded-3xl bg-white opacity-50 blur-sm" />
             
             {/* Main logo box */}
-            <div className="relative w-28 h-28 rounded-3xl flex flex-col items-center justify-center shadow-2xl border-4 border-white overflow-hidden" style={{
-              background: 'linear-gradient(to bottom, #003893 33.33%, #ffffff 33.33%, #ffffff 66.66%, #ce1126 66.66%)'
-            }}>
-              {/* No pattern overlay - clean flag background */}
-              
-              {/* KBV text - white with dark shadow */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4, duration: 0.3 }}
-                className="flex flex-col items-center"
-              >
-                <span className="text-2xl font-black tracking-tight text-white drop-shadow-md">
-                  KBV
-                </span>
-                {/* FP with white color */}
-                <span className="text-lg font-bold tracking-wider text-white mt-0.5 drop-shadow-md">
-                  FP
-                </span>
-              </motion.div>
-            </div>
+            <img 
+              src="/icon.png" 
+              alt="KBV Lyon" 
+              className="relative w-28 h-28 rounded-3xl shadow-2xl border-4 border-white object-cover"
+            />
           </div>
         </motion.div>
 
