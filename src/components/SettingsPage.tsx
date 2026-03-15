@@ -366,12 +366,12 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
           )}
 
           {/* RGPD & Legal Info */}
-          <div className="premium-card p-4 md:p-6 space-y-4">
-            <h3 className="text-base md:text-lg font-black text-foreground flex items-center gap-2">
+          <div className="premium-card p-4 md:p-5 space-y-3">
+            <h3 className="text-base font-black text-foreground flex items-center gap-2">
               <Shield className="w-5 h-5 text-primary flex-shrink-0" />
               <span>{t("legal_info")}</span>
             </h3>
-            <div className="space-y-3 text-sm text-muted-foreground">
+            <div className="space-y-2 text-sm text-muted-foreground leading-relaxed">
               <p>
                 <strong className="text-foreground">{t("rgpd_protection")}:</strong> {t("rgpd_desc")}
               </p>
@@ -382,32 +382,33 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
                 <strong className="text-foreground">{t("contact_info")}:</strong> {t("contact_rgpd")} <a href="mailto:pinto12397@gmail.com" className="text-primary hover:underline">pinto12397@gmail.com</a>
               </p>
             </div>
-            <div className="pt-2 border-t border-border">
+            <div className="pt-2 border-t border-border flex justify-between items-center">
               <button 
                 onClick={() => alert(t("export_coming_soon"))}
-                className="text-xs text-primary hover:underline"
+                className="text-[10px] uppercase font-bold text-primary hover:underline"
               >
                 {t("export_data_rgpd")}
               </button>
+              <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">RGPD Compliance</span>
             </div>
           </div>
 
           {/* Congregation Profile */}
-          <div className="premium-card p-4 md:p-6 space-y-4">
+          <div className="premium-card p-4 md:p-5 space-y-4">
             <h3 className="text-sm font-black text-foreground flex items-center gap-2">
               <User className="w-4 h-4 text-primary flex-shrink-0" />
               <span>{t("congregation_profile")}</span>
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+              <div className="col-span-1">
                 <label htmlFor="cong-name" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("congregation_name")}</label>
                 <input id="cong-name" className="input-soft text-sm mt-1" value={congregation.name} onChange={(e) => updateCongregation({ name: e.target.value })} />
               </div>
-              <div>
+              <div className="col-span-1">
                 <label htmlFor="cong-city" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("city")}</label>
                 <input id="cong-city" className="input-soft text-sm mt-1" value={congregation.city} onChange={(e) => updateCongregation({ city: e.target.value })} />
               </div>
-              <div>
+              <div className="col-span-1">
                 <label htmlFor="cong-day" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("day")}</label>
                 <select id="cong-day" className="input-soft text-sm mt-1" value={congregation.day} onChange={(e) => updateCongregation({ day: e.target.value })}>
                   {["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"].map((d) => (
@@ -415,7 +416,7 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
                   ))}
                 </select>
               </div>
-              <div>
+              <div className="col-span-1">
                 <label htmlFor="cong-time" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("time")}</label>
                 <input id="cong-time" className="input-soft text-sm mt-1" type="time" value={congregation.time} onChange={(e) => updateCongregation({ time: e.target.value })} />
               </div>
@@ -423,27 +424,26 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
           </div>
 
           {/* Responsable Accueil */}
-          <div className="premium-card p-4 md:p-6 space-y-4">
+          <div className="premium-card p-4 md:p-5 space-y-4">
             <h3 className="text-sm font-black text-foreground flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-primary flex-shrink-0" />
               <span>{t("reception_manager")}</span>
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+              <div className="col-span-1">
                 <label htmlFor="resp-name" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("full_name")}</label>
                 <input id="resp-name" className="input-soft text-sm mt-1" value={congregation.responsableName} onChange={(e) => updateCongregation({ responsableName: e.target.value })} />
               </div>
-              <div>
+              <div className="col-span-1">
                 <label htmlFor="resp-phone" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("phone")}</label>
                 <input id="resp-phone" className="input-soft text-sm mt-1" value={congregation.responsablePhone} onChange={(e) => updateCongregation({ responsablePhone: e.target.value })} />
               </div>
-              <div className="sm:col-span-2">
+              <div className="col-span-2">
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("whatsapp_group")}</label>
-                <input className="input-soft text-sm mt-1" placeholder="Numéro du groupe ou admin" value={congregation.whatsappGroup} onChange={(e) => updateCongregation({ whatsappGroup: e.target.value })} />
-              </div>
-              <div className="sm:col-span-2">
-                <label htmlFor="whatsapp-invite" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("whatsapp_invite_id")}</label>
-                <input id="whatsapp-invite" className="input-soft text-sm mt-1" value={congregation.whatsappInviteId} onChange={(e) => updateCongregation({ whatsappInviteId: e.target.value })} />
+                <div className="grid grid-cols-2 gap-3 mt-1">
+                  <input className="input-soft text-xs" placeholder="Groupe/Admin" value={congregation.whatsappGroup} onChange={(e) => updateCongregation({ whatsappGroup: e.target.value })} />
+                  <input id="whatsapp-invite" className="input-soft text-xs" placeholder="Invite ID" value={congregation.whatsappInviteId} onChange={(e) => updateCongregation({ whatsappInviteId: e.target.value })} />
+                </div>
               </div>
             </div>
           </div>
