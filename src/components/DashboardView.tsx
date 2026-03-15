@@ -84,7 +84,10 @@ export function DashboardView() {
           <p className="text-sm md:text-base text-muted-foreground mt-0.5">{t("welcome_back")}</p>
         </div>
         <button
-          onClick={() => setShowUserManual(true)}
+          onClick={() => {
+            setShowUserManual(true);
+            setActiveTab("settings");
+          }}
           className="flex items-center gap-2 px-3 xs:px-4 py-2 text-xs xs:text-sm font-bold text-primary bg-primary/10 hover:bg-primary/20 rounded-xl transition-colors touch-manipulation"
           title={t("user_manual") || "Mode d'emploi"}
         >
