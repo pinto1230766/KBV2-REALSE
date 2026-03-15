@@ -678,13 +678,15 @@ export function PlanningHub() {
                       {detailTab === "infos" && (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
                           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">{t("visit_details")}</p>
-                          <div className="space-y-1">
-                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("talk_theme")}</p>
-                            <input className="input-soft text-base font-bold" value={detailForm.talkTheme || ""} onChange={(e) => setDetailForm({ ...detailForm, talkTheme: e.target.value })} placeholder={t("talk_theme")} />
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("talk_number")}</p>
-                            <input className="input-soft text-2xl font-black w-32" value={detailForm.talkNoOrType || ""} onChange={(e) => setDetailForm({ ...detailForm, talkNoOrType: e.target.value })} placeholder={t("talk_number")} />
+                          <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="flex-[3] space-y-1">
+                              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("talk_theme")}</p>
+                              <input className="input-soft text-base font-bold" value={detailForm.talkTheme || ""} onChange={(e) => setDetailForm({ ...detailForm, talkTheme: e.target.value })} placeholder={t("talk_theme")} />
+                            </div>
+                            <div className="flex-1 space-y-1 min-w-[100px]">
+                              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("talk_number")}</p>
+                              <input className="input-soft text-2xl font-black w-full" value={detailForm.talkNoOrType || ""} onChange={(e) => setDetailForm({ ...detailForm, talkNoOrType: e.target.value })} placeholder={t("talk_number")} />
+                            </div>
                           </div>
                           <div className="space-y-1">
                             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("speaker_phone")}</p>
