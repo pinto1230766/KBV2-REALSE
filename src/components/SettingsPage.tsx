@@ -318,30 +318,35 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
       {activeTab === "general" && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5 md:space-y-6">
           {/* Version Card */}
-          <div className="premium-card p-4 md:p-8 text-center">
-            <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
-              <Monitor className="w-6 h-6 md:w-8 md:h-8 text-primary-foreground" />
-            </div>
-            <p className="text-xs md:text-sm font-bold uppercase tracking-wider text-muted-foreground">KBV Manager</p>
-            <h2 className="text-xl md:text-2xl font-black text-foreground mt-1">Version 2.0.0</h2>
-            <p className="text-sm md:text-base text-muted-foreground mt-2 max-w-md mx-auto">
-              {t("app_description")}
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mt-5 md:mt-6 max-w-md mx-auto">
-              <div className="p-3 rounded-xl bg-muted">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("developer")}</p>
-                <p className="text-sm md:text-base font-bold text-foreground mt-1">Pinto Francisco</p>
+          {/* Version Card Compacte */}
+          <div className="premium-card p-4 md:p-5 text-center">
+            <div className="flex items-center justify-center gap-4 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+                <Monitor className="w-5 h-5 text-primary-foreground" />
               </div>
-              <div className="p-3 rounded-xl bg-muted">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("last_update")}</p>
-                <p className="text-sm md:text-base font-bold text-foreground mt-1">Mars 2026</p>
-              </div>
-              <div className="p-3 rounded-xl bg-muted sm:col-span-2">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Contact / Support</p>
-                <p className="text-sm md:text-base font-bold text-foreground mt-1">pinto12397@gmail.com</p>
+              <div className="text-left">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground leading-none">KBV Manager</p>
+                <h2 className="text-lg font-black text-foreground">Version 2.0.0</h2>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground uppercase tracking-wider mt-4">© 2025-2026 Pinto Francisco · Tous droits réservés</p>
+            
+            <div className="grid grid-cols-2 gap-2 mt-4">
+              <div className="p-2 rounded-xl bg-muted/50 text-left">
+                <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">{t("developer")}</p>
+                <p className="text-xs font-bold text-foreground">Pinto Francisco</p>
+              </div>
+              <div className="p-2 rounded-xl bg-muted/50 text-left">
+                <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">{t("last_update")}</p>
+                <p className="text-xs font-bold text-foreground">Mars 2026</p>
+              </div>
+              <div className="p-2 rounded-xl bg-muted/50 text-left col-span-2 flex items-center justify-between">
+                <div>
+                  <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Contact / Support</p>
+                  <p className="text-xs font-bold text-foreground">pinto12397@gmail.com</p>
+                </div>
+                <p className="text-[8px] text-muted-foreground uppercase tracking-wider text-right">© 2025-2026</p>
+              </div>
+            </div>
           </div>
 
           {/* User Manual Button */}

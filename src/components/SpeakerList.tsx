@@ -121,9 +121,9 @@ export function SpeakerList() {
     toast.success(t("speaker_deleted"));
   };
 
-  const filtered = speakers.filter(
-    (sp) => sp.nom.toLowerCase().includes(search.toLowerCase()) || sp.congregation.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = speakers
+    .filter((sp) => sp.nom.toLowerCase().includes(search.toLowerCase()) || sp.congregation.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => a.nom.localeCompare(b.nom));
 
   return (
     <div className="py-4 md:py-6 space-y-4">
@@ -170,7 +170,7 @@ export function SpeakerList() {
                 className="premium-card p-3 cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all group relative"
                 onClick={() => openFiche(sp)}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-center gap-4">
                   {/* Photos/Avatars avec support couple */}
                   <div className="flex gap-1.5 flex-shrink-0">
                     {sp.householdType === "couple" ? (
@@ -201,23 +201,22 @@ export function SpeakerList() {
                     )}
                   </div>
 
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 text-center">
                     <p className="text-sm font-black text-foreground truncate">{sp.nom}</p>
                     {sp.householdType === "couple" && sp.spouseName && (
                       <p className="text-[11px] font-bold text-primary/80 -mt-0.5">{t("with")} {sp.spouseName}</p>
                     )}
-                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 truncate mt-1">
+                    <p className="text-xs text-muted-foreground flex items-center justify-center gap-1.5 truncate mt-1">
                       <Home className="w-3.5 h-3.5 flex-shrink-0 text-primary/50" /> {sp.congregation}
                     </p>
                     {sp.telephone && (
-                      <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
-                        <Phone className="w-3.5 h-3.5 text-primary/50" />
-                        <span className="font-medium">{sp.telephone}</span>
-                      </div>
+                      <p className="text-[10px] text-muted-foreground/70 flex items-center justify-center gap-1 mt-0.5">
+                        <Phone className="w-3 h-3" /> {sp.telephone}
+                      </p>
                     )}
                   </div>
 
-                  <div className="flex flex-col items-end justify-between">
+                  <div className="flex flex-col items-center justify-between gap-2 self-stretch">
                     <button onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(sp.id); }} className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive/70 transition-colors" title={t("delete")}>
                       <Trash2 className="w-4 h-4" />
                     </button>

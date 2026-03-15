@@ -55,7 +55,9 @@ export function GlobalHostList() {
     setShowForm(true);
   };
 
-  const filtered = hosts.filter((h) => h.nom.toLowerCase().includes(search.toLowerCase()));
+  const filtered = hosts
+    .filter((h) => h.nom.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => a.nom.localeCompare(b.nom));
 
   return (
     <div className="py-4 md:py-6 space-y-4">
@@ -104,7 +106,7 @@ export function GlobalHostList() {
                 className="premium-card p-3 cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all group relative"
                 onClick={() => openEdit(h)}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-center gap-4">
                   {h.photoUrl ? (
                     <img src={h.photoUrl} alt={h.nom} className="w-12 h-14 rounded-xl object-cover flex-shrink-0 shadow-sm" />
                   ) : (
@@ -112,21 +114,20 @@ export function GlobalHostList() {
                       <Home className="w-6 h-6 text-muted-foreground/30" />
                     </div>
                   )}
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 text-center">
                     <p className="text-sm font-black text-foreground truncate">{h.nom}</p>
                     {(h.adresse || h.address) && (
-                      <p className="text-xs text-muted-foreground flex items-center gap-1.5 truncate mt-1">
+                      <p className="text-xs text-muted-foreground flex items-center justify-center gap-1.5 truncate mt-1">
                         <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-primary/50" /> {h.adresse || h.address}
                       </p>
                     )}
                     {h.telephone && (
-                      <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
-                        <Phone className="w-3.5 h-3.5 text-primary/50" />
-                        <span className="font-medium text-foreground/80">{h.telephone}</span>
-                      </div>
+                      <p className="text-[10px] text-muted-foreground/70 flex items-center justify-center gap-1 mt-0.5">
+                        <Phone className="w-3 h-3" /> {h.telephone}
+                      </p>
                     )}
                   </div>
-                  <div className="flex flex-col items-end justify-between">
+                  <div className="flex flex-col items-center justify-between gap-2 self-stretch">
                     <button onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(h.id); }} className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive/70 transition-colors" title={t("delete")}>
                       <Trash2 className="w-4 h-4" />
                     </button>

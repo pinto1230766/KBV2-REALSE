@@ -588,26 +588,28 @@ export function PlanningHub() {
               return (
                 <motion.div key={visit.visitId} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ delay: i * 0.02 }}
                   className="premium-card p-3 cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all" onClick={() => openDetail(visit)}>
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-center gap-4">
                     <div className="w-12 h-14 rounded-xl bg-muted flex flex-col items-center justify-center flex-shrink-0">
                       <span className="text-[8px] font-bold uppercase tracking-wider text-primary">{monthShort}</span>
                       <span className="text-lg font-black text-foreground leading-tight">{dayNum}</span>
                     </div>
-                    <div className="flex-1 min-w-0">
+
+                    <div className="flex-1 min-w-0 text-center">
                       <p className="text-sm font-black text-foreground truncate">{visit.nom}</p>
                       {visit.talkTheme && <p className="text-xs text-muted-foreground truncate mt-0.5">{visit.talkTheme}</p>}
-                      <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
                         <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${
                           visit.status === "confirmed" ? "status-confirmed" : visit.status === "completed" ? "status-completed" : visit.status === "cancelled" ? "status-cancelled" : "status-scheduled"
                         }`}>{t(visit.status)}</span>
                         <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary">{locationLabel(visit.locationType)}</span>
                       </div>
-                      <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
+                      <div className="flex items-center justify-center gap-3 mt-2 text-[10px] text-muted-foreground">
                         <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {visit.heure_visite || "11:30"}</span>
                         <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {visit.congregation}</span>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-1">
+
+                    <div className="flex flex-col gap-1 items-center self-stretch justify-center pr-1">
                       {visit.status !== "confirmed" && visit.status !== "completed" && (
                         <button onClick={(e) => { e.stopPropagation(); updateVisit(visit.visitId, { status: "confirmed" }); toast.success(t("visit_confirmed")); }} className="p-1.5 rounded-lg hover:bg-emerald-500/10 transition-colors" title="Confirmer">
                           <Check className="w-3.5 h-3.5 text-emerald-500" />
@@ -616,9 +618,9 @@ export function PlanningHub() {
                       <button onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(visit.visitId); }} className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors" title="Supprimer">
                         <Trash2 className="w-3.5 h-3.5 text-destructive" />
                       </button>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground/30 mt-auto" />
                     </div>
                   </div>
-                  <div className="flex justify-end mt-1"><ChevronRight className="w-4 h-4 text-muted-foreground/30" /></div>
                 </motion.div>
               );
             })}
