@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import {
   Plus, Trash2, Check, ChevronRight, Clock, MapPin, Archive, AlertTriangle,
   X, Info, Users, MessageSquare, CreditCard, Star, Phone, Mail, Send,
@@ -191,16 +191,7 @@ export function PlanningHub() {
   const [showArchived, setShowArchived] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  // Auto-open visit when clicking from calendar (without scroll)
-  useEffect(() => {
-    if (pendingVisitId) {
-      const visit = visits.find((v) => v.visitId === pendingVisitId);
-      if (visit) {
-        setViewVisit(visit);
-        setPendingVisit(null); // Clear pending after opening
-      }
-    }
-  }, [pendingVisitId, visits, setPendingVisit]);
+
 
   // Detail form
   const [detailForm, setDetailForm] = useState<Partial<Visit>>({});
@@ -264,7 +255,7 @@ export function PlanningHub() {
     toast.success(t("visit_deleted"));
   };
 
-  const openDetail = (visit: Visit) => {
+  const openDetail = useCallback((visit: Visit) => {
     setViewVisit(visit);
     // Format dates for date inputs (yyyy-MM-dd)
     const formatDateForInput = (dateStr?: string) => {
@@ -287,7 +278,18 @@ export function PlanningHub() {
     setSelectedRecipient("orateur");
     setTemplateLang(language);
     setShowAssignHost(false);
-  };
+  }, [language, setViewVisit, setDetailForm, setDetailTab, setMessageText, setSelectedRecipient, setTemplateLang, setShowAssignHost]);
+
+  // Auto-open visit when clicking from calendar (without scroll)
+  useEffect(() => {
+    if (pendingVisitId) {
+      const visit = visits.find((v) => v.visitId === pendingVisitId);
+      if (visit) {
+        openDetail(visit);
+        setPendingVisit(null); // Clear pending after opening
+      }
+    }
+  }, [pendingVisitId, visits, setPendingVisit, openDetail]);
 
   const saveDetail = () => {
     if (!viewVisit) return;
