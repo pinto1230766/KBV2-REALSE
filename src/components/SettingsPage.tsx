@@ -16,6 +16,7 @@ import type { Language, Visit, Speaker, Host } from "../store/visitTypes";
 import { syncCloud, normalizeName } from "../lib/syncCloud";
 import { parseCSV, extractSheetInfo, parseRowsToData } from "../lib/sheetUtils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
+import { KbvLogo } from "./KbvLogo";
 
 type SettingsTab = "general" | "appearance" | "notifications" | "data";
 type ThemeMode = "light" | "dark" | "system";
@@ -321,8 +322,8 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
           {/* Version Card Compacte */}
           <div className="premium-card p-4 md:p-5 text-center">
             <div className="flex items-center justify-center gap-4 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                <Monitor className="w-5 h-5 text-primary-foreground" />
+              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center overflow-hidden">
+                <KbvLogo className="w-full h-full" />
               </div>
               <div className="text-left">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground leading-none">KBV Manager</p>

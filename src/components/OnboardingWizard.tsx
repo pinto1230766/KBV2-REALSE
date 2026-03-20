@@ -15,9 +15,9 @@ import { useTranslation } from "@/hooks/useTranslation";
 const DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 
 const LANGUAGES: { code: Language; name: string; nativeName: string; flag: string }[] = [
-  { code: "fr", name: "Français", nativeName: "Français", flag: "/images/flags/france.png" },
-  { code: "pt", name: "Português", nativeName: "Português", flag: "/images/flags/portugal.png" },
-  { code: "cv", name: "Cape Verdean Creole", nativeName: "Crioulo Caboverdiano", flag: "/images/flags/cape_verde.png" },
+  { code: "fr", name: "Français", nativeName: "Français", flag: "./images/flags/france.png" },
+  { code: "pt", name: "Português", nativeName: "Português", flag: "./images/flags/portugal.png" },
+  { code: "cv", name: "Cape Verdean Creole", nativeName: "Crioulo Caboverdiano", flag: "./images/flags/cape_verde.png" },
 ];
 
 interface OnboardingWizardProps {
@@ -226,6 +226,7 @@ export function OnboardingWizard({ onComplete, onShowUserManual }: OnboardingWiz
       email: "jean.dupont@email.com",
       notes: "Ancien responsable du programme",
       householdType: "single",
+      photoUrl: "images/speakers/speakers.jpg",
     });
     
     // Sample host
@@ -238,6 +239,7 @@ export function OnboardingWizard({ onComplete, onShowUserManual }: OnboardingWiz
       capacity: 4,
       role: "hebergement",
       notes: "Grande maison avec jardin",
+      photoUrl: "images/hosts/host.jpg",
     });
     
     // Sample visit (next month)

@@ -8,13 +8,15 @@
     "dist/**/*",
     "electron/**/*"
   ],
+  "asar": false,
   "win": {
     "target": [
       {
-        "target": "nsis",
+        "target": "dir",
         "arch": ["x64"]
       }
     ],
+    "sign": null,
     "icon": "public/icon.png"
   },
   "mac": {

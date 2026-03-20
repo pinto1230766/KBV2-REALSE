@@ -35,6 +35,7 @@ import { PWAInstallBanner } from "./components/PWAInstallBanner";
 import { OfflineIndicator } from "./components/OfflineIndicator";
 import { OnboardingWizard } from "./components/OnboardingWizard";
 import { UserManualPage } from "./components/UserManualPage";
+import { KbvLogo } from "./components/KbvLogo";
 
 function App() {
   const { isStandalone } = usePWA();
@@ -73,19 +74,26 @@ function App() {
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
 
-    // Sanitize legacy demo photos references
-    const DEMO_SPEAKER = "/images/speakers/speakers.jpg";
-    const DEMO_HOST = "/images/hosts/host.jpg";
-
+    // Auto-patch absolute paths to relative for Electron/PWA compatibility
     speakers.forEach(s => {
-      if (s.photoUrl === DEMO_SPEAKER) {
-        useSpeakerStore.getState().updateSpeaker(s.id, { photoUrl: undefined });
+      // Restore sample photo if missing for the demo speaker
+      if (!s.photoUrl && s.nom.trim().toLowerCase() === "jean dupont") {
+        useSpeakerStore.getState().updateSpeaker(s.id, { photoUrl: "./images/speakers/speakers.jpg" });
+      } else if (s.photoUrl && s.photoUrl.startsWith("/")) {
+        useSpeakerStore.getState().updateSpeaker(s.id, { photoUrl: "." + s.photoUrl });
+      } else if (s.photoUrl && s.photoUrl.startsWith("images/")) {
+        useSpeakerStore.getState().updateSpeaker(s.id, { photoUrl: "./" + s.photoUrl });
       }
     });
 
     hosts.forEach(h => {
-      if (h.photoUrl === DEMO_HOST) {
-        useHostStore.getState().updateHost(h.id, { photoUrl: undefined });
+      // Restore sample photo if missing for the demo host
+      if (!h.photoUrl && h.nom.trim().toLowerCase() === "marie martin") {
+        useHostStore.getState().updateHost(h.id, { photoUrl: "./images/hosts/host.jpg" });
+      } else if (h.photoUrl && h.photoUrl.startsWith("/")) {
+        useHostStore.getState().updateHost(h.id, { photoUrl: "." + h.photoUrl });
+      } else if (h.photoUrl && h.photoUrl.startsWith("images/")) {
+        useHostStore.getState().updateHost(h.id, { photoUrl: "./" + h.photoUrl });
       }
     });
 
@@ -171,11 +179,9 @@ function App() {
         <header className="px-4 md:px-8 py-3 md:py-4 flex items-center justify-between bg-card shadow-sm transition-colors gap-4 border-b border-border safe-top">
           {/* Logo */}
           <div className="flex items-center gap-3 flex-shrink-0">
-            <img 
-              src="/icon.png" 
-              alt="KBV Lyon" 
-              className="w-10 h-10 md:w-11 md:h-11 rounded-xl object-cover shadow-lg"
-            />
+            <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl overflow-hidden shadow-lg bg-primary/10">
+              <KbvLogo className="w-full h-full" />
+            </div>
             <div className="hidden sm:block">
               <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.35em] text-primary">
                 Coordination

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { KbvLogo } from "./KbvLogo";
 
 export function SplashScreen({ onFinished }: { onFinished: () => void }) {
   const [phase, setPhase] = useState<"logo" | "text" | "exit">("logo");
@@ -37,12 +38,10 @@ export function SplashScreen({ onFinished }: { onFinished: () => void }) {
             {/* White border effect */}
             <div className="absolute -inset-1 rounded-3xl bg-white opacity-50 blur-sm" />
             
-            {/* Main logo box */}
-            <img 
-              src="/icon.png" 
-              alt="KBV Lyon" 
-              className="relative w-28 h-28 rounded-3xl shadow-2xl border-4 border-white object-cover"
-            />
+            {/* Main logo SVG */}
+            <div className="relative w-28 h-28 rounded-3xl shadow-2xl border-4 border-white overflow-hidden bg-white/10 backdrop-blur-sm">
+              <KbvLogo className="w-full h-full" />
+            </div>
           </div>
         </motion.div>
 

@@ -1,10 +1,9 @@
-import { useMemo } from "react";
-import { Calendar, Users, Home, TrendingUp, ChevronRight, Download, Upload, BookOpen } from "lucide-react";
-import { motion } from "framer-motion";
+import { useMemo, useState } from "react";
+import { Calendar, Users, Home, TrendingUp, ChevronRight, Download, Upload, BookOpen, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useVisitStore } from "../store/useVisitStore";
 import { useHostStore } from "../store/useHostStore";
 import { useSpeakerStore } from "../store/useSpeakerStore";
-import { useSettingsStore } from "../store/useSettingsStore";
 import { useUIStore } from "../store/useUIStore";
 import { useTranslation } from "../hooks/useTranslation";
 import { toast } from "sonner";
@@ -17,6 +16,8 @@ export function DashboardView() {
   const setActiveTab = useUIStore((s) => s.setActiveTab);
   const setShowUserManual = useUIStore((s) => s.setShowUserManual);
   const { t, language } = useTranslation();
+  
+  const [filter, setFilter] = useState<'all' | 'upcoming' | 'confirmed' | 'month'>('all');
 
   const stats = useMemo(() => {
     const now = new Date();
@@ -29,13 +30,34 @@ export function DashboardView() {
     return { total: visits.length, upcoming: upcoming.length, confirmed: confirmed.length, thisMonth: thisMonth.length };
   }, [visits]);
 
-  const upcomingVisits = useMemo(() => {
+  // Handle filter selection
+  const handleFilterClick = (newFilter: typeof filter) => {
+    setFilter(prev => prev === newFilter ? 'all' : newFilter);
+  };
+
+  const filteredVisits = useMemo(() => {
+    const sorted = [...visits]
+      .sort((a, b) => new Date(a.visitDate).getTime() - new Date(b.visitDate).getTime());
+    
     const now = new Date();
-    return visits
-      .filter((v) => new Date(v.visitDate) >= now && v.status !== "cancelled")
-      .sort((a, b) => new Date(a.visitDate).getTime() - new Date(b.visitDate).getTime())
-      .slice(0, 5);
-  }, [visits]);
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    switch (filter) {
+      case 'upcoming':
+        return sorted.filter(v => new Date(v.visitDate) >= now && v.status !== "cancelled");
+      case 'confirmed':
+        return sorted.filter(v => v.status === 'confirmed');
+      case 'month':
+        return sorted.filter(v => {
+          const d = new Date(v.visitDate);
+          return d >= startOfMonth && d <= endOfMonth;
+        });
+      default:
+        // Default behavior: show only next 5 upcoming
+        return sorted.filter(v => new Date(v.visitDate) >= now && v.status !== "cancelled").slice(0, 5);
+    }
+  }, [visits, filter]);
 
   const locale = language === "pt" ? "pt-PT" : language === "cv" ? "pt-CV" : "fr-FR";
 
@@ -99,20 +121,35 @@ export function DashboardView() {
       {/* Stat Cards */}
       <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {/* À venir */}
-        <motion.button variants={item} whileHover={{ y: -2 }} onClick={() => setActiveTab("planning")}
-          className="premium-card p-2.5 xs:p-4 md:p-5 text-left min-h-[90px] flex flex-col justify-between">
+        <motion.button 
+          variants={item} 
+          whileHover={{ y: -2 }} 
+          onClick={() => handleFilterClick('upcoming')}
+          className={`premium-card p-2.5 xs:p-4 md:p-5 text-left min-h-[90px] flex flex-col justify-between transition-all ${
+            filter === 'upcoming' ? "ring-2 ring-primary shadow-lg scale-[1.02]" : ""
+          }`}
+        >
           <p className="text-[10px] xs:text-xs md:text-sm font-bold uppercase tracking-wider text-muted-foreground">{t("upcoming")}</p>
           <div className="flex items-center gap-2 mt-1 xs:mt-2">
             <p className="text-2xl xs:text-3xl md:text-4xl font-black text-foreground">{stats.upcoming}</p>
-            <TrendingUp className="w-4 h-4 xs:w-5 xs:h-5 md:w-6 md:h-6 text-primary" />
+            <Calendar className="w-4 h-4 xs:w-5 xs:h-5 md:w-6 md:h-6 text-primary" />
           </div>
         </motion.button>
 
         {/* Confirmées */}
-        <motion.button variants={item} whileHover={{ y: -2 }} onClick={() => setActiveTab("planning")}
-          className="rounded-2xl p-2.5 xs:p-4 md:p-5 text-left bg-amber-400 dark:bg-amber-500 text-white shadow-lg min-h-[90px] flex flex-col justify-between">
+        <motion.button 
+          variants={item} 
+          whileHover={{ y: -2 }} 
+          onClick={() => handleFilterClick('confirmed')}
+          className={`rounded-2xl p-2.5 xs:p-4 md:p-5 text-left min-h-[90px] flex flex-col justify-between transition-all ${
+            filter === 'confirmed' ? "bg-emerald-500 ring-2 ring-emerald-400 shadow-lg scale-[1.02]" : "bg-amber-400 dark:bg-amber-500"
+          } text-white shadow-lg`}
+        >
           <p className="text-[10px] xs:text-xs md:text-sm font-bold uppercase tracking-wider text-white/80">{t("confirmed_count")}</p>
-          <p className="text-2xl xs:text-3xl md:text-4xl font-black">{stats.confirmed}</p>
+          <div className="flex items-center gap-2 mt-1 xs:mt-2">
+            <p className="text-2xl xs:text-3xl md:text-4xl font-black">{stats.confirmed}</p>
+            <Check className="w-4 h-4 xs:w-5 xs:h-5 md:w-6 md:h-6 text-white/80" />
+          </div>
         </motion.button>
 
         {/* Orateurs */}
@@ -123,95 +160,116 @@ export function DashboardView() {
         </motion.button>
 
         {/* Ce mois-ci */}
-        <motion.button variants={item} whileHover={{ y: -2 }} onClick={() => setActiveTab("planning")}
-          className="premium-card p-2.5 xs:p-4 md:p-5 text-left min-h-[90px] flex flex-col justify-between">
+        <motion.button 
+          variants={item} 
+          whileHover={{ y: -2 }} 
+          onClick={() => handleFilterClick('month')}
+          className={`premium-card p-2.5 xs:p-4 md:p-5 text-left min-h-[90px] flex flex-col justify-between transition-all ${
+            filter === 'month' ? "ring-2 ring-primary shadow-lg scale-[1.02]" : ""
+          }`}
+        >
           <p className="text-[10px] xs:text-xs md:text-sm font-bold uppercase tracking-wider text-primary">{t("this_month")}</p>
-          <p className="text-2xl xs:text-3xl md:text-4xl font-black text-foreground">{stats.thisMonth}</p>
+          <div className="flex items-center gap-2 mt-1 xs:mt-2">
+            <p className="text-2xl xs:text-3xl md:text-4xl font-black text-foreground">{stats.thisMonth}</p>
+            <TrendingUp className="w-4 h-4 xs:w-5 xs:h-5 md:w-6 md:h-6 text-primary" />
+          </div>
         </motion.button>
       </div>
 
       {/* Recent Activities */}
       <motion.div variants={item}>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-base md:text-lg font-black text-foreground">{t("recent_activities")}</h3>
-          <button onClick={() => setActiveTab("planning")} className="text-sm font-semibold text-primary hover:underline">
-            {t("see_all")}
+        <div className="flex items-center justify-between mb-3 px-1">
+          <h3 className="text-base md:text-lg font-black text-foreground">
+            {filter === 'all' ? t("recent_activities") : 
+             filter === 'upcoming' ? t("upcoming_visits") :
+             filter === 'confirmed' ? t("confirmed_count") :
+             filter === 'month' ? t("this_month") : t("recent_activities")}
+          </h3>
+          <button 
+            onClick={() => filter === 'all' ? setActiveTab("planning") : setFilter('all')} 
+            className="text-sm font-semibold text-primary hover:underline flex items-center gap-1"
+          >
+            {filter === 'all' ? (
+              <>{t("see_all")} <ChevronRight className="w-3 h-3" /></>
+            ) : (
+              <>{t("all")}</>
+            )}
           </button>
         </div>
-        {upcomingVisits.length === 0 ? (
+        {filteredVisits.length === 0 ? (
           <p className="text-sm text-muted-foreground py-8 text-center">{t("no_visits")}</p>
         ) : (
           <div className="space-y-2">
-            {upcomingVisits.map((visit, i) => {
-              // Recherche de l'orateur pour enrichir l'affichage
-              const speaker = speakers.find((s) => s.nom === visit.nom);
-              const isCouple = speaker?.householdType === "couple";
-              const displayName = isCouple && speaker?.spouseName ? `${speaker.nom} & ${speaker.spouseName}` : visit.nom;
+            <AnimatePresence mode="popLayout">
+              {filteredVisits.map((visit, i) => {
+                const speaker = speakers.find((s) => s.nom.trim().toLowerCase() === visit.nom.trim().toLowerCase());
+                const isCouple = speaker?.householdType === "couple";
+                const displayName = isCouple && speaker?.spouseName ? `${speaker.nom} & ${speaker.spouseName}` : visit.nom;
 
-              const d = new Date(visit.visitDate);
-              const monthShort = d.toLocaleDateString(locale, { month: "short" }).toUpperCase().replace(".", "");
-              const dayNum = d.getDate();
-              return (
-                <motion.button
-                  key={visit.visitId}
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2 + i * 0.05 }}
-                  onClick={() => {
-                    useUIStore.getState().setPendingVisit(visit.visitId);
-                    setActiveTab("planning");
-                  }}
-                  className="w-full premium-card p-4 flex items-center gap-4 text-left hover:ring-1 hover:ring-primary/30 transition-all"
-                >
-                  {/* Date block */}
-                  <div className="w-12 h-14 rounded-xl bg-muted flex flex-col items-center justify-center flex-shrink-0">
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">{monthShort}</span>
-                    <span className="text-lg font-black text-foreground leading-tight">{dayNum}</span>
-                  </div>
+                const d = new Date(visit.visitDate);
+                const monthShort = d.toLocaleDateString(locale, { month: "short" }).toUpperCase().replace(".", "");
+                const dayNum = d.getDate();
+                return (
+                  <motion.button
+                    key={visit.visitId}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ delay: i * 0.05 }}
+                    onClick={() => {
+                      useUIStore.getState().setPendingVisit(visit.visitId);
+                      setActiveTab("planning");
+                    }}
+                    className="w-full premium-card p-4 flex items-center gap-4 text-left hover:ring-1 hover:ring-primary/30 transition-all"
+                  >
+                    <div className="w-12 h-14 rounded-xl bg-muted flex flex-col items-center justify-center flex-shrink-0">
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">{monthShort}</span>
+                      <span className="text-lg font-black text-foreground leading-tight">{dayNum}</span>
+                    </div>
 
-                  {/* Photos/Avatar */}
-                  <div className="flex -space-x-3 overflow-hidden">
-                    {isCouple ? (
-                      <>
-                        <div className="w-9 h-9 rounded-full ring-2 ring-background bg-muted overflow-hidden flex-shrink-0">
+                    <div className="flex -space-x-3 overflow-hidden">
+                      {isCouple ? (
+                        <>
+                          <div className="w-9 h-9 rounded-full ring-2 ring-background bg-muted overflow-hidden flex-shrink-0">
+                            {speaker?.photoUrl ? (
+                              <img src={speaker.photoUrl} alt={speaker.nom} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center"><Users className="w-4 h-4 text-muted-foreground/50" /></div>
+                            )}
+                          </div>
+                          <div className="w-9 h-9 rounded-full ring-2 ring-background bg-muted overflow-hidden flex-shrink-0">
+                            {speaker?.spousePhotoUrl ? (
+                              <img src={speaker.spousePhotoUrl} alt={speaker.spouseName} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center"><Users className="w-4 h-4 text-muted-foreground/50" /></div>
+                            )}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="w-9 h-9 rounded-full bg-muted overflow-hidden flex-shrink-0">
                           {speaker?.photoUrl ? (
-                            <img src={speaker.photoUrl} alt={speaker.nom} className="w-full h-full object-cover" />
+                            <img src={speaker.photoUrl} alt={visit.nom} className="w-full h-full object-cover" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center"><Users className="w-4 h-4 text-muted-foreground/50" /></div>
+                             <div className="w-full h-full flex items-center justify-center"><Users className="w-4 h-4 text-muted-foreground/50" /></div>
                           )}
                         </div>
-                        <div className="w-9 h-9 rounded-full ring-2 ring-background bg-muted overflow-hidden flex-shrink-0">
-                          {speaker?.spousePhotoUrl ? (
-                            <img src={speaker.spousePhotoUrl} alt={speaker.spouseName} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center"><Users className="w-4 h-4 text-muted-foreground/50" /></div>
-                          )}
-                        </div>
-                      </>
-                    ) : (
-                      <div className="w-9 h-9 rounded-full bg-muted overflow-hidden flex-shrink-0">
-                        {speaker?.photoUrl && !speaker.photoUrl.includes("speakers.jpg") ? (
-                          <img src={speaker.photoUrl} alt={visit.nom} className="w-full h-full object-cover" />
-                        ) : (
-                           <div className="w-full h-full flex items-center justify-center"><Users className="w-4 h-4 text-muted-foreground/50" /></div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
 
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-foreground truncate">{displayName}</p>
-                    <p className="text-[10px] text-muted-foreground truncate">📍 {visit.congregation}</p>
-                  </div>
-                  <span className={`px-2 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider flex-shrink-0 ${
-                    visit.status === "confirmed" ? "status-confirmed" : visit.status === "completed" ? "status-completed" : visit.status === "cancelled" ? "status-cancelled" : "status-scheduled"
-                  }`}>
-                    {t(visit.status === "confirmed" ? "confirmed" : visit.status)}
-                  </span>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground/50 flex-shrink-0" />
-                </motion.button>
-              );
-            })}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-foreground truncate">{displayName}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">📍 {visit.congregation}</p>
+                    </div>
+                    <span className={`px-2 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider flex-shrink-0 ${
+                      visit.status === "confirmed" ? "status-confirmed" : visit.status === "completed" ? "status-completed" : visit.status === "cancelled" ? "status-cancelled" : "status-scheduled"
+                    }`}>
+                      {t(visit.status === "confirmed" ? "confirmed" : visit.status)}
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground/50 flex-shrink-0" />
+                  </motion.button>
+                );
+              })}
+            </AnimatePresence>
           </div>
         )}
       </motion.div>
@@ -221,7 +279,7 @@ export function DashboardView() {
         <h3 className="text-base font-black text-foreground">KBV v2 – Premium</h3>
         <p className="text-xs xs:text-sm text-muted-foreground mt-1">
           {language === "cv" ? "Bo ferramenta di planifikason lokal, otimizadu pa un esperiénsia fásil i fluidu." :
-           language === "pt" ? "A sua ferramenta de planificação local, otimizada para une experiência fácil e fluida." :
+           language === "pt" ? "A sua ferramenta de planificação local, otimizada para une expérience fácil e fluida." :
            "Votre outil de planification locale, optimisé pour une expérience tactile fluide."}
         </p>
         <div className="flex flex-col sm:flex-row gap-2 xs:gap-3 mt-4">
