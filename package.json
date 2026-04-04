@@ -24,7 +24,7 @@
     "open:ios": "npx cap open ios"
   },
   "dependencies": {
-    "@capacitor/android": "^6.2.0",
+    "@capacitor/android": "^6.2.1",
     "@capacitor/core": "^6.2.0",
     "@capacitor/ios": "^6.2.0",
     "@hookform/resolvers": "^3.10.0",

@@ -1,4 +1,6 @@
 import { useState, useRef } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Users, Plus, Trash2, Edit3, Phone, ChevronRight, AlertTriangle, Search, Camera, Upload, X, MapPin, UserCircle, Home } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSpeakerStore } from "../store/useSpeakerStore";
@@ -7,6 +9,7 @@ import { useTranslation } from "../hooks/useTranslation";
 import { toast } from "sonner";
 import type { Speaker, HouseholdType } from "../store/visitTypes";
 import { generateId } from "../lib/sheetUtils";
+import { speakerSchema, type SpeakerFormData } from "../lib/validation";
 
 const staggerContainer = {
   hidden: { opacity: 0 },
@@ -85,7 +88,19 @@ export function SpeakerList() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [editingNotes, setEditingNotes] = useState(false);
 
-  // Form state for fiche
+  const { register, handleSubmit: handleZodSubmit, formState: { errors }, reset: resetZodForm, watch } = useForm<SpeakerFormData>({
+    resolver: zodResolver(speakerSchema),
+    defaultValues: {
+      nom: "",
+      congregation: congregationName,
+      telephone: "",
+      email: "",
+      notes: "",
+      householdType: "single",
+      spouseName: "",
+    },
+  });
+
   const [form, setForm] = useState({
     nom: "", congregation: "", telephone: "", email: "", notes: "",
     photoUrl: undefined as string | undefined,
@@ -96,6 +111,15 @@ export function SpeakerList() {
 
   const resetForm = () => {
     setForm({ nom: "", congregation: "", telephone: "", email: "", notes: "", photoUrl: undefined, spousePhotoUrl: undefined, householdType: "single", spouseName: "" });
+    resetZodForm({
+      nom: "",
+      congregation: congregationName,
+      telephone: "",
+      email: "",
+      notes: "",
+      householdType: "single",
+      spouseName: "",
+    });
     setEditing(null);
     setShowForm(false);
     setViewSpeaker(null);
@@ -114,6 +138,15 @@ export function SpeakerList() {
       householdType: sp.householdType || "single",
       spouseName: sp.spouseName || "",
     });
+    resetZodForm({
+      nom: sp.nom,
+      congregation: sp.congregation,
+      telephone: sp.telephone || "",
+      email: sp.email || "",
+      notes: sp.notes || "",
+      householdType: sp.householdType || "single",
+      spouseName: sp.spouseName || "",
+    });
     setEditing(sp);
     setViewSpeaker(sp);
     setEditingNotes(false);
@@ -121,19 +154,28 @@ export function SpeakerList() {
 
   const openAddForm = () => {
     setForm({ nom: "", congregation: congregationName, telephone: "", email: "", notes: "", photoUrl: undefined, spousePhotoUrl: undefined, householdType: "single", spouseName: "" });
+    resetZodForm({
+      nom: "",
+      congregation: congregationName,
+      telephone: "",
+      email: "",
+      notes: "",
+      householdType: "single",
+      spouseName: "",
+    });
     setEditing(null);
     setShowForm(true);
     setViewSpeaker(null);
     setEditingNotes(false);
   };
 
-  const handleSave = () => {
-    if (!form.nom) return;
+  const handleSave = (data?: SpeakerFormData) => {
+    if (!data) return;
     if (editing) {
-      updateSpeaker(editing.id, form);
+      updateSpeaker(editing.id, { ...form, ...data });
       toast.success(t("speaker_updated"));
     } else {
-      addSpeaker({ ...form, id: generateId() } as Speaker);
+      addSpeaker({ ...form, ...data, id: generateId() } as Speaker);
       toast.success(t("speaker_added"));
     }
     resetForm();
@@ -389,7 +431,7 @@ export function SpeakerList() {
                 {/* Save button */}
                 <motion.button
                   whileTap={{ scale: 0.97 }}
-                  onClick={handleSave}
+                  onClick={handleZodSubmit(handleSave)}
                   className="w-full py-3 rounded-2xl bg-primary text-primary-foreground text-sm font-bold uppercase tracking-widest"
                 >
                   {t("save")}
@@ -413,10 +455,14 @@ export function SpeakerList() {
                 <AvatarUpload photoUrl={form.photoUrl} onPhotoChange={(url) => setForm({ ...form, photoUrl: url })} label={t("photo")} />
               </div>
               
-              <input className="input-soft text-sm" placeholder={t("speaker_name")} value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} />
-              <input className="input-soft text-sm" placeholder={t("congregation")} value={form.congregation} onChange={(e) => setForm({ ...form, congregation: e.target.value })} />
-              <input className="input-soft text-sm" placeholder={t("phone")} value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} />
-              <input className="input-soft text-sm" placeholder={t("email")} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              <input className="input-soft text-sm" placeholder={t("speaker_name")} {...register("nom")} />
+              {errors.nom && <p className="text-xs text-destructive">{errors.nom.message}</p>}
+              <input className="input-soft text-sm" placeholder={t("congregation")} {...register("congregation")} />
+              {errors.congregation && <p className="text-xs text-destructive">{errors.congregation.message}</p>}
+              <input className="input-soft text-sm" placeholder={t("phone")} {...register("telephone")} />
+              {errors.telephone && <p className="text-xs text-destructive">{errors.telephone.message}</p>}
+              <input className="input-soft text-sm" placeholder={t("email")} {...register("email")} />
+              {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
               
               {/* Type de foyer */}
               <div className="space-y-2">
@@ -452,7 +498,7 @@ export function SpeakerList() {
               <textarea className="input-soft text-sm min-h-[60px] resize-none" placeholder={t("notes")} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
               
               <div className="flex gap-2">
-                <motion.button whileTap={{ scale: 0.97 }} onClick={handleSave} className="flex-1 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold">{editing ? t("save") : t("add")}</motion.button>
+                <motion.button whileTap={{ scale: 0.97 }} onClick={handleZodSubmit(handleSave)} className="flex-1 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold">{editing ? t("save") : t("add")}</motion.button>
                 <button onClick={resetForm} className="px-4 py-2.5 rounded-xl bg-muted text-muted-foreground text-xs font-bold">{t("cancel")}</button>
               </div>
             </motion.div>

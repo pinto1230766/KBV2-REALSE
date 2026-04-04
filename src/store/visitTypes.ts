@@ -8,11 +8,9 @@ export interface Host {
   telephone: string;
   email?: string;
   adresse?: string;
-  address?: string;
   notes?: string;
   role?: VisitHostRole;
   photoUrl?: string;
-  tags?: string[];
   capacity?: number;
 }
 
@@ -93,7 +91,6 @@ export interface Speaker {
   householdType?: HouseholdType;
   spouseName?: string;
   notes?: string;
-  talks?: string[];
 }
 
 export type Language = "fr" | "cv" | "pt";

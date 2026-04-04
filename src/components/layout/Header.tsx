@@ -10,8 +10,7 @@ export interface SearchResult {
   label: string;
   sublabel: string;
   type: "visit" | "speaker" | "host";
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  payload?: any;
+  payload?: unknown;
 }
 
 interface HeaderProps {

@@ -5,6 +5,7 @@ import { PhotoUpload } from "./PhotoUpload";
 import { useHostStore } from "../store/useHostStore";
 import { useTranslation } from "../hooks/useTranslation";
 import { toast } from "sonner";
+import { hostSchema, type HostFormData } from "../lib/validation";
 import type { Host } from "../store/visitTypes";
 import { generateId } from "../lib/sheetUtils";
 
@@ -73,7 +74,7 @@ export function GlobalHostList() {
   const openEdit = (h: Host) => {
     setForm({
       nom: h.nom, telephone: h.telephone, email: h.email || "",
-      adresse: h.adresse || h.address || "", capacity: h.capacity || 2,
+      adresse: h.adresse || "", capacity: h.capacity || 2,
       notes: h.notes || "", role: h.role || "hebergement", photoUrl: h.photoUrl,
     });
     setEditing(h);
@@ -150,9 +151,9 @@ export function GlobalHostList() {
                   )}
                   <div className="flex-1 min-w-0 text-center">
                     <p className="text-sm font-black text-foreground truncate">{h.nom}</p>
-                    {(h.adresse || h.address) && (
+                    {(h.adresse) && (
                       <p className="text-xs text-muted-foreground flex items-center justify-center gap-1.5 truncate mt-1">
-                        <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-primary/50" /> {h.adresse || h.address}
+                        <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-primary/50" /> {h.adresse}
                       </p>
                     )}
                     {h.telephone && (

@@ -3,17 +3,11 @@ import { Toaster } from "sonner";
 import { SplashScreen } from "./components/SplashScreen";
 import { usePWA } from "./hooks/usePWA";
 import {
-  Search,
   LayoutGrid,
   Users,
   Settings,
   Home,
   Calendar,
-  MapPin,
-  User,
-  MessageSquare,
-  Download,
-  BarChart3,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { DashboardView } from "./components/DashboardView";
@@ -136,8 +130,8 @@ function App() {
   const handleResultClick = (result: SearchResult) => {
     setIsSearchFocused(false);
     setSearchTerm("");
-    if (result.type === "visit") {
-      setPendingVisit((result as unknown as { payload: { visitId: string } }).payload.visitId);
+    if (result.type === "visit" && result.payload) {
+      setPendingVisit((result.payload as { visitId: string }).visitId);
       setActiveTab("planning");
       return;
     }
