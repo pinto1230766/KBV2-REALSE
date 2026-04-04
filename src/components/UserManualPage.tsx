@@ -138,7 +138,7 @@ export function UserManualPage({ onBack }: UserManualPageProps) {
           screenshot: "📱 Écran avec menu bas: Orateurs encadré en bleu"
         },
         { 
-          title: "Ajouter un nouvel orateur", 
+          title: t("add_speaker"), 
           description: "Appuyez sur le bouton '+' en haut à droite de l'écran",
           screenshot: "➕ Bouton '+' orange en haut à droite"
         },
@@ -166,7 +166,7 @@ export function UserManualPage({ onBack }: UserManualPageProps) {
           screenshot: "📱 Écran avec menu bas: Hôtes encadré en bleu"
         },
         { 
-          title: "Ajouter un nouvel hôte", 
+          title: t("add_host"), 
           description: "Appuyez sur le bouton '+' en haut à droite",
           screenshot: "➕ Bouton '+' orange en haut à droite"
         },
@@ -195,8 +195,8 @@ export function UserManualPage({ onBack }: UserManualPageProps) {
         },
         { 
           title: "Créer une visite", 
-          description: "Appuyez sur le bouton '+' ou 'Programmer une visite'",
-          screenshot: "➕ Bouton '+' ou texte 'Programmer une visite'"
+          description: t("schedule_visit_btn"),
+          screenshot: t("schedule_visit_screenshot")
         },
         { 
           title: "Sélectionner l'orateur", 

@@ -15,7 +15,7 @@ export function usePWA() {
     // Check if running as standalone (installed PWA)
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches ||
-      (navigator as any).standalone === true;
+      (navigator as unknown as { standalone: boolean }).standalone === true;
     setIsStandalone(standalone);
     setIsInstalled(standalone);
 
