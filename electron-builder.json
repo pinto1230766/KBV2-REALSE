@@ -6,9 +6,10 @@
   },
   "files": [
     "dist/**/*",
-    "electron/**/*"
+    "electron/**/*",
+    "package.json"
   ],
-  "asar": false,
+  "asar": true,
   "win": {
     "target": [
       {
@@ -17,7 +18,7 @@
       }
     ],
     "sign": null,
-    "icon": "public/icon.png"
+    "icon": "build/icon.png"
   },
   "mac": {
     "target": [
@@ -37,7 +38,7 @@
   "nsis": {
     "oneClick": false,
     "allowToChangeInstallationDirectory": true,
-    "installerIcon": "public/icon.png",
-    "uninstallerIcon": "public/icon.png"
+    "installerIcon": "build/icon.png",
+    "uninstallerIcon": "build/icon.png"
   }
 }

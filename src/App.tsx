@@ -13,6 +13,7 @@ import {
   User,
   MessageSquare,
   Download,
+  BarChart3,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { DashboardView } from "./components/DashboardView";
@@ -36,6 +37,8 @@ import { OfflineIndicator } from "./components/OfflineIndicator";
 import { OnboardingWizard } from "./components/OnboardingWizard";
 import { UserManualPage } from "./components/UserManualPage";
 import { KbvLogo } from "./components/KbvLogo";
+import { AppLayout } from "./components/layout/AppLayout";
+import { SearchResult } from "./components/layout/Header";
 
 function App() {
   const { isStandalone } = usePWA();
@@ -59,6 +62,7 @@ function App() {
   const congregationName = settings?.congregation?.name || "";
   const setActiveTab = useUIStore((s) => s.setActiveTab);
   const setPendingVisit = useUIStore((s) => s.setPendingVisit);
+  const pendingVisitId = useUIStore((s) => s.pendingVisitId);
   const setShowUserManual = useUIStore((s) => s.setShowUserManual);
   const setIsOnline = useUIStore((s) => s.setIsOnline);
   const { t } = useTranslation();
@@ -76,7 +80,6 @@ function App() {
 
     // Auto-patch absolute paths to relative for Electron/PWA compatibility
     speakers.forEach(s => {
-      // Restore sample photo if missing for the demo speaker
       if (!s.photoUrl && s.nom.trim().toLowerCase() === "jean dupont") {
         useSpeakerStore.getState().updateSpeaker(s.id, { photoUrl: "./images/speakers/speakers.jpg" });
       } else if (s.photoUrl && s.photoUrl.startsWith("/")) {
@@ -87,7 +90,6 @@ function App() {
     });
 
     hosts.forEach(h => {
-      // Restore sample photo if missing for the demo host
       if (!h.photoUrl && h.nom.trim().toLowerCase() === "marie martin") {
         useHostStore.getState().updateHost(h.id, { photoUrl: "./images/hosts/host.jpg" });
       } else if (h.photoUrl && h.photoUrl.startsWith("/")) {
@@ -131,11 +133,11 @@ function App() {
     return [...visitMatches, ...speakerMatches, ...hostMatches];
   }, [trimmedTerm, visits, speakers, hosts]);
 
-  const handleResultClick = (result: (typeof searchResults)[number]) => {
+  const handleResultClick = (result: SearchResult) => {
     setIsSearchFocused(false);
     setSearchTerm("");
     if (result.type === "visit") {
-      setPendingVisit((result as { payload: { visitId: string } }).payload.visitId);
+      setPendingVisit((result as unknown as { payload: { visitId: string } }).payload.visitId);
       setActiveTab("planning");
       return;
     }
@@ -161,181 +163,63 @@ function App() {
 
   if (activeTab === "install") {
     return (
-      <>
+      <div className="h-full w-full">
         {showSplash && <SplashScreen onFinished={hideSplash} />}
         <InstallPage />
-      </>
+      </div>
     );
   }
 
   return (
-    <>
+    <div className="h-full w-full overflow-hidden flex flex-col">
       {showSplash && <SplashScreen onFinished={hideSplash} />}
-      {!showSplash && showOnboarding && <OnboardingWizard onComplete={handleOnboardingComplete} onShowUserManual={() => setShowUserManual(true)} />}
-    <div className="flex h-screen w-screen overflow-x-hidden">
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <header className="px-4 md:px-8 py-3 md:py-4 flex items-center justify-between bg-card shadow-sm transition-colors gap-4 border-b border-border safe-top">
-          {/* Logo */}
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl overflow-hidden shadow-lg bg-primary/10">
-              <KbvLogo className="w-full h-full" />
-            </div>
-            <div className="hidden sm:block">
-              <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.35em] text-primary">
-                Coordination
-              </p>
-              <h1 className="text-lg md:text-xl font-black text-foreground">KBV {congregationName && `- ${congregationName}`}</h1>
-            </div>
-          </div>
+      {!showSplash && showOnboarding && (
+        <OnboardingWizard 
+          onComplete={handleOnboardingComplete} 
+          onShowUserManual={() => setShowUserManual(true)} 
+        />
+      )}
 
-          {/* Desktop Nav — hidden on phone, shown on tablet+ */}
-          <nav className="hidden md:flex items-center gap-2 lg:gap-4 overflow-x-auto scrollbar-hide">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`relative py-3 px-2 lg:px-3 text-xs lg:text-sm uppercase tracking-wider font-bold transition-all whitespace-nowrap rounded-lg hover:bg-muted/50 ${
-                  activeTab === item.id
-                    ? "text-primary bg-primary/5"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <item.icon className="w-4 h-4" />
-                  {item.label}
-                </span>
-                {activeTab === item.id && (
-                  <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 bg-primary rounded-full" />
-                )}
-              </button>
-            ))}
-          </nav>
-
-          {/* Notifications + Search */}
-          <div className="flex items-center gap-2 flex-1 max-w-xs md:max-w-sm justify-end">
-            <button
-              onClick={() => setActiveTab("install")}
-              className="p-2 rounded-xl hover:bg-muted transition-colors"
-              title="Installer l'app"
-            >
-              <Download className="w-4 h-4 text-muted-foreground" />
-            </button>
-            <div className="relative flex-1 max-w-[200px] md:max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder={t("search")}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onFocus={() => setIsSearchFocused(true)}
-              onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)}
-              className="w-full pl-9 pr-4 py-2.5 md:py-3 bg-muted rounded-full border border-border text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase tracking-wider text-foreground placeholder:text-muted-foreground"
-            />
-            {isSearchFocused && trimmedTerm && (
-              <div className="absolute z-20 mt-2 w-full rounded-2xl bg-card border border-border shadow-xl">
-                {searchResults.length === 0 ? (
-                  <p className="text-sm text-muted-foreground p-4">{t("no_results")}</p>
-                ) : (
-                  <ul className="divide-y divide-border/50">
-                    {searchResults.map((result) => (
-                      <li key={`${result.type}-${result.id}`}>
-                        <button
-                          onMouseDown={(e) => e.preventDefault()}
-                          onClick={() => handleResultClick(result)}
-                          className="w-full flex items-center gap-3 px-4 py-3 md:py-4 text-left hover:bg-muted/50 transition-colors"
-                        >
-                          <span className="p-2 rounded-xl bg-primary/10 text-primary">
-                            {result.type === "visit" ? (
-                              <MapPin className="w-5 h-5" />
-                            ) : result.type === "speaker" ? (
-                              <User className="w-5 h-5" />
-                            ) : (
-                              <Home className="w-5 h-5" />
-                            )}
-                          </span>
-                          <div className="flex-1">
-                            <p className="text-base font-semibold text-foreground">{result.label}</p>
-                            <p className="text-sm text-muted-foreground uppercase tracking-wider">
-                              {result.sublabel}
-                            </p>
-                          </div>
-                          <MessageSquare className="w-5 h-5 text-muted-foreground/30" />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
-            </div>
-          </div>
-        </header>
-
-        {/* PWA Install Banner */}
-        <PWAInstallBanner />
-
-        {/* Content — add bottom padding on mobile for bottom nav */}
-        <main className="flex-1 px-4 md:px-8 pb-24 md:pb-8 overflow-y-auto overscroll-contain">
-          {activeTab === "dashboard" ? (
-            <DashboardView />
-          ) : activeTab === "planning" ? (
-            <PlanningHub />
-          ) : activeTab === "speakers" ? (
-            <SpeakerList />
-          ) : activeTab === "hosts" ? (
-            <GlobalHostList />
-          ) : activeTab === "settings" ? (
+      {/* Main Interface Refactored */}
+      <AppLayout
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        congregationName={congregationName}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        isSearchFocused={isSearchFocused}
+        setIsSearchFocused={setIsSearchFocused}
+        searchResults={searchResults}
+        handleResultClick={handleResultClick}
+        navItems={navItems}
+        sidebar={
+          <CalendarSidebar
+            visits={visits}
+            onVisitClick={(visit) => {
+              setPendingVisit(visit.visitId);
+              setActiveTab("planning");
+            }}
+            onSyncNow={() => runSync(false)}
+          />
+        }
+      >
+        <div className="h-full w-full">
+          {activeTab === "dashboard" && <DashboardView />}
+          {activeTab === "planning" && <PlanningHub />}
+          {activeTab === "speakers" && <SpeakerList />}
+          {activeTab === "hosts" && <GlobalHostList />}
+          {activeTab === "settings" && (
             showUserManual ? (
               <UserManualPage onBack={() => setShowUserManual(false)} />
             ) : (
               <SettingsPage onShowUserManual={() => setShowUserManual(true)} />
             )
-          ) : (
-            <SettingsPage />
           )}
-        </main>
-      </div>
-
-      {/* Sidebar Calendar — shown on large tablets & desktop */}
-      <aside className="w-[360px] bg-card border-l border-border hidden lg:block">
-        <CalendarSidebar
-          visits={visits}
-          onVisitClick={(visit) => {
-            setPendingVisit(visit.visitId);
-            setActiveTab("planning");
-          }}
-          onSyncNow={() => runSync(false)}
-        />
-      </aside>
-
-      {/* Mobile Bottom Navigation — phone only */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-card border-t border-border safe-bottom">
-        <div className="flex items-center justify-around px-0 py-1.5">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl min-w-0 flex-1 transition-colors ${
-                activeTab === item.id
-                  ? "text-primary bg-primary/10"
-                  : "text-muted-foreground"
-              }`}
-            >
-              <item.icon className={`w-5 h-5 ${activeTab === item.id ? "text-primary" : ""}`} />
-              <span className="text-[8px] font-semibold uppercase tracking-wide leading-tight truncate max-w-full">{item.label}</span>
-            </button>
-          ))}
         </div>
-      </nav>
-
-      {/* Offline floating indicator */}
-      <OfflineIndicator />
+      </AppLayout>
 
       <Toaster position="top-right" richColors closeButton />
     </div>
-    </>
   );
 }
 

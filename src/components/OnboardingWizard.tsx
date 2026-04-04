@@ -217,9 +217,11 @@ export function OnboardingWizard({ onComplete, onShowUserManual }: OnboardingWiz
     const addHost = useHostStore.getState().addHost;
     const addVisit = useVisitStore.getState().addVisit;
     
+    const uniqueSuffix = Date.now().toString();
+
     // Sample speaker
     addSpeaker({
-      id: "sample-speaker-1",
+      id: "sample-speaker-" + uniqueSuffix,
       nom: "Jean Dupont",
       congregation: form.name.trim() || "Ma congrégation",
       telephone: "+33 6 12 34 56 78",
@@ -231,7 +233,7 @@ export function OnboardingWizard({ onComplete, onShowUserManual }: OnboardingWiz
     
     // Sample host
     addHost({
-      id: "sample-host-1",
+      id: "sample-host-" + uniqueSuffix,
       nom: "Marie Martin",
       adresse: "123 Rue de la Paix, Paris",
       telephone: "+33 6 98 76 54 32",
@@ -248,7 +250,7 @@ export function OnboardingWizard({ onComplete, onShowUserManual }: OnboardingWiz
     const visitDate = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 15, 11, 0);
     
     addVisit({
-      visitId: "V-" + Date.now(),
+      visitId: "V-" + uniqueSuffix,
       nom: "Jean Dupont",
       congregation: form.name.trim() || "Ma congrégation",
       visitDate: visitDate.toISOString(),

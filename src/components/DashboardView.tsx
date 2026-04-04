@@ -94,11 +94,33 @@ export function DashboardView() {
     input.click();
   };
 
-  const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
-  const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } };
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const staggerItem = {
+    hidden: { opacity: 0, y: 15, scale: 0.98 },
+    show: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      transition: {
+        type: "spring" as const,
+        stiffness: 260,
+        damping: 20
+      }
+    }
+  };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="py-4 md:py-6 space-y-5 md:space-y-6">
+    <motion.div variants={staggerContainer} initial="hidden" animate="show" className="py-4 md:py-6 space-y-5 md:space-y-6">
       {/* Title */}
       <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-3 px-1">
         <div>
@@ -122,10 +144,10 @@ export function DashboardView() {
       <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {/* À venir */}
         <motion.button 
-          variants={item} 
+          variants={staggerItem} 
           whileHover={{ y: -2 }} 
           onClick={() => handleFilterClick('upcoming')}
-          className={`premium-card p-2.5 xs:p-4 md:p-5 text-left min-h-[90px] flex flex-col justify-between transition-all ${
+          className={`glass-card p-2.5 xs:p-4 md:p-5 text-left min-h-[90px] flex flex-col justify-between transition-all ${
             filter === 'upcoming' ? "ring-2 ring-primary shadow-lg scale-[1.02]" : ""
           }`}
         >
@@ -138,7 +160,7 @@ export function DashboardView() {
 
         {/* Confirmées */}
         <motion.button 
-          variants={item} 
+          variants={staggerItem} 
           whileHover={{ y: -2 }} 
           onClick={() => handleFilterClick('confirmed')}
           className={`rounded-2xl p-2.5 xs:p-4 md:p-5 text-left min-h-[90px] flex flex-col justify-between transition-all ${
@@ -153,18 +175,18 @@ export function DashboardView() {
         </motion.button>
 
         {/* Orateurs */}
-        <motion.button variants={item} whileHover={{ y: -2 }} onClick={() => setActiveTab("speakers")}
-          className="premium-card p-2.5 xs:p-4 md:p-5 text-left min-h-[90px] flex flex-col justify-between">
+        <motion.button variants={staggerItem} whileHover={{ y: -2 }} onClick={() => setActiveTab("speakers")}
+          className="glass-card p-2.5 xs:p-4 md:p-5 text-left min-h-[90px] flex flex-col justify-between">
           <p className="text-[10px] xs:text-xs md:text-sm font-bold uppercase tracking-wider text-muted-foreground">{t("speakers")}</p>
           <p className="text-2xl xs:text-3xl md:text-4xl font-black text-foreground">{speakers.length}</p>
         </motion.button>
 
         {/* Ce mois-ci */}
         <motion.button 
-          variants={item} 
+          variants={staggerItem} 
           whileHover={{ y: -2 }} 
           onClick={() => handleFilterClick('month')}
-          className={`premium-card p-2.5 xs:p-4 md:p-5 text-left min-h-[90px] flex flex-col justify-between transition-all ${
+          className={`glass-card p-2.5 xs:p-4 md:p-5 text-left min-h-[90px] flex flex-col justify-between transition-all ${
             filter === 'month' ? "ring-2 ring-primary shadow-lg scale-[1.02]" : ""
           }`}
         >
@@ -177,7 +199,7 @@ export function DashboardView() {
       </div>
 
       {/* Recent Activities */}
-      <motion.div variants={item}>
+      <motion.div variants={staggerItem}>
         <div className="flex items-center justify-between mb-3 px-1">
           <h3 className="text-base md:text-lg font-black text-foreground">
             {filter === 'all' ? t("recent_activities") : 
@@ -220,9 +242,12 @@ export function DashboardView() {
                       useUIStore.getState().setPendingVisit(visit.visitId);
                       setActiveTab("planning");
                     }}
-                    className="w-full premium-card p-4 flex items-center gap-4 text-left hover:ring-1 hover:ring-primary/30 transition-all"
+                    className="w-full glass-card p-4 flex items-center gap-4 text-left hover:ring-1 hover:ring-primary/30 transition-all group overflow-hidden"
                   >
-                    <div className="w-12 h-14 rounded-xl bg-muted flex flex-col items-center justify-center flex-shrink-0">
+                    {/* Subtle glass highlight on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                    
+                    <div className="relative z-10 w-12 h-14 rounded-xl bg-muted/30 flex flex-col items-center justify-center flex-shrink-0">
                       <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">{monthShort}</span>
                       <span className="text-lg font-black text-foreground leading-tight">{dayNum}</span>
                     </div>
@@ -275,22 +300,26 @@ export function DashboardView() {
       </motion.div>
 
       {/* KBV Premium Card */}
-      <motion.div variants={item} className="rounded-2xl bg-card dark:bg-[hsl(220,30%,10%)] p-4 xs:p-6 border border-border">
-        <h3 className="text-base font-black text-foreground">KBV v2 – Premium</h3>
-        <p className="text-xs xs:text-sm text-muted-foreground mt-1">
-          {language === "cv" ? "Bo ferramenta di planifikason lokal, otimizadu pa un esperiénsia fásil i fluidu." :
-           language === "pt" ? "A sua ferramenta de planificação local, otimizada para une expérience fácil e fluida." :
-           "Votre outil de planification locale, optimisé pour une expérience tactile fluide."}
-        </p>
-        <div className="flex flex-col sm:flex-row gap-2 xs:gap-3 mt-4">
-          <motion.button whileTap={{ scale: 0.97 }} onClick={handleExport}
-            className="w-full sm:w-auto px-5 py-2.5 justify-center rounded-xl bg-muted text-foreground text-xs font-bold hover:bg-muted/80 transition-colors flex items-center gap-2">
-            <Download className="w-4 h-4 flex-shrink-0" /> {t("backup")}
-          </motion.button>
-          <motion.button whileTap={{ scale: 0.97 }} onClick={handleImport}
-            className="w-full sm:w-auto px-5 py-2.5 justify-center rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity flex items-center gap-2">
-            <Upload className="w-4 h-4 flex-shrink-0" /> Import
-          </motion.button>
+      <motion.div variants={staggerItem} className="relative rounded-2xl bg-gradient-to-br from-card to-card/50 p-4 xs:p-6 border border-border overflow-hidden group">
+        <div className="absolute top-0 right-0 p-8 bg-primary/5 rounded-full blur-3xl -mr-12 -mt-12 transition-colors group-hover:bg-primary/10" />
+        
+        <div className="relative z-10">
+          <h3 className="text-base font-black bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">KBV v2 – Premium</h3>
+          <p className="text-xs xs:text-sm text-muted-foreground mt-1 max-w-md">
+            {language === "cv" ? "Bo ferramenta di planifikason lokal, otimizadu pa un esperiénsia fásil i fluidu." :
+             language === "pt" ? "A sua ferramenta de planificação local, otimizada para une expérience fácil e fluida." :
+             "Votre outil de planification locale, optimisé pour une expérience tactile fluide."}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2 xs:gap-3 mt-4">
+            <motion.button whileTap={{ scale: 0.97 }} onClick={handleExport}
+              className="w-full sm:w-auto px-5 py-2.5 justify-center rounded-xl bg-muted/50 backdrop-blur-sm text-foreground text-xs font-bold hover:bg-muted/80 transition-colors flex items-center gap-2 border border-border/50">
+              <Download className="w-4 h-4 flex-shrink-0" /> {t("backup")}
+            </motion.button>
+            <motion.button whileTap={{ scale: 0.97 }} onClick={handleImport}
+              className="w-full sm:w-auto px-5 py-2.5 justify-center rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity flex items-center gap-2">
+              <Upload className="w-4 h-4 flex-shrink-0" /> Import
+            </motion.button>
+          </div>
         </div>
       </motion.div>
     </motion.div>

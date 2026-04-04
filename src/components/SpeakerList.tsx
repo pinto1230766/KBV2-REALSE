@@ -8,6 +8,31 @@ import { toast } from "sonner";
 import type { Speaker, HouseholdType } from "../store/visitTypes";
 import { generateId } from "../lib/sheetUtils";
 
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.1
+    }
+  }
+};
+
+const staggerItem = {
+  hidden: { opacity: 0, y: 15, scale: 0.98 },
+  show: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1,
+    transition: {
+      type: "spring" as const,
+      stiffness: 260,
+      damping: 20
+    }
+  }
+};
+
 /* Mini photo uploader for the fiche */
 function AvatarUpload({ photoUrl, onPhotoChange, label }: { photoUrl?: string; onPhotoChange: (url: string | undefined) => void; label: string }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -125,6 +150,8 @@ export function SpeakerList() {
     .filter((sp) => sp.nom.toLowerCase().includes(search.toLowerCase()) || sp.congregation.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => a.nom.localeCompare(b.nom));
 
+  const uniqueFiltered = Array.from(new Map(filtered.map(item => [item.id, item])).values());
+
   return (
     <div className="py-4 md:py-6 space-y-4">
       {/* Header */}
@@ -152,25 +179,31 @@ export function SpeakerList() {
       </div>
 
       {/* Grid */}
-      {filtered.length === 0 ? (
+      {uniqueFiltered.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p className="text-base">{t("no_results")}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-          <AnimatePresence>
-            {filtered.map((sp) => (
+        <motion.div 
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3"
+        >
+          <AnimatePresence mode="popLayout">
+            {uniqueFiltered.map((sp) => (
               <motion.div
                 key={`speaker-${sp.id}`}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
+                variants={staggerItem}
                 exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                className="premium-card p-3 cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all group relative"
+                className="premium-card p-3 cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all group relative overflow-hidden"
                 onClick={() => openFiche(sp)}
               >
-                <div className="flex items-center gap-4">
+                {/* Subtle glass highlight on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                
+                <div className="flex items-center gap-4 relative z-10">
                   {/* Photos/Avatars avec support couple */}
                   <div className="flex gap-1.5 flex-shrink-0">
                     {sp.householdType === "couple" ? (
@@ -226,7 +259,7 @@ export function SpeakerList() {
               </motion.div>
             ))}
           </AnimatePresence>
-        </div>
+        </motion.div>
       )}
 
       {/* ============ FICHE ORATEUR MODAL ============ */}
