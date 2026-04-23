@@ -131,7 +131,10 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
     // Dedup visits by visit_id AND by normalized name+date
     const existingVisitIds = new Set(useVisitStore.getState().visits.map((v) => v.visitId));
     const existingVisitKeys = new Set(
-      useVisitStore.getState().visits.map((v) => `${normalizeName(v.nom)}|${v.visitDate}`)
+      useVisitStore.getState().visits.map((v) => {
+        const datePart = v.visitDate ? v.visitDate.split('T')[0] : '';
+        return `${normalizeName(v.nom)}|${datePart}`;
+      })
     );
     // Dedup speakers by normalized name
     const existingSpeakerNames = new Set(
@@ -139,7 +142,8 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
     );
 
     newVisits.forEach((v) => {
-      const key = `${normalizeName(v.nom)}|${v.visitDate}`;
+      const datePart = v.visitDate ? v.visitDate.split('T')[0] : '';
+      const key = `${normalizeName(v.nom)}|${datePart}`;
       if (!existingVisitIds.has(v.visitId) && !existingVisitKeys.has(key)) {
         useVisitStore.getState().addVisit(v);
         addedVisits++;

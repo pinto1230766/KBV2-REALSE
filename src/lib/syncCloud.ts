@@ -268,8 +268,11 @@ export async function syncCloud(): Promise<SyncResult> {
       }
     }
     
-    // Deduplicate by normalized name + date
-    const dedupedVisits = dedup(merged, (v) => `${normalizeName(v.nom)}|${v.visitDate}`);
+    // Deduplicate by normalized name + date (ignoring time)
+    const dedupedVisits = dedup(merged, (v) => {
+      const datePart = v.visitDate ? v.visitDate.split('T')[0] : '';
+      return `${normalizeName(v.nom)}|${datePart}`;
+    });
     useVisitStore.getState().setVisits(dedupedVisits);
     result.pulled.visits = remoteConverted.length;
   }

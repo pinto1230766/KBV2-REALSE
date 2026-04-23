@@ -74,9 +74,7 @@ function App() {
 
     // Auto-patch absolute paths to relative for Electron/PWA compatibility
     speakers.forEach(s => {
-      if (!s.photoUrl && s.nom.trim().toLowerCase() === "jean dupont") {
-        useSpeakerStore.getState().updateSpeaker(s.id, { photoUrl: "./images/speakers/speakers.jpg" });
-      } else if (s.photoUrl && s.photoUrl.startsWith("/")) {
+      if (s.photoUrl && s.photoUrl.startsWith("/")) {
         useSpeakerStore.getState().updateSpeaker(s.id, { photoUrl: "." + s.photoUrl });
       } else if (s.photoUrl && s.photoUrl.startsWith("images/")) {
         useSpeakerStore.getState().updateSpeaker(s.id, { photoUrl: "./" + s.photoUrl });
@@ -84,9 +82,7 @@ function App() {
     });
 
     hosts.forEach(h => {
-      if (!h.photoUrl && h.nom.trim().toLowerCase() === "marie martin") {
-        useHostStore.getState().updateHost(h.id, { photoUrl: "./images/hosts/host.jpg" });
-      } else if (h.photoUrl && h.photoUrl.startsWith("/")) {
+      if (h.photoUrl && h.photoUrl.startsWith("/")) {
         useHostStore.getState().updateHost(h.id, { photoUrl: "." + h.photoUrl });
       } else if (h.photoUrl && h.photoUrl.startsWith("images/")) {
         useHostStore.getState().updateHost(h.id, { photoUrl: "./" + h.photoUrl });
@@ -98,6 +94,7 @@ function App() {
       window.removeEventListener("offline", handleOffline);
     };
   }, [setIsOnline, speakers, hosts]);
+
 
   const trimmedTerm = searchTerm.trim().toLowerCase();
 

@@ -433,6 +433,14 @@ const dictionary: Record<string, TranslationEntry> = {
   save_host: { fr: "Sauvegarder", cv: "Gravâ", pt: "Salvar" },
   save_host_desc: { fr: "Appuyez sur 'Enregistrer' pour sauvegarder l'hôte", cv: "Klik na 'Gravâ' pa guarda anfitrion", pt: "Pressione 'Salvar' para guardar o anfitrião" },
   save_host_screenshot: { fr: "💾 Bouton 'Enregistrer' en vert", cv: "💾 Boton 'Gravâ' verdi", pt: "💾 Botão 'Salvar' em verde" },
+
+  // Clés manquantes — corrigées
+  welcome: { fr: "Bienvenue", cv: "Bun Vinda", pt: "Bem-vindo" },
+  photo: { fr: "Photo", cv: "Foto", pt: "Foto" },
+  date: { fr: "Date", cv: "Data", pt: "Data" },
+  with: { fr: "avec", cv: "ku", pt: "com" },
+  groupe: { fr: "groupe", cv: "grupu", pt: "grupo" },
+  orateur: { fr: "orateur", cv: "orador", pt: "orador" },
 };
 
 export function useTranslation() {

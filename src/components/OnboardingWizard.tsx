@@ -1,14 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, ChevronLeft, Church, User, Clock, Check, Sparkles, Globe, MapPin, BookOpen } from "lucide-react";
+import { ChevronRight, ChevronLeft, Church, User, Clock, Check, Sparkles, Globe, MapPin, BookOpen, FileSpreadsheet, Cloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { useSpeakerStore } from "@/store/useSpeakerStore";
-import { useHostStore } from "@/store/useHostStore";
-import { useVisitStore } from "@/store/useVisitStore";
 import type { Language } from "@/store/visitTypes";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -32,12 +29,15 @@ export function OnboardingWizard({ onComplete, onShowUserManual }: OnboardingWiz
   const [step, setStep] = useState(0);
   const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
   const [form, setForm] = useState({
-    name: "",
-    city: "",
+    name: "Lyon KBV",
+    city: "Lyon",
     day: "Dimanche",
-    time: "10:00",
+    time: "11:30",
     responsableName: "",
     responsablePhone: "",
+    googleSheetUrl: "https://docs.google.com/spreadsheets/d/1drIzPPi6AohCroSyUkF1UmMFxuEtMACBF4XATDjBOcg/edit?gid=1530698388#gid=1530698388",
+    supabaseUrl: "https://ikjxpmhyrgddmbhzruhn.supabase.co",
+    supabaseKey: "sb_publishable_UEPK5kHZmk30TzEETe2TmA_BV2Ezkcz",
   });
 
   const update = (field: string, value: string) =>
@@ -78,7 +78,7 @@ export function OnboardingWizard({ onComplete, onShowUserManual }: OnboardingWiz
       id: "welcome",
       icon: Globe,
       title: selectedLanguage === "cv" ? "Bun vinda" : selectedLanguage === "pt" ? "Bem-vindo" : "Bienvenue",
-      subtitle: selectedLanguage === "cv" ? "Aplicason di koordenamentu di vizitas" : selectedLanguage === "pt" ? "Aplicativo de coordenação de visitas" : "Application de coordination des visites",
+      subtitle: selectedLanguage === "cv" ? "Aplikason di koordenamentu di vizitas" : selectedLanguage === "pt" ? "Aplicativo de coordenação de visitas" : "Application de coordination des visites",
       content: (
         <div className="space-y-4 text-center">
           <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
@@ -101,7 +101,7 @@ export function OnboardingWizard({ onComplete, onShowUserManual }: OnboardingWiz
             </Label>
             <Input
               id="name"
-              placeholder="ex: Lyon Centre"
+              placeholder="ex: Lyon KBV"
               value={form.name}
               onChange={(e) => update("name", e.target.value)}
               className="bg-muted border-border"
@@ -174,7 +174,7 @@ export function OnboardingWizard({ onComplete, onShowUserManual }: OnboardingWiz
             </Label>
             <Input
               id="respName"
-              placeholder="ex: Jean Dupont"
+              placeholder="ex: Francisco Pinto"
               value={form.responsableName}
               onChange={(e) => update("responsableName", e.target.value)}
               className="bg-muted border-border"
@@ -197,72 +197,106 @@ export function OnboardingWizard({ onComplete, onShowUserManual }: OnboardingWiz
       ),
       canNext: true,
     },
+    {
+      id: "google-sheet",
+      icon: FileSpreadsheet,
+      title: selectedLanguage === "cv" ? "Google Sheet" : selectedLanguage === "pt" ? "Google Sheet" : "Google Sheet",
+      subtitle: selectedLanguage === "cv" ? "Kola URL di bo folha pa sinkronizâ vizitas (opasonal)" : selectedLanguage === "pt" ? "Cole o URL da sua planilha para sincronizar visitas (opcional)" : "Collez l'URL de votre feuille pour synchroniser les visites (optionnel)",
+      content: (
+        <div className="space-y-4">
+          <div className="p-3 rounded-xl bg-primary/5 border border-primary/20">
+            <p className="text-xs text-primary font-medium">
+              {selectedLanguage === "cv" ? "Google Sheet ta permití importâ vizitas automaticamente." : selectedLanguage === "pt" ? "O Google Sheet permite importar visitas automaticamente." : "Le Google Sheet permet d'importer vos visites automatiquement."}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="sheetUrl" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              {t("sheet_url")}
+            </Label>
+            <Input
+              id="sheetUrl"
+              placeholder="https://docs.google.com/spreadsheets/d/..."
+              value={form.googleSheetUrl}
+              onChange={(e) => update("googleSheetUrl", e.target.value)}
+              className="bg-muted border-border text-xs"
+            />
+            <p className="text-[10px] text-muted-foreground">{t("sheet_url_hint")}</p>
+          </div>
+        </div>
+      ),
+      canNext: true,
+    },
+    {
+      id: "supabase",
+      icon: Cloud,
+      title: "Supabase",
+      subtitle: selectedLanguage === "cv" ? "Sinkronizason cloud (opasonal)" : selectedLanguage === "pt" ? "Sincronização na nuvem (opcional)" : "Synchronisation cloud (optionnel)",
+      content: (
+        <div className="space-y-4">
+          <div className="p-3 rounded-xl bg-primary/5 border border-primary/20">
+            <p className="text-xs text-primary font-medium">
+              {selectedLanguage === "cv" ? "Supabase ta permití sinkronizâ dadus enti varios dispositivos." : selectedLanguage === "pt" ? "Supabase permite sincronizar dados entre vários dispositivos." : "Supabase permet de synchroniser vos données entre plusieurs appareils."}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="supabaseUrl" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              {t("supabase_url")}
+            </Label>
+            <Input
+              id="supabaseUrl"
+              placeholder="https://votre-projet.supabase.co"
+              value={form.supabaseUrl}
+              onChange={(e) => update("supabaseUrl", e.target.value)}
+              className="bg-muted border-border text-xs"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="supabaseKey" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              {t("supabase_anon_key")}
+            </Label>
+            <Input
+              id="supabaseKey"
+              type="password"
+              placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+              value={form.supabaseKey}
+              onChange={(e) => update("supabaseKey", e.target.value)}
+              className="bg-muted border-border text-xs"
+            />
+            <p className="text-[10px] text-muted-foreground">{t("supabase_key_hint")}</p>
+          </div>
+        </div>
+      ),
+      canNext: true,
+    },
   ];
 
   const currentStep = steps[step];
   const isLast = step === steps.length - 1;
 
   const handleFinish = () => {
+    // Save congregation settings
     updateCongregation({
-      name: form.name.trim() || "Ma congrégation",
-      city: form.city.trim() || "",
+      name: form.name.trim() || "Lyon KBV",
+      city: form.city.trim() || "Lyon",
       day: form.day,
       time: form.time,
       responsableName: form.responsableName.trim(),
       responsablePhone: form.responsablePhone.trim(),
+      googleSheetUrl: form.googleSheetUrl.trim(),
     });
-    
-    // Add sample data for demonstration
-    const addSpeaker = useSpeakerStore.getState().addSpeaker;
-    const addHost = useHostStore.getState().addHost;
-    const addVisit = useVisitStore.getState().addVisit;
-    
-    const uniqueSuffix = Date.now().toString();
 
-    // Sample speaker
-    addSpeaker({
-      id: "sample-speaker-" + uniqueSuffix,
-      nom: "Jean Dupont",
-      congregation: form.name.trim() || "Ma congrégation",
-      telephone: "+33 6 12 34 56 78",
-      email: "jean.dupont@email.com",
-      notes: "Ancien responsable du programme",
-      householdType: "single",
-      photoUrl: "images/speakers/speakers.jpg",
-    });
-    
-    // Sample host
-    addHost({
-      id: "sample-host-" + uniqueSuffix,
-      nom: "Marie Martin",
-      adresse: "123 Rue de la Paix, Paris",
-      telephone: "+33 6 98 76 54 32",
-      email: "marie.martin@email.com",
-      capacity: 4,
-      role: "hebergement",
-      notes: "Grande maison avec jardin",
-      photoUrl: "images/hosts/host.jpg",
-    });
-    
-    // Sample visit (next month)
-    const nextMonth = new Date();
-    nextMonth.setMonth(nextMonth.getMonth() + 1);
-    const visitDate = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 15, 11, 0);
-    
-    addVisit({
-      visitId: "V-" + uniqueSuffix,
-      nom: "Jean Dupont",
-      congregation: form.name.trim() || "Ma congrégation",
-      visitDate: visitDate.toISOString(),
-      status: "scheduled",
-      locationType: "kingdom_hall",
-      talkNoOrType: "1",
-      talkTheme: "L'amour de Dieu",
-      speakerPhone: "+33 6 12 34 56 78",
-    });
-    
+    // Save Supabase credentials to localStorage if provided
+    if (form.supabaseUrl.trim()) {
+      localStorage.setItem('VITE_SUPABASE_URL', form.supabaseUrl.trim());
+    }
+    if (form.supabaseKey.trim()) {
+      localStorage.setItem('VITE_SUPABASE_ANON_KEY', form.supabaseKey.trim());
+    }
+
     onComplete();
   };
+
+
 
   return (
     <div className="fixed inset-0 z-[9998] bg-background flex flex-col">
