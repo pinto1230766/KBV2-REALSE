@@ -17,7 +17,6 @@
         "arch": ["x64"]
       }
     ],
-    "sign": null,
     "icon": "build/icon.png"
   },
   "mac": {
