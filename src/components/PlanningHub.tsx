@@ -93,41 +93,23 @@ const messageTemplates = {
       body: `Bom dia Irmão {prenom_orateur},\n\nObrigado de coração pelo discurso partilhado via {visit_channel_label}! 🙏💻\nMesmo à distância, a sua mensagem deu força a toda a congregação.\n\nFraternalmente,\n{ton_nom}`,
     },
   },
-  // ─── HÔTES ───
-  repas_host: {
-    category: "repas",
+  // ─── LOGISTIQUE ───
+  logistique_host: {
+    category: "logistique",
     fr: {
-      title: "Repas – Détails",
-      desc: "Message pour le responsable du repas",
-      body: `Bonjour {prenom_responsable_repas},\n\nVoici les informations pour le repas de {prenom_orateur} {nom_orateur} :\n\n📅 Date : {date_repas} ({jour_repas})\n⏰ Heure : {heure_repas}\n🏠 Lieu : {adresse_repas}\n\n⚠️ Allergies : {details_allergies}\n👥 Accompagnants : {nb_accompagnants}\n\nMerci pour ton aide ! Fraternellement,\n{ton_nom}`,
+      title: "Logistique – Repas & Transport",
+      desc: "Message regroupant les détails du repas et du transport",
+      body: `Bonjour,\n\nVoici les informations logistiques pour la visite de {prenom_orateur} {nom_orateur} :\n\n🍽️ REPAS\n{repas_planning}\n\n🚗 TRANSPORT\n{transport_planning}\n\n⚠️ Allergies : {details_allergies}\n👥 Accompagnants : {nb_accompagnants}\n\nMerci pour ton aide ! Fraternellement,\n{ton_nom}`,
     },
     cv: {
-      title: "Kumida – Detalhes",
-      desc: "Mensajen pa responsabel pa kumida",
-      body: `Bon dia {prenom_responsable_repas},\n\nLi sta kel informason pa kumida di {prenom_orateur} {nom_orateur}:\n\n📅 Data: {date_repas} ({jour_repas})\n⏰ Óra: {heure_repas}\n🏠 Lugar: {adresse_repas}\n\n⚠️ Alerjia: {details_allergies}\n👥 Akonpanhantis: {nb_accompagnants}\n\nObrigadu pa bu juda! Fraternalmenti,\n{ton_nom}`,
+      title: "Lojístika – Kumida & Transporti",
+      desc: "Mensajen ku detalhes di kumida i transporti",
+      body: `Bon dia,\n\nLi sta informason di lojístika pa vizita di {prenom_orateur} {nom_orateur}:\n\n🍽️ KUMIDA\n{repas_planning}\n\n🚗 TRANSPORTI\n{transport_planning}\n\n⚠️ Alerjia: {details_allergies}\n👥 Akonpanhantis: {nb_accompagnants}\n\nObrigadu pa bu juda! Fraternalmenti,\n{ton_nom}`,
     },
     pt: {
-      title: "Refeição – Detalhes",
-      desc: "Mensagem para o responsável da refeição",
-      body: `Bom dia {prenom_responsable_repas},\n\nAqui estão as informações para a refeição de {prenom_orateur} {nom_orateur}:\n\n📅 Data: {date_repas} ({jour_repas})\n⏰ Hora: {heure_repas}\n🏠 Local: {adresse_repas}\n\n⚠️ Alergias: {details_allergies}\n👥 Acompanhantes: {nb_accompagnants}\n\nObrigado pela ajuda! Fraternalmente,\n{ton_nom}`,
-    },
-  },
-  transport_host: {
-    category: "transport",
-    fr: {
-      title: "Transport – Détails",
-      desc: "Message pour le chauffeur",
-      body: `Bonjour {prenom_chauffeur},\n\nVoici les informations pour le transport de {prenom_orateur} {nom_orateur} :\n\n📅 Date : {date_transport}\n⏰ Heure : {heure_transport}\n📍 De : {lieu_depart} ➡️ Vers : {lieu_arrivee}\n\nMerci pour ta disponibilité ! Fraternellement,\n{ton_nom}`,
-    },
-    cv: {
-      title: "Transporti – Detalhes",
-      desc: "Mensajen pa motorista",
-      body: `Bon dia {prenom_chauffeur},\n\nLi sta kel informason pa transporti di {prenom_orateur} {nom_orateur}:\n\n📅 Data: {date_transport}\n⏰ Óra: {heure_transport}\n📍 Di: {lieu_depart} ➡️ Pa: {lieu_arrivee}\n\nObrigadu pa bu disponiblidi! Fraternalmenti,\n{ton_nom}`,
-    },
-    pt: {
-      title: "Transporte – Detalhes",
-      desc: "Mensagem para o motorista",
-      body: `Bom dia {prenom_chauffeur},\n\nAqui estão as informações para o transporte de {prenom_orateur} {nom_orateur}:\n\n📅 Data: {date_transport}\n⏰ Hora: {heure_transport}\n📍 De: {lieu_depart} ➡️ Para: {lieu_arrivee}\n\nObrigado pela disponibilidade! Fraternalmente,\n{ton_nom}`,
+      title: "Logística – Refeição & Transporte",
+      desc: "Mensagem com detalhes da refeição e do transporte",
+      body: `Bom dia,\n\nAqui estão as informações logísticas para a visita de {prenom_orateur} {nom_orateur}:\n\n🍽️ REFEIÇÃO\n{repas_planning}\n\n🚗 TRANSPORTE\n{transport_planning}\n\n⚠️ Alergias: {details_allergies}\n👥 Acompanhantes: {nb_accompagnants}\n\nObrigado pela ajuda! Fraternalmente,\n{ton_nom}`,
     },
   },
   // ─── GROUPES ───
@@ -169,7 +151,7 @@ const messageTemplates = {
   },
 };
 
-type TemplateCategory = "speaker" | "repas" | "transport" | "groupe";
+type TemplateCategory = "speaker" | "logistique" | "groupe";
 
 
 export function PlanningHub() {
@@ -1006,7 +988,7 @@ export function PlanningHub() {
                             <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent">
                               {[
                                 { step: 1, color: "bg-blue-500", label: "Étape 1 : Planification", keys: ["confirmation_speaker", "volunteers_group"] },
-                                { step: 2, color: "bg-amber-500", label: "Étape 2 : Logistique", keys: ["repas_host", "transport_host"] },
+                                { step: 2, color: "bg-amber-500", label: "Étape 2 : Logistique", keys: ["logistique_host"] },
                                 { step: 3, color: "bg-primary", label: "Étape 3 : Briefing", keys: ["preparation_speaker", "preparation_group"] },
                                 { step: 4, color: "bg-emerald-500", label: "Étape 4 : Après-Visite", keys: ["thanks_speaker", "thanks_speaker_online"] },
                               ].map((group) => (
@@ -1029,8 +1011,7 @@ export function PlanningHub() {
                                         if (typeof tmpl === "string") return null;
 
                                         const categoryLabel = templates.category === "speaker" ? "🎤 Orateur"
-                                          : templates.category === "repas" ? "🍽️ Hôte – Repas"
-                                          : templates.category === "transport" ? "🚗 Hôte – Transport"
+                                          : templates.category === "logistique" ? "⚙️ Hôte – Logistique"
                                           : "👥 Groupe";
 
                                         return (
@@ -1045,12 +1026,9 @@ export function PlanningHub() {
                                                 const resolved = resolveVariables(tmpl.body);
                                                 setMessageText(resolved);
                                                 if (templates.category === "speaker") setSelectedRecipient("orateur");
-                                                else if (templates.category === "repas") {
-                                                  const idx = (detailForm.hostAssignments || []).findIndex((ha) => ha.role === "repas");
-                                                  setSelectedRecipient(idx >= 0 ? `host_${idx}` : "orateur");
-                                                } else if (templates.category === "transport") {
-                                                  const idx = (detailForm.hostAssignments || []).findIndex((ha) => ha.role === "transport");
-                                                  setSelectedRecipient(idx >= 0 ? `host_${idx}` : "orateur");
+                                                else if (templates.category === "logistique") {
+                                                  const idx = (detailForm.hostAssignments || []).findIndex((ha) => ha.role === "repas" || ha.role === "transport" || ha.role === "hebergement");
+                                                  setSelectedRecipient(idx >= 0 ? `host_${idx}` : "groupe");
                                                 } else if (templates.category === "groupe") setSelectedRecipient("groupe");
                                                 setTimeout(() => { const ta = document.querySelector('textarea[placeholder]'); if (ta) ta.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
                                               }} className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider shrink-0 hover:scale-105 active:scale-95 transition-transform">
