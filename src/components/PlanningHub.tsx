@@ -369,12 +369,12 @@ export function PlanningHub() {
     // Always copy message first
     navigator.clipboard.writeText(text);
     if (phone === WHATSAPP_INVITE_ID || phone.length < 6) {
-      // For group: open invite link, user pastes message
-      const link = `https://chat.whatsapp.com/${WHATSAPP_INVITE_ID}`;
+      // For group: use generic share link, user picks the group natively
+      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
       const a = document.createElement("a");
-      a.href = link; a.target = "_blank"; a.rel = "noopener noreferrer";
+      a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer";
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      toast.success("✅ Message copié – Collez-le dans le groupe WhatsApp");
+      toast.success("✅ Message copié – Choisissez le groupe dans WhatsApp");
       return;
     }
     const cleaned = phone.replace(/\s/g, "");
@@ -635,7 +635,7 @@ export function PlanningHub() {
         {viewVisit && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50" onClick={closeDetail}>
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-              className="w-full max-w-3xl bg-card rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+              className="w-full max-w-5xl bg-card rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
               {(() => {
                 const speaker = getSpeakerForVisit(viewVisit);
                 const visitD = new Date(viewVisit.visitDate);
@@ -992,10 +992,10 @@ export function PlanningHub() {
                             </div>
                           </div>
 
-                          {/* Templates */}
-                          <div className="space-y-3">
+                          {/* Templates organized by Progress Steps */}
+                          <div className="space-y-6 pt-4 border-t border-border mt-6">
                             <div className="flex items-center justify-between">
-                              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("templates_by_step")}</p>
+                              <h3 className="text-sm font-black uppercase tracking-widest text-foreground">Chronologie des messages</h3>
                               <select className="input-soft text-xs w-28" value={templateLang} onChange={(e) => setTemplateLang(e.target.value as "fr" | "cv" | "pt")} title="Langue">
                                 <option value="fr">FR Français</option>
                                 <option value="cv">CV Kriolu</option>
@@ -1003,44 +1003,69 @@ export function PlanningHub() {
                               </select>
                             </div>
 
-                            {Object.entries(messageTemplates).map(([key, templates]) => {
-                              const lang = templateLang as "fr" | "cv" | "pt";
-                              const tmpl = templates[lang] || templates.fr;
-                              if (typeof tmpl === "string") return null;
-                              const categoryLabel = templates.category === "speaker" ? "🎤 Orateur"
-                                : templates.category === "repas" ? "🍽️ Hôte – Repas"
-                                : templates.category === "transport" ? "🚗 Hôte – Transport"
-                                : "👥 Groupe";
-                              return (
-                                <div key={key} className="premium-card p-4 space-y-3">
-                                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{categoryLabel}</p>
-                                  <div className="bg-muted/30 rounded-xl p-4 space-y-2">
-                                    <p className="text-sm font-bold text-foreground">{tmpl.title}</p>
-                                    <p className="text-[10px] text-muted-foreground">{tmpl.desc}</p>
-                                    <p className="text-xs text-foreground whitespace-pre-line line-clamp-6">{resolveVariables(tmpl.body)}</p>
+                            <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent">
+                              {[
+                                { step: 1, color: "bg-blue-500", label: "Étape 1 : Planification", keys: ["confirmation_speaker", "volunteers_group"] },
+                                { step: 2, color: "bg-amber-500", label: "Étape 2 : Logistique", keys: ["repas_host", "transport_host"] },
+                                { step: 3, color: "bg-primary", label: "Étape 3 : Briefing", keys: ["preparation_speaker", "preparation_group"] },
+                                { step: 4, color: "bg-emerald-500", label: "Étape 4 : Après-Visite", keys: ["thanks_speaker", "thanks_speaker_online"] },
+                              ].map((group) => (
+                                <div key={group.step} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                                  <div className={`flex items-center justify-center w-10 h-10 rounded-full border-4 border-card ${group.color} text-white font-bold shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-sm z-10`}>
+                                    {group.step}
                                   </div>
-                                  <button onClick={() => {
-                                    const resolved = resolveVariables(tmpl.body);
-                                    setMessageText(resolved);
-                                    // Auto-select recipient based on template category
-                                    if (templates.category === "speaker") {
-                                      setSelectedRecipient("orateur");
-                                    } else if (templates.category === "repas") {
-                                      const idx = (detailForm.hostAssignments || []).findIndex((ha) => ha.role === "repas");
-                                      setSelectedRecipient(idx >= 0 ? `host_${idx}` : "orateur");
-                                    } else if (templates.category === "transport") {
-                                      const idx = (detailForm.hostAssignments || []).findIndex((ha) => ha.role === "transport");
-                                      setSelectedRecipient(idx >= 0 ? `host_${idx}` : "orateur");
-                                    } else if (templates.category === "groupe") {
-                                      setSelectedRecipient("groupe");
-                                    }
-                                    setTimeout(() => { const ta = document.querySelector('textarea[placeholder]'); if (ta) ta.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
-                                  }} className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider">
-                                    {t("insert_message")}
-                                  </button>
+                                  <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-2xl border border-border bg-card shadow-sm space-y-4">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <h4 className="font-bold text-foreground">{group.label}</h4>
+                                    </div>
+                                    
+                                    <div className="space-y-3">
+                                      {group.keys.map((key) => {
+                                        // @ts-ignore
+                                        const templates = messageTemplates[key];
+                                        if (!templates) return null;
+                                        const lang = templateLang as "fr" | "cv" | "pt";
+                                        const tmpl = templates[lang] || templates.fr;
+                                        if (typeof tmpl === "string") return null;
+
+                                        const categoryLabel = templates.category === "speaker" ? "🎤 Orateur"
+                                          : templates.category === "repas" ? "🍽️ Hôte – Repas"
+                                          : templates.category === "transport" ? "🚗 Hôte – Transport"
+                                          : "👥 Groupe";
+
+                                        return (
+                                          <div key={key} className="bg-muted/30 rounded-xl p-3 border border-border/50 hover:border-primary/30 transition-colors">
+                                            <div className="flex justify-between items-start gap-2 mb-2">
+                                              <div>
+                                                <p className="text-[9px] font-bold uppercase tracking-widest text-primary mb-1">{categoryLabel}</p>
+                                                <p className="text-sm font-bold text-foreground leading-tight">{tmpl.title}</p>
+                                                <p className="text-[10px] text-muted-foreground mt-0.5">{tmpl.desc}</p>
+                                              </div>
+                                              <button onClick={() => {
+                                                const resolved = resolveVariables(tmpl.body);
+                                                setMessageText(resolved);
+                                                if (templates.category === "speaker") setSelectedRecipient("orateur");
+                                                else if (templates.category === "repas") {
+                                                  const idx = (detailForm.hostAssignments || []).findIndex((ha) => ha.role === "repas");
+                                                  setSelectedRecipient(idx >= 0 ? `host_${idx}` : "orateur");
+                                                } else if (templates.category === "transport") {
+                                                  const idx = (detailForm.hostAssignments || []).findIndex((ha) => ha.role === "transport");
+                                                  setSelectedRecipient(idx >= 0 ? `host_${idx}` : "orateur");
+                                                } else if (templates.category === "groupe") setSelectedRecipient("groupe");
+                                                setTimeout(() => { const ta = document.querySelector('textarea[placeholder]'); if (ta) ta.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+                                              }} className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider shrink-0 hover:scale-105 active:scale-95 transition-transform">
+                                                Insérer
+                                              </button>
+                                            </div>
+                                            <p className="text-[10px] text-foreground/70 whitespace-pre-line line-clamp-3 italic">"{resolveVariables(tmpl.body)}"</p>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
                                 </div>
-                              );
-                            })}
+                              ))}
+                            </div>
                           </div>
                         </motion.div>
                       )}
