@@ -62,6 +62,7 @@ interface HostRow {
 
 // ─── Normalize name ───
 export function normalizeName(name: string): string {
+  if (!name) return "";
   return name.replace(/\n/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
 }
 
@@ -77,6 +78,15 @@ function dedup<T>(items: T[], keyFn: (item: T) => string): T[] {
     }
   }
   return result;
+}
+
+// ─── Safety Parse ───
+function safeJson(val: any) {
+  if (!val) return [];
+  if (typeof val === 'string') {
+    try { return JSON.parse(val); } catch { return []; }
+  }
+  return val;
 }
 
 // ─── Helpers: convert between app model and actual DB columns ───
@@ -115,8 +125,8 @@ function rowToVisit(r: VisitRow): Visit {
     congregation: r.congregation,
     visitDate: r.visit_date,
     heure_visite: r.heure_visite || undefined,
-    locationType: r.location_type as Visit["locationType"],
-    status: r.status as Visit["status"],
+    locationType: (r.location_type || "kingdom_hall") as Visit["locationType"],
+    status: (r.status || "scheduled") as Visit["status"],
     isEvent: r.is_event ?? undefined,
     eventType: r.event_type as Visit["eventType"],
     talkNoOrType: r.talk_no_or_type ?? "",
@@ -125,8 +135,8 @@ function rowToVisit(r: VisitRow): Visit {
     notes: r.notes ?? undefined,
     feedback: r.feedback ?? undefined,
     feedbackRating: r.feedback_rating ?? undefined,
-    hostAssignments: Array.isArray(r.host_assignments) ? r.host_assignments : [],
-    companions: Array.isArray(r.companions) ? r.companions : [],
+    hostAssignments: safeJson(r.host_assignments),
+    companions: safeJson(r.companions),
     date_arrivee: r.date_arrivee ?? undefined,
     heure_arrivee: r.heure_arrivee ?? undefined,
     date_depart: r.date_depart ?? undefined,
@@ -204,23 +214,31 @@ export interface SyncResult {
 }
 
 export async function syncCloud(): Promise<SyncResult> {
+  console.log("Starting cloud sync...");
   const result: SyncResult = {
     pushed: { visits: 0, speakers: 0, hosts: 0 },
     pulled: { visits: 0, speakers: 0, hosts: 0 },
   };
 
-  if (!supabase) return result;
+  if (!supabase) {
+    console.error("Supabase client not initialized!");
+    return result;
+  }
 
   // ── 1. PULL & MERGE: Resolve conflicts locally using timestamps ──
   
   // A. VISITS
   const { data: remoteVisits, error: pullVisitsError } = await supabase.from("visits").select("*");
-  if (pullVisitsError) throw pullVisitsError;
+  if (pullVisitsError) {
+    console.error("Pull visits error:", pullVisitsError);
+    throw pullVisitsError;
+  }
   
   const localVisits = useVisitStore.getState().visits;
   const remoteVisitsConverted = (remoteVisits || []).map(rowToVisit);
-  const mergedVisitsMap = new Map<string, Visit>();
+  console.log(`Pulled ${remoteVisitsConverted.length} visits from remote.`);
   
+  const mergedVisitsMap = new Map<string, Visit>();
   localVisits.forEach(v => mergedVisitsMap.set(v.visitId, v));
   remoteVisitsConverted.forEach(rv => {
     const lv = mergedVisitsMap.get(rv.visitId);
@@ -230,6 +248,7 @@ export async function syncCloud(): Promise<SyncResult> {
   });
   
   const finalVisits = dedup(Array.from(mergedVisitsMap.values()), (v) => {
+    if (!v.nom) return `empty-${Math.random()}`;
     const datePart = v.visitDate ? v.visitDate.split('T')[0] : '';
     return `${normalizeName(v.nom)}|${datePart}`;
   });
@@ -276,7 +295,7 @@ export async function syncCloud(): Promise<SyncResult> {
   useHostStore.getState().setHosts(finalHosts);
   result.pulled.hosts = remoteHostsConverted.length;
 
-  // ── 2. PUSH: Send the fully reconciled state to the cloud ──
+  // ── 2. PUSH: Send the fully reconciled state back to the cloud ──
   
   if (finalVisits.length > 0) {
     const { error } = await supabase.from("visits").upsert(finalVisits.map(visitToRow), { onConflict: "visit_id" });
@@ -299,6 +318,8 @@ export async function syncCloud(): Promise<SyncResult> {
   useSettingsStore.getState().updateCongregation({
     lastSyncAt: new Date().toISOString(),
   });
+  
+  console.log("Cloud sync finished successfully.", result);
 
   return result;
 }
