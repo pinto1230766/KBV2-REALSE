@@ -81,8 +81,11 @@ export function useAutoSync() {
       // 2. Supabase cloud sync
       let cloudResult;
       try {
+        console.log("🔄 Triggering cloud sync from useAutoSync...");
         cloudResult = await syncCloud();
-      } catch {
+        console.log("✅ Cloud sync finished:", cloudResult);
+      } catch (err) {
+        console.error("❌ Cloud sync critical error:", err);
         cloudResult = null;
       }
 

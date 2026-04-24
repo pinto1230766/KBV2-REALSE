@@ -22,8 +22,8 @@ interface VisitRow {
   notes: string | null;
   feedback: string | null;
   feedback_rating: number | null;
-  host_assignments: any | null;
-  companions: any | null;
+  host_assignments: unknown | null;
+  companions: unknown | null;
   date_arrivee: string | null;
   heure_arrivee: string | null;
   date_depart: string | null;
@@ -81,7 +81,7 @@ function dedup<T>(items: T[], keyFn: (item: T) => string): T[] {
 }
 
 // ─── Safety Parse ───
-function safeJson(val: any) {
+function safeJson(val: unknown) {
   if (!val) return [];
   if (typeof val === 'string') {
     try { return JSON.parse(val); } catch { return []; }
