@@ -22,8 +22,8 @@ interface VisitRow {
   notes: string | null;
   feedback: string | null;
   feedback_rating: number | null;
-  host_assignments: unknown | null;
-  companions: unknown | null;
+  host_assignments: any | null;
+  companions: any | null;
   date_arrivee: string | null;
   heure_arrivee: string | null;
   date_depart: string | null;
@@ -55,9 +55,14 @@ interface HostRow {
   notes: string | null;
   role: string | null;
   photo_url: string | null;
-  tags: string[] | null;
   capacity: number | null;
   updated_at: string | null;
+}
+
+// ─── UUID Validation ───
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function isValidUUID(id: string): boolean {
+  return UUID_REGEX.test(id);
 }
 
 // ─── Normalize name ───
@@ -187,7 +192,6 @@ function hostToRow(h: Host): Partial<HostRow> {
     notes: h.notes || null,
     role: h.role || null,
     photo_url: h.photoUrl || null,
-    tags: [],
     capacity: h.capacity || null,
     updated_at: h.updatedAt || new Date().toISOString(),
   };
@@ -220,25 +224,18 @@ export async function syncCloud(): Promise<SyncResult> {
     pulled: { visits: 0, speakers: 0, hosts: 0 },
   };
 
-  if (!supabase) {
-    console.error("Supabase client not initialized!");
-    return result;
-  }
+  if (!supabase) return result;
 
   // ── 1. PULL & MERGE: Resolve conflicts locally using timestamps ──
   
   // A. VISITS
   const { data: remoteVisits, error: pullVisitsError } = await supabase.from("visits").select("*");
-  if (pullVisitsError) {
-    console.error("Pull visits error:", pullVisitsError);
-    throw pullVisitsError;
-  }
+  if (pullVisitsError) console.error("Pull visits error:", pullVisitsError);
   
   const localVisits = useVisitStore.getState().visits;
   const remoteVisitsConverted = (remoteVisits || []).map(rowToVisit);
-  console.log(`Pulled ${remoteVisitsConverted.length} visits from remote.`);
-  
   const mergedVisitsMap = new Map<string, Visit>();
+  
   localVisits.forEach(v => mergedVisitsMap.set(v.visitId, v));
   remoteVisitsConverted.forEach(rv => {
     const lv = mergedVisitsMap.get(rv.visitId);
@@ -257,7 +254,7 @@ export async function syncCloud(): Promise<SyncResult> {
 
   // B. SPEAKERS
   const { data: remoteSpeakers, error: pullSpeakersError } = await supabase.from("speakers").select("*");
-  if (pullSpeakersError) throw pullSpeakersError;
+  if (pullSpeakersError) console.error("Pull speakers error:", pullSpeakersError);
   
   const localSpeakers = useSpeakerStore.getState().speakers;
   const remoteSpeakersConverted = (remoteSpeakers || []).map(rowToSpeaker);
@@ -277,7 +274,7 @@ export async function syncCloud(): Promise<SyncResult> {
 
   // C. HOSTS
   const { data: remoteHosts, error: pullHostsError } = await supabase.from("hosts").select("*");
-  if (pullHostsError) throw pullHostsError;
+  if (pullHostsError) console.error("Pull hosts error:", pullHostsError);
   
   const localHosts = useHostStore.getState().hosts;
   const remoteHostsConverted = (remoteHosts || []).map(rowToHost);
@@ -297,22 +294,27 @@ export async function syncCloud(): Promise<SyncResult> {
 
   // ── 2. PUSH: Send the fully reconciled state back to the cloud ──
   
-  if (finalVisits.length > 0) {
-    const { error } = await supabase.from("visits").upsert(finalVisits.map(visitToRow), { onConflict: "visit_id" });
+  // CRITICAL: Filter only valid UUIDs for push to avoid Supabase errors (22P02)
+  const pushableVisits = finalVisits.filter(v => isValidUUID(v.visitId));
+  const pushableSpeakers = finalSpeakers.filter(s => isValidUUID(s.id));
+  const pushableHosts = finalHosts.filter(h => isValidUUID(h.id));
+
+  if (pushableVisits.length > 0) {
+    const { error } = await supabase.from("visits").upsert(pushableVisits.map(visitToRow), { onConflict: "visit_id" });
     if (error) console.error("Push visits error:", error);
-    else result.pushed.visits = finalVisits.length;
+    else result.pushed.visits = pushableVisits.length;
   }
   
-  if (finalSpeakers.length > 0) {
-    const { error } = await supabase.from("speakers").upsert(finalSpeakers.map(speakerToRow), { onConflict: "id" });
+  if (pushableSpeakers.length > 0) {
+    const { error } = await supabase.from("speakers").upsert(pushableSpeakers.map(speakerToRow), { onConflict: "id" });
     if (error) console.error("Push speakers error:", error);
-    else result.pushed.speakers = finalSpeakers.length;
+    else result.pushed.speakers = pushableSpeakers.length;
   }
   
-  if (finalHosts.length > 0) {
-    const { error } = await supabase.from("hosts").upsert(finalHosts.map(hostToRow), { onConflict: "id" });
+  if (pushableHosts.length > 0) {
+    const { error } = await supabase.from("hosts").upsert(pushableHosts.map(hostToRow), { onConflict: "id" });
     if (error) console.error("Push hosts error:", error);
-    else result.pushed.hosts = finalHosts.length;
+    else result.pushed.hosts = pushableHosts.length;
   }
 
   useSettingsStore.getState().updateCongregation({
@@ -320,6 +322,5 @@ export async function syncCloud(): Promise<SyncResult> {
   });
   
   console.log("Cloud sync finished successfully.", result);
-
   return result;
 }
