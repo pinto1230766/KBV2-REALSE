@@ -12,6 +12,7 @@ export interface Host {
   role?: VisitHostRole;
   photoUrl?: string;
   capacity?: number;
+  updatedAt?: string;
 }
 
 export interface Companion {
@@ -91,6 +92,7 @@ export interface Speaker {
   householdType?: HouseholdType;
   spouseName?: string;
   notes?: string;
+  updatedAt?: string;
 }
 
 export type Language = "fr" | "cv" | "pt";

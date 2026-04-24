@@ -14,7 +14,9 @@ export const useVisitStore = create<VisitState>()(
   persist(
     (set) => ({
       visits: [],
-      addVisit: (visit) => set((s) => ({ visits: [...s.visits, visit] })),
+      addVisit: (visit) => set((s) => ({ 
+        visits: [...s.visits, { ...visit, updatedAt: visit.updatedAt || new Date().toISOString() }] 
+      })),
       setVisits: (visits) => set({ visits }),
       updateVisit: (visitId, data) =>
         set((s) => ({

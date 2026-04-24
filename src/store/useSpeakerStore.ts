@@ -14,11 +14,13 @@ export const useSpeakerStore = create<SpeakerState>()(
   persist(
     (set) => ({
       speakers: [],
-      addSpeaker: (speaker) => set((s) => ({ speakers: [...s.speakers, speaker] })),
+      addSpeaker: (speaker) => set((s) => ({ 
+        speakers: [...s.speakers, { ...speaker, updatedAt: new Date().toISOString() }] 
+      })),
       setSpeakers: (speakers) => set({ speakers }),
       updateSpeaker: (id, data) =>
         set((s) => ({
-          speakers: s.speakers.map((sp) => (sp.id === id ? { ...sp, ...data } : sp)),
+          speakers: s.speakers.map((sp) => (sp.id === id ? { ...sp, ...data, updatedAt: new Date().toISOString() } : sp)),
         })),
       deleteSpeaker: (id) =>
         set((s) => ({ speakers: s.speakers.filter((sp) => sp.id !== id) })),

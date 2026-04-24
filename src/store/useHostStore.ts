@@ -14,11 +14,13 @@ export const useHostStore = create<HostState>()(
   persist(
     (set) => ({
       hosts: [],
-      addHost: (host) => set((s) => ({ hosts: [...s.hosts, host] })),
+      addHost: (host) => set((s) => ({ 
+        hosts: [...s.hosts, { ...host, updatedAt: new Date().toISOString() }] 
+      })),
       setHosts: (hosts) => set({ hosts }),
       updateHost: (id, data) =>
         set((s) => ({
-          hosts: s.hosts.map((h) => (h.id === id ? { ...h, ...data } : h)),
+          hosts: s.hosts.map((h) => (h.id === id ? { ...h, ...data, updatedAt: new Date().toISOString() } : h)),
         })),
       deleteHost: (id) =>
         set((s) => ({ hosts: s.hosts.filter((h) => h.id !== id) })),

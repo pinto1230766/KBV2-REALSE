@@ -22,8 +22,8 @@ interface VisitRow {
   notes: string | null;
   feedback: string | null;
   feedback_rating: number | null;
-  host_assignments: string | null;
-  companions: string | null;
+  host_assignments: any | null;
+  companions: any | null;
   date_arrivee: string | null;
   heure_arrivee: string | null;
   date_depart: string | null;
@@ -43,6 +43,7 @@ interface SpeakerRow {
   wife_name: string | null;
   notes: string | null;
   talk_history: string | null;
+  updated_at: string | null;
 }
 
 interface HostRow {
@@ -56,21 +57,15 @@ interface HostRow {
   photo_url: string | null;
   tags: string[] | null;
   capacity: number | null;
+  updated_at: string | null;
 }
 
-// Warning flag for Supabase not configured
-let warnedSupabaseNotConfigured = false;
-
-// ─── Normalize name: remove newlines, extra spaces, lowercase ───
+// ─── Normalize name ───
 export function normalizeName(name: string): string {
   return name.replace(/\n/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
 }
 
-// ─── UUID check ───
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-function isUUID(s: string) { return UUID_RE.test(s); }
-
-// ─── Dedup helper: keep first entry per key ───
+// ─── Dedup helper ───
 function dedup<T>(items: T[], keyFn: (item: T) => string): T[] {
   const seen = new Set<string>();
   const result: T[] = [];
@@ -86,7 +81,7 @@ function dedup<T>(items: T[], keyFn: (item: T) => string): T[] {
 
 // ─── Helpers: convert between app model and actual DB columns ───
 
-function visitToRow(v: Visit) {
+function visitToRow(v: Visit): Partial<VisitRow> {
   return {
     visit_id: v.visitId,
     nom: v.nom,
@@ -119,7 +114,7 @@ function rowToVisit(r: VisitRow): Visit {
     nom: r.nom,
     congregation: r.congregation,
     visitDate: r.visit_date,
-    heure_visite: r.heure_visite,
+    heure_visite: r.heure_visite || undefined,
     locationType: r.location_type as Visit["locationType"],
     status: r.status as Visit["status"],
     isEvent: r.is_event ?? undefined,
@@ -130,8 +125,8 @@ function rowToVisit(r: VisitRow): Visit {
     notes: r.notes ?? undefined,
     feedback: r.feedback ?? undefined,
     feedbackRating: r.feedback_rating ?? undefined,
-    hostAssignments: (() => { try { return r.host_assignments ? JSON.parse(r.host_assignments) : undefined; } catch { return undefined; } })(),
-    companions: (() => { try { return r.companions ? JSON.parse(r.companions) : undefined; } catch { return undefined; } })(),
+    hostAssignments: Array.isArray(r.host_assignments) ? r.host_assignments : [],
+    companions: Array.isArray(r.companions) ? r.companions : [],
     date_arrivee: r.date_arrivee ?? undefined,
     heure_arrivee: r.heure_arrivee ?? undefined,
     date_depart: r.date_depart ?? undefined,
@@ -140,7 +135,7 @@ function rowToVisit(r: VisitRow): Visit {
   };
 }
 
-function speakerToRow(s: Speaker) {
+function speakerToRow(s: Speaker): Partial<SpeakerRow> {
   return {
     id: s.id,
     nom: s.nom,
@@ -152,6 +147,7 @@ function speakerToRow(s: Speaker) {
     household_type: s.householdType || "single",
     wife_name: s.spouseName || null,
     notes: s.notes || null,
+    updated_at: s.updatedAt || new Date().toISOString(),
   };
 }
 
@@ -160,18 +156,18 @@ function rowToSpeaker(r: SpeakerRow): Speaker {
     id: r.id,
     nom: r.nom,
     congregation: r.congregation,
-    telephone: r.telephone,
-    email: r.email,
-    photoUrl: r.photo_url,
-    spousePhotoUrl: r.wife_photo_url,
+    telephone: r.telephone || undefined,
+    email: r.email || undefined,
+    photoUrl: r.photo_url || undefined,
+    spousePhotoUrl: r.wife_photo_url || undefined,
     householdType: r.household_type as Speaker["householdType"],
     spouseName: r.wife_name ?? undefined,
     notes: r.notes ?? undefined,
-    talks: (() => { try { return r.talk_history ? JSON.parse(r.talk_history) : []; } catch { return []; } })(),
+    updatedAt: r.updated_at || undefined,
   };
 }
 
-function hostToRow(h: Host) {
+function hostToRow(h: Host): Partial<HostRow> {
   return {
     id: h.id,
     nom: h.nom,
@@ -179,9 +175,11 @@ function hostToRow(h: Host) {
     email: h.email || null,
     adresse: h.adresse || null,
     notes: h.notes || null,
+    role: h.role || null,
     photo_url: h.photoUrl || null,
-    tags: h.tags || [],
+    tags: [],
     capacity: h.capacity || null,
+    updated_at: h.updatedAt || new Date().toISOString(),
   };
 }
 
@@ -189,18 +187,16 @@ function rowToHost(r: HostRow): Host {
   return {
     id: r.id,
     nom: r.nom,
-    telephone: r.telephone,
-    email: r.email,
-    adresse: r.adresse,
-    notes: r.notes,
+    telephone: r.telephone || undefined,
+    email: r.email || undefined,
+    adresse: r.adresse || undefined,
+    notes: r.notes || undefined,
     role: r.role as Host["role"] ?? undefined,
-    photoUrl: r.photo_url,
-    tags: r.tags,
-    capacity: r.capacity,
+    photoUrl: r.photo_url || undefined,
+    capacity: r.capacity || undefined,
+    updatedAt: r.updated_at || undefined,
   };
 }
-
-// ─── Sync: push local → remote, then pull remote → local (REPLACE, not merge) ───
 
 export interface SyncResult {
   pushed: { visits: number; speakers: number; hosts: number };
@@ -213,102 +209,91 @@ export async function syncCloud(): Promise<SyncResult> {
     pulled: { visits: 0, speakers: 0, hosts: 0 },
   };
 
-  // Check if Supabase is configured
-  if (!supabase) {
-    // Supabase is optional - silently skip cloud sync if not configured
-    return result;
+  if (!supabase) return result;
+
+  // ── 1. PULL & MERGE: Resolve conflicts locally using timestamps ──
+  
+  // A. VISITS
+  const { data: remoteVisits, error: pullVisitsError } = await supabase.from("visits").select("*");
+  if (pullVisitsError) throw pullVisitsError;
+  
+  const localVisits = useVisitStore.getState().visits;
+  const remoteVisitsConverted = (remoteVisits || []).map(rowToVisit);
+  const mergedVisitsMap = new Map<string, Visit>();
+  
+  localVisits.forEach(v => mergedVisitsMap.set(v.visitId, v));
+  remoteVisitsConverted.forEach(rv => {
+    const lv = mergedVisitsMap.get(rv.visitId);
+    if (!lv || (rv.updatedAt && lv.updatedAt && rv.updatedAt > lv.updatedAt) || (rv.updatedAt && !lv.updatedAt)) {
+      mergedVisitsMap.set(rv.visitId, rv);
+    }
+  });
+  
+  const finalVisits = dedup(Array.from(mergedVisitsMap.values()), (v) => {
+    const datePart = v.visitDate ? v.visitDate.split('T')[0] : '';
+    return `${normalizeName(v.nom)}|${datePart}`;
+  });
+  useVisitStore.getState().setVisits(finalVisits);
+  result.pulled.visits = remoteVisitsConverted.length;
+
+  // B. SPEAKERS
+  const { data: remoteSpeakers, error: pullSpeakersError } = await supabase.from("speakers").select("*");
+  if (pullSpeakersError) throw pullSpeakersError;
+  
+  const localSpeakers = useSpeakerStore.getState().speakers;
+  const remoteSpeakersConverted = (remoteSpeakers || []).map(rowToSpeaker);
+  const mergedSpeakersMap = new Map<string, Speaker>();
+  
+  localSpeakers.forEach(s => mergedSpeakersMap.set(s.id, s));
+  remoteSpeakersConverted.forEach(rs => {
+    const ls = mergedSpeakersMap.get(rs.id);
+    if (!ls || (rs.updatedAt && ls.updatedAt && rs.updatedAt > ls.updatedAt) || (rs.updatedAt && !ls.updatedAt)) {
+      mergedSpeakersMap.set(rs.id, rs);
+    }
+  });
+  
+  const finalSpeakers = Array.from(mergedSpeakersMap.values());
+  useSpeakerStore.getState().setSpeakers(finalSpeakers);
+  result.pulled.speakers = remoteSpeakersConverted.length;
+
+  // C. HOSTS
+  const { data: remoteHosts, error: pullHostsError } = await supabase.from("hosts").select("*");
+  if (pullHostsError) throw pullHostsError;
+  
+  const localHosts = useHostStore.getState().hosts;
+  const remoteHostsConverted = (remoteHosts || []).map(rowToHost);
+  const mergedHostsMap = new Map<string, Host>();
+  
+  localHosts.forEach(h => mergedHostsMap.set(h.id, h));
+  remoteHostsConverted.forEach(rh => {
+    const lh = mergedHostsMap.get(rh.id);
+    if (!lh || (rh.updatedAt && lh.updatedAt && rh.updatedAt > lh.updatedAt) || (rh.updatedAt && !lh.updatedAt)) {
+      mergedHostsMap.set(rh.id, rh);
+    }
+  });
+  
+  const finalHosts = Array.from(mergedHostsMap.values());
+  useHostStore.getState().setHosts(finalHosts);
+  result.pulled.hosts = remoteHostsConverted.length;
+
+  // ── 2. PUSH: Send the fully reconciled state to the cloud ──
+  
+  if (finalVisits.length > 0) {
+    const { error } = await supabase.from("visits").upsert(finalVisits.map(visitToRow), { onConflict: "visit_id" });
+    if (error) console.error("Push visits error:", error);
+    else result.pushed.visits = finalVisits.length;
   }
   
-  // Reset warning flag when Supabase is available
-  warnedSupabaseNotConfigured = false;
-
-  const localVisits = useVisitStore.getState().visits;
-  const localSpeakers = useSpeakerStore.getState().speakers;
-  const localHosts = useHostStore.getState().hosts;
-
-  // PUSH: upsert local data to Supabase
-  const pushableVisits = localVisits.filter((v) => v.visitId && v.visitId.trim() !== "");
-  if (pushableVisits.length > 0) {
-    const { error } = await supabase
-      .from("visits")
-      .upsert(pushableVisits.map(visitToRow), { onConflict: "visit_id" });
-    if (error) console.error("Push visits error:", error);
-    else result.pushed.visits = pushableVisits.length;
-  }
-
-  if (localSpeakers.length > 0) {
-    const { error } = await supabase
-      .from("speakers")
-      .upsert(localSpeakers.map(speakerToRow), { onConflict: "id" });
+  if (finalSpeakers.length > 0) {
+    const { error } = await supabase.from("speakers").upsert(finalSpeakers.map(speakerToRow), { onConflict: "id" });
     if (error) console.error("Push speakers error:", error);
-    else result.pushed.speakers = localSpeakers.length;
+    else result.pushed.speakers = finalSpeakers.length;
   }
-
-  if (localHosts.length > 0) {
-    const { error } = await supabase
-      .from("hosts")
-      .upsert(localHosts.map(hostToRow), { onConflict: "id" });
+  
+  if (finalHosts.length > 0) {
+    const { error } = await supabase.from("hosts").upsert(finalHosts.map(hostToRow), { onConflict: "id" });
     if (error) console.error("Push hosts error:", error);
-    else result.pushed.hosts = localHosts.length;
-  }
-
-  // ── PULL: fetch remote data, merge with local, deduplicate, then REPLACE local store ──
-  const { data: remoteVisits } = await supabase.from("visits").select("*");
-  if (remoteVisits) {
-    // Merge remote into local: remote wins for same visitId
-    const remoteConverted = remoteVisits.map(rowToVisit);
-    const remoteById = new Map(remoteConverted.map((v) => [v.visitId, v]));
-    
-    // Start with remote data, then add local-only entries
-    const merged: Visit[] = [...remoteConverted];
-    for (const lv of localVisits) {
-      if (!remoteById.has(lv.visitId)) {
-        merged.push(lv);
-      }
-    }
-    
-    // Deduplicate by normalized name + date (ignoring time)
-    const dedupedVisits = dedup(merged, (v) => {
-      const datePart = v.visitDate ? v.visitDate.split('T')[0] : '';
-      return `${normalizeName(v.nom)}|${datePart}`;
-    });
-    useVisitStore.getState().setVisits(dedupedVisits);
-    result.pulled.visits = remoteConverted.length;
-  }
-
-  const { data: remoteSpeakers } = await supabase.from("speakers").select("*");
-  if (remoteSpeakers) {
-    const remoteConverted = remoteSpeakers.map(rowToSpeaker);
-    const remoteById = new Map(remoteConverted.map((s) => [s.id, s]));
-    
-    const merged: Speaker[] = [...remoteConverted];
-    for (const ls of localSpeakers) {
-      if (!remoteById.has(ls.id)) {
-        merged.push(ls);
-      }
-    }
-    
-    // Deduplicate by normalized name
-    const dedupedSpeakers = dedup(merged, (s) => normalizeName(s.nom));
-    useSpeakerStore.getState().setSpeakers(dedupedSpeakers);
-    result.pulled.speakers = remoteConverted.length;
-  }
-
-  const { data: remoteHosts } = await supabase.from("hosts").select("*");
-  if (remoteHosts) {
-    const remoteConverted = remoteHosts.map(rowToHost);
-    const remoteById = new Map(remoteConverted.map((h) => [h.id, h]));
-    
-    const merged: Host[] = [...remoteConverted];
-    for (const lh of localHosts) {
-      if (!remoteById.has(lh.id)) {
-        merged.push(lh);
-      }
-    }
-    
-    const dedupedHosts = dedup(merged, (h) => normalizeName(h.nom));
-    useHostStore.getState().setHosts(dedupedHosts);
-    result.pulled.hosts = remoteConverted.length;
+    else result.pushed.hosts = finalHosts.length;
   }
 
   useSettingsStore.getState().updateCongregation({
