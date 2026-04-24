@@ -44,7 +44,18 @@ function App() {
   });
   const hideSplash = useCallback(() => setShowSplash(false), []);
   const [showOnboarding, setShowOnboarding] = useState(() => {
-    return !localStorage.getItem("kbv-onboarding-done");
+    // If onboarding is already done, don't show it
+    if (localStorage.getItem("kbv-onboarding-done")) return false;
+    
+    // If we have pre-configured Supabase keys in the build (.env), 
+    // we can skip onboarding to provide a "Ready to use" experience
+    const hasPreConfig = !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
+    if (hasPreConfig) {
+      localStorage.setItem("kbv-onboarding-done", "true");
+      return false;
+    }
+    
+    return true;
   });
 
   const visits = useVisitStore((s) => s.visits);
