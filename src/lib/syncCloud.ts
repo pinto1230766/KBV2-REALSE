@@ -22,8 +22,8 @@ interface VisitRow {
   notes: string | null;
   feedback: string | null;
   feedback_rating: number | null;
-  host_assignments: any | null;
-  companions: any | null;
+  host_assignments: unknown | null;
+  companions: unknown | null;
   date_arrivee: string | null;
   heure_arrivee: string | null;
   date_depart: string | null;
