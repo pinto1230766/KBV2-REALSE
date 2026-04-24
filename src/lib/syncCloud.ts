@@ -22,8 +22,8 @@ interface VisitRow {
   notes: string | null;
   feedback: string | null;
   feedback_rating: number | null;
-  host_assignments: unknown | null;
-  companions: unknown | null;
+  host_assignments: any | null;
+  companions: any | null;
   date_arrivee: string | null;
   heure_arrivee: string | null;
   date_depart: string | null;
@@ -59,10 +59,30 @@ interface HostRow {
   updated_at: string | null;
 }
 
-// ─── UUID Validation ───
+// ─── UUID Conversion & Validation ───
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function isValidUUID(id: string): boolean {
   return UUID_REGEX.test(id);
+}
+
+/**
+ * Converts any string to a deterministic valid UUID v4 format.
+ * This allows "sheet-xxx" IDs to be stored in Supabase UUID columns.
+ */
+function toUUID(str: string): string {
+  if (!str) return "00000000-0000-4000-8000-000000000000";
+  if (isValidUUID(str)) return str;
+
+  // Simple deterministic hash
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  
+  const h = Math.abs(hash).toString(16).padStart(8, '0');
+  // Return a valid UUID-looking string using the hash
+  return `550e8400-e29b-41d4-a716-${h.repeat(3).substring(0, 12)}`;
 }
 
 // ─── Normalize name ───
@@ -98,7 +118,7 @@ function safeJson(val: unknown) {
 
 function visitToRow(v: Visit): Partial<VisitRow> {
   return {
-    visit_id: v.visitId,
+    visit_id: toUUID(v.visitId), // Convert to valid UUID for DB
     nom: v.nom,
     congregation: v.congregation,
     visit_date: v.visitDate,
@@ -152,7 +172,7 @@ function rowToVisit(r: VisitRow): Visit {
 
 function speakerToRow(s: Speaker): Partial<SpeakerRow> {
   return {
-    id: s.id,
+    id: toUUID(s.id),
     nom: s.nom,
     congregation: s.congregation,
     telephone: s.telephone || null,
@@ -184,7 +204,7 @@ function rowToSpeaker(r: SpeakerRow): Speaker {
 
 function hostToRow(h: Host): Partial<HostRow> {
   return {
-    id: h.id,
+    id: toUUID(h.id),
     nom: h.nom,
     telephone: h.telephone || null,
     email: h.email || null,
@@ -226,9 +246,7 @@ export async function syncCloud(): Promise<SyncResult> {
 
   if (!supabase) return result;
 
-  // ── 1. PULL & MERGE: Resolve conflicts locally using timestamps ──
-  
-  // A. VISITS
+  // ── 1. PULL & MERGE ──
   const { data: remoteVisits, error: pullVisitsError } = await supabase.from("visits").select("*");
   if (pullVisitsError) console.error("Pull visits error:", pullVisitsError);
   
@@ -255,11 +273,9 @@ export async function syncCloud(): Promise<SyncResult> {
   // B. SPEAKERS
   const { data: remoteSpeakers, error: pullSpeakersError } = await supabase.from("speakers").select("*");
   if (pullSpeakersError) console.error("Pull speakers error:", pullSpeakersError);
-  
   const localSpeakers = useSpeakerStore.getState().speakers;
   const remoteSpeakersConverted = (remoteSpeakers || []).map(rowToSpeaker);
   const mergedSpeakersMap = new Map<string, Speaker>();
-  
   localSpeakers.forEach(s => mergedSpeakersMap.set(s.id, s));
   remoteSpeakersConverted.forEach(rs => {
     const ls = mergedSpeakersMap.get(rs.id);
@@ -267,7 +283,6 @@ export async function syncCloud(): Promise<SyncResult> {
       mergedSpeakersMap.set(rs.id, rs);
     }
   });
-  
   const finalSpeakers = Array.from(mergedSpeakersMap.values());
   useSpeakerStore.getState().setSpeakers(finalSpeakers);
   result.pulled.speakers = remoteSpeakersConverted.length;
@@ -275,11 +290,9 @@ export async function syncCloud(): Promise<SyncResult> {
   // C. HOSTS
   const { data: remoteHosts, error: pullHostsError } = await supabase.from("hosts").select("*");
   if (pullHostsError) console.error("Pull hosts error:", pullHostsError);
-  
   const localHosts = useHostStore.getState().hosts;
   const remoteHostsConverted = (remoteHosts || []).map(rowToHost);
   const mergedHostsMap = new Map<string, Host>();
-  
   localHosts.forEach(h => mergedHostsMap.set(h.id, h));
   remoteHostsConverted.forEach(rh => {
     const lh = mergedHostsMap.get(rh.id);
@@ -287,34 +300,28 @@ export async function syncCloud(): Promise<SyncResult> {
       mergedHostsMap.set(rh.id, rh);
     }
   });
-  
   const finalHosts = Array.from(mergedHostsMap.values());
   useHostStore.getState().setHosts(finalHosts);
   result.pulled.hosts = remoteHostsConverted.length;
 
-  // ── 2. PUSH: Send the fully reconciled state back to the cloud ──
-  
-  // CRITICAL: Filter only valid UUIDs for push to avoid Supabase errors (22P02)
-  const pushableVisits = finalVisits.filter(v => isValidUUID(v.visitId));
-  const pushableSpeakers = finalSpeakers.filter(s => isValidUUID(s.id));
-  const pushableHosts = finalHosts.filter(h => isValidUUID(h.id));
-
-  if (pushableVisits.length > 0) {
-    const { error } = await supabase.from("visits").upsert(pushableVisits.map(visitToRow), { onConflict: "visit_id" });
+  // ── 2. PUSH ──
+  // Now we use toUUID() during conversion to ensure every entry is pushable
+  if (finalVisits.length > 0) {
+    const { error } = await supabase.from("visits").upsert(finalVisits.map(visitToRow), { onConflict: "visit_id" });
     if (error) console.error("Push visits error:", error);
-    else result.pushed.visits = pushableVisits.length;
+    else result.pushed.visits = finalVisits.length;
   }
   
-  if (pushableSpeakers.length > 0) {
-    const { error } = await supabase.from("speakers").upsert(pushableSpeakers.map(speakerToRow), { onConflict: "id" });
+  if (finalSpeakers.length > 0) {
+    const { error } = await supabase.from("speakers").upsert(finalSpeakers.map(speakerToRow), { onConflict: "id" });
     if (error) console.error("Push speakers error:", error);
-    else result.pushed.speakers = pushableSpeakers.length;
+    else result.pushed.speakers = finalSpeakers.length;
   }
   
-  if (pushableHosts.length > 0) {
-    const { error } = await supabase.from("hosts").upsert(pushableHosts.map(hostToRow), { onConflict: "id" });
+  if (finalHosts.length > 0) {
+    const { error } = await supabase.from("hosts").upsert(finalHosts.map(hostToRow), { onConflict: "id" });
     if (error) console.error("Push hosts error:", error);
-    else result.pushed.hosts = pushableHosts.length;
+    else result.pushed.hosts = finalHosts.length;
   }
 
   useSettingsStore.getState().updateCongregation({
