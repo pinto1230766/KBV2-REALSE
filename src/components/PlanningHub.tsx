@@ -1003,7 +1003,6 @@ export function PlanningHub() {
                                     
                                     <div className="space-y-3">
                                       {group.keys.map((key) => {
-                                        // @ts-expect-error - key is valid from stepsConfig
                                         const templates = messageTemplates[key];
                                         if (!templates) return null;
                                         const lang = templateLang as "fr" | "cv" | "pt";
