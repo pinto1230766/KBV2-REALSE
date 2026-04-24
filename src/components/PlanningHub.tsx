@@ -325,7 +325,7 @@ export function PlanningHub() {
     if (!host) return;
     const newAssignment: HostAssignment = {
       hostId: host.id, hostName: host.nom, hostPhone: host.telephone,
-      hostEmail: host.email, hostAddress: host.adresse || host.address,
+      hostEmail: host.email, hostAddress: host.adresse,
       hostPhotoUrl: host.photoUrl, role: assignRole, day: assignDay, time: assignTime,
     };
     setDetailForm({ ...detailForm, hostAssignments: [...(detailForm.hostAssignments || []), newAssignment] });
@@ -857,11 +857,11 @@ export function PlanningHub() {
                                     </div>
                                     <div>
                                       <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t("date")}</label>
-                                      <input type="date" className="input-soft text-sm" value={ha.day || ""} onChange={(e) => updateHostAssignment(origIdx, "day", e.target.value)} onClick={(e) => (e.target as any).showPicker?.()} title={t("date")} />
+                                      <input type="date" className="input-soft text-sm" value={ha.day || ""} onChange={(e) => updateHostAssignment(origIdx, "day", e.target.value)} onClick={(e) => (e.target as HTMLInputElement).showPicker?.()} title={t("date")} />
                                     </div>
                                     <div>
                                       <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t("time")}</label>
-                                      <input type="time" className="input-soft text-sm" value={ha.time || ""} onChange={(e) => updateHostAssignment(origIdx, "time", e.target.value)} onClick={(e) => (e.target as any).showPicker?.()} title={t("time")} />
+                                      <input type="time" className="input-soft text-sm" value={ha.time || ""} onChange={(e) => updateHostAssignment(origIdx, "time", e.target.value)} onClick={(e) => (e.target as HTMLInputElement).showPicker?.()} title={t("time")} />
                                     </div>
                                   </div>
                                   <div>
@@ -911,8 +911,8 @@ export function PlanningHub() {
                                   <option value="repas">{t("repas")}</option>
                                 </select>
                                 <div className="grid grid-cols-2 gap-2">
-                                  <input className="input-soft text-sm" type="date" placeholder={t("day")} value={assignDay} onChange={(e) => setAssignDay(e.target.value)} onClick={(e) => (e.target as any).showPicker?.()} />
-                                  <input className="input-soft text-sm" type="time" placeholder={t("time")} value={assignTime} onChange={(e) => setAssignTime(e.target.value)} onClick={(e) => (e.target as any).showPicker?.()} />
+                                  <input className="input-soft text-sm" type="date" placeholder={t("day")} value={assignDay} onChange={(e) => setAssignDay(e.target.value)} onClick={(e) => (e.target as HTMLInputElement).showPicker?.()} />
+                                  <input className="input-soft text-sm" type="time" placeholder={t("time")} value={assignTime} onChange={(e) => setAssignTime(e.target.value)} onClick={(e) => (e.target as HTMLInputElement).showPicker?.()} />
                                 </div>
                                 <div className="flex gap-2">
                                   <button onClick={addHostAssignment} className="flex-1 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold">{t("add")}</button>
@@ -1003,7 +1003,7 @@ export function PlanningHub() {
                                     
                                     <div className="space-y-3">
                                       {group.keys.map((key) => {
-                                        // @ts-ignore
+                                        // @ts-expect-error - key is valid from stepsConfig
                                         const templates = messageTemplates[key];
                                         if (!templates) return null;
                                         const lang = templateLang as "fr" | "cv" | "pt";
@@ -1166,8 +1166,8 @@ export function PlanningHub() {
               <input className="input-soft text-sm" placeholder={t("speaker_name")} value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} />
               <input className="input-soft text-sm" placeholder={t("congregation")} value={form.congregation} onChange={(e) => setForm({ ...form, congregation: e.target.value })} />
               <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
-                <div><label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">{t("visit_date")}</label><input className="input-soft text-sm" type="date" value={form.visitDate} onChange={(e) => setForm({ ...form, visitDate: e.target.value })} onClick={(e) => (e.target as any).showPicker?.()} title={t("visit_date")} /></div>
-                <div><label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">{t("time")}</label><input className="input-soft text-sm" type="time" value={form.heure_visite} onChange={(e) => setForm({ ...form, heure_visite: e.target.value })} onClick={(e) => (e.target as any).showPicker?.()} title={t("time")} /></div>
+                <div><label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">{t("visit_date")}</label><input className="input-soft text-sm" type="date" value={form.visitDate} onChange={(e) => setForm({ ...form, visitDate: e.target.value })} onClick={(e) => (e.target as HTMLInputElement).showPicker?.()} title={t("visit_date")} /></div>
+                <div><label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">{t("time")}</label><input className="input-soft text-sm" type="time" value={form.heure_visite} onChange={(e) => setForm({ ...form, heure_visite: e.target.value })} onClick={(e) => (e.target as HTMLInputElement).showPicker?.()} title={t("time")} /></div>
               </div>
               <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
                 <input className="input-soft text-sm" placeholder={t("talk_number")} value={form.talkNoOrType} onChange={(e) => setForm({ ...form, talkNoOrType: e.target.value })} />
