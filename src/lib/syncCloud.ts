@@ -226,9 +226,8 @@ export async function syncCloud(): Promise<SyncResult> {
   const localSpeakers = useSpeakerStore.getState().speakers;
   const localHosts = useHostStore.getState().hosts;
 
-  // ── PUSH: upsert local data to Supabase ──
-  // Filter visits with valid UUIDs only (sheet-imported visits have non-UUID ids)
-  const pushableVisits = localVisits.filter((v) => isUUID(v.visitId));
+  // PUSH: upsert local data to Supabase
+  const pushableVisits = localVisits.filter((v) => v.visitId && v.visitId.trim() !== "");
   if (pushableVisits.length > 0) {
     const { error } = await supabase
       .from("visits")
