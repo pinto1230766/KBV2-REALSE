@@ -29,32 +29,47 @@ export function getHostKey(host: Host): string {
   return name || `id:${host.id}`;
 }
 
-function hasValue(value: unknown): boolean {
-  if (value === undefined || value === null) return false;
-  if (typeof value === "string") return value.trim().length > 0;
-  if (Array.isArray(value)) return value.length > 0;
-  return true;
+function timestamp(value?: string): number {
+  if (!value) return 0;
+  const t = new Date(value).getTime();
+  return Number.isNaN(t) ? 0 : t;
 }
 
-function isNewer(next?: string, current?: string): boolean {
-  if (!next) return false;
-  if (!current) return true;
-  return new Date(next).getTime() >= new Date(current).getTime();
-}
+/**
+ * Merge two records of the same logical entity.
+ * The newer one (by updatedAt) wins ALL its declared fields, including
+ * intentional clears (empty string, null). This is critical so that a user
+ * editing a field — for example switching householdType from "couple" back
+ * to "single" or clearing a spouseName — is not silently reverted by an
+ * older remote copy carrying the previous value.
+ *
+ * Fields that are `undefined` in the winner fall back to the loser's value.
+ */
+function mergeItem<T extends { updatedAt?: string }>(a: T, b: T, idField: keyof T): T {
+  const aTime = timestamp(a.updatedAt);
+  const bTime = timestamp(b.updatedAt);
+  // Strictly newer wins. On equality we keep `a` (caller controls order:
+  // local data is passed first so local edits win ties against remote).
+  const winner = bTime > aTime ? b : a;
+  const loser = winner === a ? b : a;
 
-function mergeItem<T extends { updatedAt?: string }>(current: T, next: T, idField: keyof T): T {
-  const output = { ...current } as Record<string, unknown>;
-  const nextWins = isNewer(next.updatedAt, current.updatedAt);
+  const output: Record<string, unknown> = { ...(loser as Record<string, unknown>) };
 
-  Object.entries(next as Record<string, unknown>).forEach(([field, value]) => {
+  Object.entries(winner as Record<string, unknown>).forEach(([field, value]) => {
     if (field === idField) return;
-    if (field === "updatedAt") {
-      if (isNewer(value as string | undefined, output.updatedAt as string | undefined)) output.updatedAt = value;
-      return;
-    }
-    if (!hasValue(value)) return;
-    if (!hasValue(output[field]) || nextWins) output[field] = value;
+    // `undefined` means "field was not provided" — fall back to loser.
+    // Any other value (including "", null, [], false, 0) is an intentional
+    // assignment from the winner and must be respected.
+    if (value === undefined) return;
+    output[field] = value;
   });
+
+  // Preserve the loser's id (caller-controlled stable identity).
+  output[idField as string] = (output[idField as string] ?? (loser as Record<string, unknown>)[idField as string]);
+
+  // Always advance updatedAt to the newer of the two so subsequent merges
+  // continue to honor this resolved state.
+  output.updatedAt = winner.updatedAt || loser.updatedAt;
 
   return output as T;
 }
