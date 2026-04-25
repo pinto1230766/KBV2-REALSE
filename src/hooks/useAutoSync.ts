@@ -2,9 +2,10 @@ import { useEffect, useRef, useCallback } from "react";
 import { useVisitStore } from "../store/useVisitStore";
 import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useSettingsStore } from "../store/useSettingsStore";
-import { syncCloud, normalizeName } from "../lib/syncCloud";
+import { syncCloud } from "../lib/syncCloud";
 import { toast } from "sonner";
 import { parseCSV, extractSheetInfo, parseRowsToData } from "../lib/sheetUtils";
+import { getSpeakerKey, getVisitKey, mergeSpeakers, mergeVisits } from "../lib/dedup";
 
 async function syncGoogleSheet(sheetUrl: string): Promise<{ addedVisits: number; addedSpeakers: number }> {
   const info = extractSheetInfo(sheetUrl);
@@ -28,33 +29,17 @@ async function syncGoogleSheet(sheetUrl: string): Promise<{ addedVisits: number;
   const rows = parseCSV(text);
   const { visits: newVisits, speakers: newSpeakers } = parseRowsToData(rows);
 
-  // Dedup visits
-  const existingKeys = new Set(
-    useVisitStore.getState().visits.map((v) => `${normalizeName(v.nom)}|${v.visitDate}`)
-  );
-  let addedVisits = 0;
-  for (const v of newVisits) {
-    const key = `${normalizeName(v.nom)}|${v.visitDate}`;
-    if (!existingKeys.has(key)) {
-      useVisitStore.getState().addVisit(v);
-      existingKeys.add(key);
-      addedVisits++;
-    }
-  }
+  const currentVisits = useVisitStore.getState().visits;
+  const currentVisitKeys = new Set(currentVisits.map(getVisitKey));
+  const mergedVisits = mergeVisits(currentVisits, newVisits);
+  useVisitStore.getState().setVisits(mergedVisits);
+  const addedVisits = mergedVisits.filter((v) => !currentVisitKeys.has(getVisitKey(v))).length;
 
-  // Dedup speakers
-  const existingSpeakers = new Set(
-    useSpeakerStore.getState().speakers.map((s) => normalizeName(s.nom))
-  );
-  let addedSpeakers = 0;
-  for (const s of newSpeakers) {
-    const key = normalizeName(s.nom);
-    if (!existingSpeakers.has(key)) {
-      useSpeakerStore.getState().addSpeaker(s);
-      existingSpeakers.add(key);
-      addedSpeakers++;
-    }
-  }
+  const currentSpeakers = useSpeakerStore.getState().speakers;
+  const currentSpeakerKeys = new Set(currentSpeakers.map(getSpeakerKey));
+  const mergedSpeakers = mergeSpeakers(currentSpeakers, newSpeakers);
+  useSpeakerStore.getState().setSpeakers(mergedSpeakers);
+  const addedSpeakers = mergedSpeakers.filter((s) => !currentSpeakerKeys.has(getSpeakerKey(s))).length;
 
   return { addedVisits, addedSpeakers };
 }
