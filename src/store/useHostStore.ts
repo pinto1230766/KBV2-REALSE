@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Host } from "./visitTypes";
+import { mergeHosts } from "../lib/dedup";
 
 interface HostState {
   hosts: Host[];
@@ -15,9 +16,9 @@ export const useHostStore = create<HostState>()(
     (set) => ({
       hosts: [],
       addHost: (host) => set((s) => ({ 
-        hosts: [...s.hosts, { ...host, updatedAt: new Date().toISOString() }] 
+        hosts: mergeHosts(s.hosts, [{ ...host, updatedAt: host.updatedAt || new Date().toISOString() }]) 
       })),
-      setHosts: (hosts) => set({ hosts }),
+      setHosts: (hosts) => set({ hosts: mergeHosts(hosts) }),
       updateHost: (id, data) =>
         set((s) => ({
           hosts: s.hosts.map((h) => (h.id === id ? { ...h, ...data, updatedAt: new Date().toISOString() } : h)),
