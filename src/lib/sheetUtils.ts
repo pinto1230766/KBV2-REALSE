@@ -1,4 +1,5 @@
 import type { Visit, Speaker } from "../store/visitTypes";
+import { normalizeName } from "./dedup";
 
 /** Generate a unique ID */
 export function generateId(): string {
@@ -51,6 +52,10 @@ export function parseSheetDate(dateStr: string): string {
   return dateStr;
 }
 
+function slugify(value: string): string {
+  return normalizeName(value).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
 /** Parse CSV rows into Visit and Speaker objects */
 export function parseRowsToData(rows: string[][]): { visits: Visit[]; speakers: Speaker[] } {
   const visits: Visit[] = [];
@@ -74,7 +79,8 @@ export function parseRowsToData(rows: string[][]): { visits: Visit[]; speakers: 
     );
 
     const visitDate = parseSheetDate(dateStr);
-    const visitId = `sheet-${visitDate}`;
+    const speakerSlug = slugify(orador) || "unknown";
+    const visitId = `sheet-${visitDate}-${speakerSlug}`;
 
     visits.push({
       visitId,
@@ -89,10 +95,10 @@ export function parseRowsToData(rows: string[][]): { visits: Visit[]; speakers: 
     });
 
     if (!isEvent) {
-      const key = orador.toLowerCase().replace(/\s+/g, " ");
+      const key = normalizeName(orador);
       if (!speakerMap.has(key)) {
         speakerMap.set(key, {
-          id: `sheet-spk-${key.replace(/\s/g, "-")}`,
+          id: `sheet-spk-${slugify(orador)}`,
           nom: orador,
           congregation,
         });

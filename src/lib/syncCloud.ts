@@ -4,6 +4,9 @@ import { useVisitStore } from "../store/useVisitStore";
 import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useHostStore } from "../store/useHostStore";
 import { useSettingsStore } from "../store/useSettingsStore";
+import { mergeHosts, mergeSpeakers, mergeVisits, normalizeName } from "./dedup";
+
+export { normalizeName };
 
 // ─── Types for Supabase database rows ───
 interface VisitRow {
@@ -53,7 +56,7 @@ interface HostRow {
   email: string | null;
   adresse: string | null;
   notes: string | null;
-  role: string | null;
+  role?: string | null;
   photo_url: string | null;
   capacity: number | null;
   updated_at: string | null;
@@ -83,26 +86,6 @@ function toUUID(str: string): string {
   const h = Math.abs(hash).toString(16).padStart(8, '0');
   // Return a valid UUID-looking string using the hash
   return `550e8400-e29b-41d4-a716-${h.repeat(3).substring(0, 12)}`;
-}
-
-// ─── Normalize name ───
-export function normalizeName(name: string): string {
-  if (!name) return "";
-  return name.replace(/\n/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
-}
-
-// ─── Dedup helper ───
-function dedup<T>(items: T[], keyFn: (item: T) => string): T[] {
-  const seen = new Set<string>();
-  const result: T[] = [];
-  for (const item of items) {
-    const key = keyFn(item);
-    if (!seen.has(key)) {
-      seen.add(key);
-      result.push(item);
-    }
-  }
-  return result;
 }
 
 // ─── Safety Parse ───
@@ -210,7 +193,6 @@ function hostToRow(h: Host): Partial<HostRow> {
     email: h.email || null,
     adresse: h.adresse || null,
     notes: h.notes || null,
-    role: h.role || null,
     photo_url: h.photoUrl || null,
     capacity: h.capacity || null,
     updated_at: h.updatedAt || new Date().toISOString(),
@@ -252,21 +234,7 @@ export async function syncCloud(): Promise<SyncResult> {
   
   const localVisits = useVisitStore.getState().visits;
   const remoteVisitsConverted = (remoteVisits || []).map(rowToVisit);
-  const mergedVisitsMap = new Map<string, Visit>();
-  
-  localVisits.forEach(v => mergedVisitsMap.set(v.visitId, v));
-  remoteVisitsConverted.forEach(rv => {
-    const lv = mergedVisitsMap.get(rv.visitId);
-    if (!lv || (rv.updatedAt && lv.updatedAt && rv.updatedAt > lv.updatedAt) || (rv.updatedAt && !lv.updatedAt)) {
-      mergedVisitsMap.set(rv.visitId, rv);
-    }
-  });
-  
-  const finalVisits = dedup(Array.from(mergedVisitsMap.values()), (v) => {
-    if (!v.nom) return `empty-${Math.random()}`;
-    const datePart = v.visitDate ? v.visitDate.split('T')[0] : '';
-    return `${normalizeName(v.nom)}|${datePart}`;
-  });
+  const finalVisits = mergeVisits(localVisits, remoteVisitsConverted);
   useVisitStore.getState().setVisits(finalVisits);
   result.pulled.visits = remoteVisitsConverted.length;
 
@@ -275,15 +243,7 @@ export async function syncCloud(): Promise<SyncResult> {
   if (pullSpeakersError) console.error("Pull speakers error:", pullSpeakersError);
   const localSpeakers = useSpeakerStore.getState().speakers;
   const remoteSpeakersConverted = (remoteSpeakers || []).map(rowToSpeaker);
-  const mergedSpeakersMap = new Map<string, Speaker>();
-  localSpeakers.forEach(s => mergedSpeakersMap.set(s.id, s));
-  remoteSpeakersConverted.forEach(rs => {
-    const ls = mergedSpeakersMap.get(rs.id);
-    if (!ls || (rs.updatedAt && ls.updatedAt && rs.updatedAt > ls.updatedAt) || (rs.updatedAt && !ls.updatedAt)) {
-      mergedSpeakersMap.set(rs.id, rs);
-    }
-  });
-  const finalSpeakers = Array.from(mergedSpeakersMap.values());
+  const finalSpeakers = mergeSpeakers(localSpeakers, remoteSpeakersConverted);
   useSpeakerStore.getState().setSpeakers(finalSpeakers);
   result.pulled.speakers = remoteSpeakersConverted.length;
 
@@ -292,15 +252,7 @@ export async function syncCloud(): Promise<SyncResult> {
   if (pullHostsError) console.error("Pull hosts error:", pullHostsError);
   const localHosts = useHostStore.getState().hosts;
   const remoteHostsConverted = (remoteHosts || []).map(rowToHost);
-  const mergedHostsMap = new Map<string, Host>();
-  localHosts.forEach(h => mergedHostsMap.set(h.id, h));
-  remoteHostsConverted.forEach(rh => {
-    const lh = mergedHostsMap.get(rh.id);
-    if (!lh || (rh.updatedAt && lh.updatedAt && rh.updatedAt > lh.updatedAt) || (rh.updatedAt && !lh.updatedAt)) {
-      mergedHostsMap.set(rh.id, rh);
-    }
-  });
-  const finalHosts = Array.from(mergedHostsMap.values());
+  const finalHosts = mergeHosts(localHosts, remoteHostsConverted);
   useHostStore.getState().setHosts(finalHosts);
   result.pulled.hosts = remoteHostsConverted.length;
 
