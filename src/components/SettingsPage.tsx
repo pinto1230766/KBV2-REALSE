@@ -13,8 +13,9 @@ import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useTranslation } from "../hooks/useTranslation";
 import { toast } from "sonner";
 import type { Language, Visit, Speaker, Host } from "../store/visitTypes";
-import { syncCloud, normalizeName } from "../lib/syncCloud";
+import { syncCloud } from "../lib/syncCloud";
 import { parseCSV, extractSheetInfo, parseRowsToData } from "../lib/sheetUtils";
+import { getHostKey, getSpeakerKey, getVisitKey, mergeHosts, mergeSpeakers, mergeVisits } from "../lib/dedup";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
 import { KbvLogo } from "./KbvLogo";
 
@@ -126,39 +127,17 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
   };
 
   const importData = async (newVisits: Visit[], newSpeakers: Speaker[]) => {
-    let addedVisits = 0;
-    let addedSpeakers = 0;
-    // Dedup visits by visit_id AND by normalized name+date
-    const existingVisitIds = new Set(useVisitStore.getState().visits.map((v) => v.visitId));
-    const existingVisitKeys = new Set(
-      useVisitStore.getState().visits.map((v) => {
-        const datePart = v.visitDate ? v.visitDate.split('T')[0] : '';
-        return `${normalizeName(v.nom)}|${datePart}`;
-      })
-    );
-    // Dedup speakers by normalized name
-    const existingSpeakerNames = new Set(
-      useSpeakerStore.getState().speakers.map((s) => normalizeName(s.nom))
-    );
+    const currentVisits = useVisitStore.getState().visits;
+    const currentVisitKeys = new Set(currentVisits.map(getVisitKey));
+    const finalVisits = mergeVisits(currentVisits, newVisits);
+    useVisitStore.getState().setVisits(finalVisits);
+    const addedVisits = finalVisits.filter((v) => !currentVisitKeys.has(getVisitKey(v))).length;
 
-    newVisits.forEach((v) => {
-      const datePart = v.visitDate ? v.visitDate.split('T')[0] : '';
-      const key = `${normalizeName(v.nom)}|${datePart}`;
-      if (!existingVisitIds.has(v.visitId) && !existingVisitKeys.has(key)) {
-        useVisitStore.getState().addVisit(v);
-        addedVisits++;
-        existingVisitKeys.add(key);
-      }
-    });
-
-    newSpeakers.forEach((s) => {
-      const key = normalizeName(s.nom);
-      if (!existingSpeakerNames.has(key)) {
-        useSpeakerStore.getState().addSpeaker(s);
-        addedSpeakers++;
-        existingSpeakerNames.add(key);
-      }
-    });
+    const currentSpeakers = useSpeakerStore.getState().speakers;
+    const currentSpeakerKeys = new Set(currentSpeakers.map(getSpeakerKey));
+    const finalSpeakers = mergeSpeakers(currentSpeakers, newSpeakers);
+    useSpeakerStore.getState().setSpeakers(finalSpeakers);
+    const addedSpeakers = finalSpeakers.filter((s) => !currentSpeakerKeys.has(getSpeakerKey(s))).length;
 
     updateCongregation({ lastSyncAt: new Date().toISOString() });
     toast.success(`${t("sync_success")}: +${addedVisits} visites, +${addedSpeakers} orateurs`);
@@ -217,9 +196,9 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
       try {
         const text = await file.text();
         const data = JSON.parse(text);
-        if (data.visits) data.visits.forEach((v: Visit) => useVisitStore.getState().addVisit(v));
-        if (data.hosts) data.hosts.forEach((h: Host) => useHostStore.getState().addHost(h));
-        if (data.speakers) data.speakers.forEach((s: Speaker) => useSpeakerStore.getState().addSpeaker(s));
+        if (data.visits) useVisitStore.getState().setVisits(mergeVisits(useVisitStore.getState().visits, data.visits));
+        if (data.hosts) useHostStore.getState().setHosts(mergeHosts(useHostStore.getState().hosts, data.hosts));
+        if (data.speakers) useSpeakerStore.getState().setSpeakers(mergeSpeakers(useSpeakerStore.getState().speakers, data.speakers));
         toast.success(t("import_success"));
       } catch {
         toast.error(t("import_error"));
