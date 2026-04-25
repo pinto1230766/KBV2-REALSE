@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Visit } from "./visitTypes";
+import { mergeVisits } from "../lib/dedup";
 
 interface VisitState {
   visits: Visit[];
@@ -15,9 +16,9 @@ export const useVisitStore = create<VisitState>()(
     (set) => ({
       visits: [],
       addVisit: (visit) => set((s) => ({ 
-        visits: [...s.visits, { ...visit, updatedAt: visit.updatedAt || new Date().toISOString() }] 
+        visits: mergeVisits(s.visits, [{ ...visit, updatedAt: visit.updatedAt || new Date().toISOString() }]) 
       })),
-      setVisits: (visits) => set({ visits }),
+      setVisits: (visits) => set({ visits: mergeVisits(visits) }),
       updateVisit: (visitId, data) =>
         set((s) => ({
           visits: s.visits.map((v) =>
