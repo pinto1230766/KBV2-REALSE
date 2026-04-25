@@ -222,6 +222,16 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
   const findDuplicates = () => {
     const dups: Array<{ type: string; name: string; ids: string[] }> = [];
 
+    const visitMap = new Map<string, string[]>();
+    visits.forEach((v) => {
+      const key = getVisitKey(v);
+      if (!visitMap.has(key)) visitMap.set(key, []);
+      visitMap.get(key)!.push(v.visitId);
+    });
+    visitMap.forEach((ids, name) => {
+      if (ids.length > 1) dups.push({ type: "visit", name, ids });
+    });
+
     // Check speakers
     const speakerMap = new Map<string, string[]>();
     speakers.forEach((s) => {
@@ -255,7 +265,8 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
 
   const deleteSelectedDuplicates = () => {
     selectedDuplicates.forEach((id) => {
-      // Try deleting from both stores
+      // Try deleting from all stores
+      try { useVisitStore.getState().deleteVisit(id); } catch { /* ignore */ }
       try { useSpeakerStore.getState().deleteSpeaker(id); } catch { /* ignore */ }
       try { useHostStore.getState().deleteHost(id); } catch { /* ignore */ }
     });
@@ -1035,7 +1046,7 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
                     <input
                       id={`dup-${dup.ids[0]}`}
                       type="checkbox"
-                      aria-label={`${dup.type === "speaker" ? t("speakers") : t("hosts")} ${dup.name}`}
+                      aria-label={`${dup.type === "visit" ? "Visites" : dup.type === "speaker" ? t("speakers") : t("hosts")} ${dup.name}`}
                       checked={dup.ids.slice(1).some((id) => selectedDuplicates.includes(id))}
                       onChange={(e) => {
                         const extraIds = dup.ids.slice(1);
@@ -1047,7 +1058,7 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
                       }}
                       className="w-4 h-4 accent-primary"
                     />
-                    <span className="text-xs font-bold uppercase text-muted-foreground">{dup.type === "speaker" ? t("speakers") : t("hosts")}</span>
+                    <span className="text-xs font-bold uppercase text-muted-foreground">{dup.type === "visit" ? "Visites" : dup.type === "speaker" ? t("speakers") : t("hosts")}</span>
                     <span className="text-sm font-bold text-foreground capitalize">{dup.name}</span>
                     <span className="text-xs text-muted-foreground ml-auto">×{dup.ids.length}</span>
                   </div>
