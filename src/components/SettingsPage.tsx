@@ -225,7 +225,7 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
     // Check speakers
     const speakerMap = new Map<string, string[]>();
     speakers.forEach((s) => {
-      const key = s.nom.toLowerCase().trim();
+      const key = getSpeakerKey(s);
       if (!speakerMap.has(key)) speakerMap.set(key, []);
       speakerMap.get(key)!.push(s.id);
     });
@@ -236,7 +236,7 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
     // Check hosts
     const hostMap = new Map<string, string[]>();
     hosts.forEach((h) => {
-      const key = h.nom.toLowerCase().trim();
+      const key = getHostKey(h);
       if (!hostMap.has(key)) hostMap.set(key, []);
       hostMap.get(key)!.push(h.id);
     });
