@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Speaker } from "./visitTypes";
+import { mergeSpeakers } from "../lib/dedup";
 
 interface SpeakerState {
   speakers: Speaker[];
@@ -15,9 +16,9 @@ export const useSpeakerStore = create<SpeakerState>()(
     (set) => ({
       speakers: [],
       addSpeaker: (speaker) => set((s) => ({ 
-        speakers: [...s.speakers, { ...speaker, updatedAt: new Date().toISOString() }] 
+        speakers: mergeSpeakers(s.speakers, [{ ...speaker, updatedAt: speaker.updatedAt || new Date().toISOString() }]) 
       })),
-      setSpeakers: (speakers) => set({ speakers }),
+      setSpeakers: (speakers) => set({ speakers: mergeSpeakers(speakers) }),
       updateSpeaker: (id, data) =>
         set((s) => ({
           speakers: s.speakers.map((sp) => (sp.id === id ? { ...sp, ...data, updatedAt: new Date().toISOString() } : sp)),
