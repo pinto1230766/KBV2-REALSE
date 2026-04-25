@@ -4,6 +4,9 @@ import { useVisitStore } from "../store/useVisitStore";
 import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useHostStore } from "../store/useHostStore";
 import { useSettingsStore } from "../store/useSettingsStore";
+import { mergeHosts, mergeSpeakers, mergeVisits, normalizeName } from "./dedup";
+
+export { normalizeName };
 
 // ─── Types for Supabase database rows ───
 interface VisitRow {
@@ -53,7 +56,7 @@ interface HostRow {
   email: string | null;
   adresse: string | null;
   notes: string | null;
-  role: string | null;
+  role?: string | null;
   photo_url: string | null;
   capacity: number | null;
   updated_at: string | null;
@@ -83,26 +86,6 @@ function toUUID(str: string): string {
   const h = Math.abs(hash).toString(16).padStart(8, '0');
   // Return a valid UUID-looking string using the hash
   return `550e8400-e29b-41d4-a716-${h.repeat(3).substring(0, 12)}`;
-}
-
-// ─── Normalize name ───
-export function normalizeName(name: string): string {
-  if (!name) return "";
-  return name.replace(/\n/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
-}
-
-// ─── Dedup helper ───
-function dedup<T>(items: T[], keyFn: (item: T) => string): T[] {
-  const seen = new Set<string>();
-  const result: T[] = [];
-  for (const item of items) {
-    const key = keyFn(item);
-    if (!seen.has(key)) {
-      seen.add(key);
-      result.push(item);
-    }
-  }
-  return result;
 }
 
 // ─── Safety Parse ───
