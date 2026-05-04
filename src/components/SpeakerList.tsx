@@ -109,10 +109,12 @@ export function SpeakerList() {
     spouseName: "",
     childrenCount: 0,
     childrenAges: "",
+    dietary: "",
+    spouseDietary: "",
   });
 
   const resetForm = () => {
-    setForm({ nom: "", congregation: "", telephone: "", email: "", notes: "", photoUrl: undefined, spousePhotoUrl: undefined, householdType: "single", spouseName: "", childrenCount: 0, childrenAges: "" });
+    setForm({ nom: "", congregation: "", telephone: "", email: "", notes: "", photoUrl: undefined, spousePhotoUrl: undefined, householdType: "single", spouseName: "", childrenCount: 0, childrenAges: "", dietary: "", spouseDietary: "" });
     resetZodForm({
       nom: "",
       congregation: congregationName,
@@ -121,6 +123,8 @@ export function SpeakerList() {
       notes: "",
       householdType: "single",
       spouseName: "",
+      dietary: "",
+      spouseDietary: "",
     });
     setEditing(null);
     setShowForm(false);
@@ -141,6 +145,8 @@ export function SpeakerList() {
       spouseName: sp.spouseName || "",
       childrenCount: sp.childrenCount ?? 0,
       childrenAges: sp.childrenAges || "",
+      dietary: sp.dietary || "",
+      spouseDietary: sp.spouseDietary || "",
     });
     resetZodForm({
       nom: sp.nom,
@@ -150,6 +156,8 @@ export function SpeakerList() {
       notes: sp.notes || "",
       householdType: sp.householdType || "single",
       spouseName: sp.spouseName || "",
+      dietary: sp.dietary || "",
+      spouseDietary: sp.spouseDietary || "",
     });
     setEditing(sp);
     setViewSpeaker(sp);
@@ -157,7 +165,7 @@ export function SpeakerList() {
   };
 
   const openAddForm = () => {
-    setForm({ nom: "", congregation: congregationName, telephone: "", email: "", notes: "", photoUrl: undefined, spousePhotoUrl: undefined, householdType: "single", spouseName: "", childrenCount: 0, childrenAges: "" });
+    setForm({ nom: "", congregation: congregationName, telephone: "", email: "", notes: "", photoUrl: undefined, spousePhotoUrl: undefined, householdType: "single", spouseName: "", childrenCount: 0, childrenAges: "", dietary: "", spouseDietary: "" });
     resetZodForm({
       nom: "",
       congregation: congregationName,
@@ -166,6 +174,8 @@ export function SpeakerList() {
       notes: "",
       householdType: "single",
       spouseName: "",
+      dietary: "",
+      spouseDietary: "",
     });
     setEditing(null);
     setShowForm(true);
@@ -185,6 +195,8 @@ export function SpeakerList() {
       spouseName: form.spouseName,
       childrenCount: form.childrenCount,
       childrenAges: form.childrenAges,
+      dietary: form.dietary,
+      spouseDietary: form.spouseDietary,
     };
     if (editing) {
       updateSpeaker(editing.id, merged);
@@ -462,6 +474,33 @@ export function SpeakerList() {
                   </AnimatePresence>
                 </div>
 
+                {/* Allergies / Régimes Alimentaires */}
+                <div className="space-y-4 pt-2 border-t border-border">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("dietary_allergies")}</p>
+                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("speaker_label")}</p>
+                      <input
+                        className="input-soft text-sm"
+                        placeholder={t("speaker_allergies_placeholder")}
+                        value={form.dietary}
+                        onChange={(e) => setForm({ ...form, dietary: e.target.value })}
+                      />
+                    </div>
+                    {form.householdType === "couple" && (
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("spouse_label")}</p>
+                        <input
+                          className="input-soft text-sm"
+                          placeholder={t("spouse_allergies_placeholder")}
+                          value={form.spouseDietary}
+                          onChange={(e) => setForm({ ...form, spouseDietary: e.target.value })}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Notes */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -569,6 +608,17 @@ export function SpeakerList() {
                       {n === 4 ? "4+" : n}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Allergies / Régimes Alimentaires */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("dietary_allergies")}</label>
+                <div className="flex flex-col gap-2">
+                  <input className="input-soft text-sm" placeholder={t("speaker_allergies_placeholder")} value={form.dietary} onChange={(e) => setForm({ ...form, dietary: e.target.value })} />
+                  {form.householdType === "couple" && (
+                    <input className="input-soft text-sm" placeholder={t("spouse_allergies_placeholder")} value={form.spouseDietary} onChange={(e) => setForm({ ...form, spouseDietary: e.target.value })} />
+                  )}
                 </div>
               </div>
               

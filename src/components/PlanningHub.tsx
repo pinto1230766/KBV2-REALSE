@@ -258,6 +258,8 @@ export function PlanningHub() {
       transportType: visit.transportType || "car",
       childrenCount: visit.childrenCount ?? getSpeakerForVisit(visit)?.childrenCount,
       childrenAges: visit.childrenAges ?? getSpeakerForVisit(visit)?.childrenAges,
+      speakerDietary: visit.speakerDietary ?? getSpeakerForVisit(visit)?.dietary,
+      spouseDietary: visit.spouseDietary ?? getSpeakerForVisit(visit)?.spouseDietary,
     });
     setDetailTab("infos");
     setMessageText("");
@@ -281,13 +283,15 @@ export function PlanningHub() {
     if (!viewVisit) return;
     updateVisit(viewVisit.visitId, detailForm);
     
-    // Sync children info back to speaker if changed
+    // Sync children and dietary info back to speaker if changed
     const speaker = getSpeakerForVisit(viewVisit);
     if (speaker) {
       updateSpeaker(speaker.id, {
         ...speaker,
         childrenCount: detailForm.childrenCount,
         childrenAges: detailForm.childrenAges,
+        dietary: detailForm.speakerDietary,
+        spouseDietary: detailForm.spouseDietary,
       });
     }
     
@@ -424,6 +428,13 @@ export function PlanningHub() {
     } catch { return "___"; }
   };
 
+  // Total people calculation (used for messages and capacity warnings)
+  const currentSpeaker = viewVisit ? getSpeakerForVisit(viewVisit) : null;
+  const isCouple = currentSpeaker?.householdType === "couple";
+  const childrenCount = detailForm.childrenCount ?? currentSpeaker?.childrenCount ?? 0;
+  const nbAccompagnants = (detailForm.companions || []).length;
+  const totalPeople = 1 + (isCouple ? 1 : 0) + childrenCount + nbAccompagnants;
+
   // Resolve all template variables with real data
   const resolveVariables = (text: string): string => {
     if (!viewVisit) return text;
@@ -464,7 +475,6 @@ export function PlanningHub() {
 
     // Enfants (from speaker store)
     const speakerFromStore = getSpeakerForVisit(viewVisit);
-    const childrenCount = speakerFromStore?.childrenCount ?? 0;
     const childrenAges = speakerFromStore?.childrenAges || "";
     const enfantsDetails = childrenCount > 0
       ? `${childrenCount} enfant(s)${childrenAges ? ` (${childrenAges})` : ""}`
@@ -533,7 +543,7 @@ export function PlanningHub() {
       // Accompagnants
       "{nb_accompagnants}": String(nbAccompagnants),
       "{noms_accompagnants}": nomsAccompagnants,
-      "{nb_total_personnes}": String(nbAccompagnants + 1),
+      "{nb_total_personnes}": String(totalPeople),
       "{allergies_orateur}": allergiesSpeaker,
       "{allergies_orateur_et_accompagnants}": detailsAllergies,
       "{details_allergies}": detailsAllergies,
@@ -558,7 +568,7 @@ export function PlanningHub() {
       "{details_allergies_block}": (detailsAllergies && detailsAllergies !== "Aucune" && detailsAllergies !== "Ninhun" && detailsAllergies !== "Nenhuma") ? `⚠️ Allergies : ${detailsAllergies}\n` : "",
       "{accompagnants_block}": nbAccompagnants > 0 ? `👥 Accompagnants (${nbAccompagnants}) : ${nomsAccompagnants}\n` : "",
       "{enfants_block}": childrenCount > 0 ? `🧒 Enfants : ${enfantsDetails}\n` : "",
-      "{transport_type_block}": (detailForm.transportType && detailForm.transportType !== "car") ? `🚗 Mode de voyage : ${t(detailForm.transportType)}\n` : "",
+      "{transport_type_block}": (detailForm.transportType && detailForm.transportType !== "car") ? `🚗 Mode de voyage : ${t(detailForm.transportType)}${detailForm.transportDetails ? ` (${detailForm.transportDetails})` : ""}\n` : "",
       "{hebergement_planning_block}": hebergementHosts.length > 0 ? `🏠 HÉBERGEMENT\n${buildHostSection(hebergementHosts)}\n\n` : "",
       "{repas_planning_block}": repasHosts.length > 0 ? `🍽️ REPAS\n${buildHostSection(repasHosts)}\n\n` : "",
       "{transport_planning_block}": transportHosts.length > 0 ? `🚗 TRANSPORT\n${buildHostSection(transportHosts)}\n\n` : "",
@@ -797,6 +807,21 @@ export function PlanningHub() {
                                 ))}
                               </div>
                               <p className="text-[10px] text-muted-foreground">{t("transport_hint")}</p>
+                              
+                              {/* Transport Details (Train/Plane) */}
+                              <AnimatePresence>
+                                {["train", "plane"].includes(detailForm.transportType || "") && (
+                                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="space-y-2 mt-3 overflow-hidden">
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("transport_details")}</p>
+                                    <input
+                                      className="input-soft text-sm"
+                                      placeholder={t("transport_details_placeholder")}
+                                      value={detailForm.transportDetails || ""}
+                                      onChange={(e) => setDetailForm({ ...detailForm, transportDetails: e.target.value })}
+                                    />
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
                             </div>
 
                             {/* Enfants (Injected from Speaker but editable for the visit) */}
@@ -1013,6 +1038,25 @@ export function PlanningHub() {
                                   <input className="input-soft text-sm" type="date" placeholder={t("day")} value={assignDay} onChange={(e) => setAssignDay(e.target.value)} onClick={(e) => (e.target as HTMLInputElement).showPicker?.()} />
                                   <input className="input-soft text-sm" type="time" placeholder={t("time")} value={assignTime} onChange={(e) => setAssignTime(e.target.value)} onClick={(e) => (e.target as HTMLInputElement).showPicker?.()} />
                                 </div>
+                                
+                                {/* Capacity Warning */}
+                                {assignRole === "hebergement" && assignHostId && (
+                                  (() => {
+                                    const selectedHost = allHosts.find(h => h.id === assignHostId);
+                                    if (selectedHost?.capacity && selectedHost.capacity < totalPeople) {
+                                      return (
+                                        <div className="flex items-start gap-2 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400">
+                                          <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                                          <p className="text-[10px] font-bold leading-tight">
+                                            Capacité insuffisante : L'hôte peut accueillir {selectedHost.capacity} personnes, mais la visite compte {totalPeople} personnes.
+                                          </p>
+                                        </div>
+                                      );
+                                    }
+                                    return null;
+                                  })()
+                                )}
+
                                 <div className="flex gap-2">
                                   <button onClick={addHostAssignment} className="flex-1 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold">{t("add")}</button>
                                   <button onClick={() => setShowAssignHost(false)} className="px-4 py-2 rounded-xl bg-muted text-muted-foreground text-xs font-bold">{t("cancel")}</button>

@@ -223,6 +223,8 @@ const dictionary: Record<string, TranslationEntry> = {
   plane: { fr: "Avion", cv: "Avion", pt: "Avião" },
   other_transport: { fr: "Autre", cv: "Otru", pt: "Outro" },
   transport_hint: { fr: "Ces infos aident à organiser le transport.", cv: "Es infus djuda organiza transportu.", pt: "Estas informações ajudam a organizar o transporte." },
+  transport_details: { fr: "Détails du voyage", cv: "Detalhis di viaji", pt: "Detalhes da viagem" },
+  transport_details_placeholder: { fr: "Gare / Aéroport, N° vol/train", cv: "Stason / Aeroportu, N° voo/konboiu", pt: "Estação / Aeroporto, N° voo/comboio" },
   station_airport: { fr: "Gare / Aéroport", cv: "Stason / Aeroportu", pt: "Estação / Aeroporto" },
   no_notes: { fr: "Aucune note", cv: "Ninhun nota", pt: "Nenhuma nota" },
   done: { fr: "Terminé", cv: "Terminadu", pt: "Concluído" },

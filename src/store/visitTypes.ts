@@ -77,6 +77,7 @@ export interface Visit {
   expenses?: Expense[];
   groupMealType?: GroupMealType;
   transportType?: "car" | "train" | "plane" | "other";
+  transportDetails?: string;
   childrenCount?: number;
   childrenAges?: string;
   updatedAt?: string;
@@ -96,6 +97,8 @@ export interface Speaker {
   spouseName?: string;
   childrenCount?: number;
   childrenAges?: string;
+  dietary?: string;
+  spouseDietary?: string;
   notes?: string;
   updatedAt?: string;
 }

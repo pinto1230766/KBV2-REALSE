@@ -11,6 +11,8 @@ export const speakerSchema = z.object({
   spouseName: z.string().optional(),
   childrenCount: z.number().min(0).optional(),
   childrenAges: z.string().optional(),
+  dietary: z.string().optional(),
+  spouseDietary: z.string().optional(),
   notes: z.string().optional(),
 });
 
