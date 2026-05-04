@@ -163,6 +163,7 @@ export function PlanningHub() {
   const setPendingVisit = useUIStore((s) => s.setPendingVisit);
   const congregation = useSettingsStore((s) => s.settings.congregation);
   const speakers = useSpeakerStore((s) => s.speakers);
+  const updateSpeaker = useSpeakerStore((s) => s.updateSpeaker);
   const allHosts = useHostStore((s) => s.hosts);
   const { t, language } = useTranslation();
 
