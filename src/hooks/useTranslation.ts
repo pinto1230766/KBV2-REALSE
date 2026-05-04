@@ -217,6 +217,13 @@ const dictionary: Record<string, TranslationEntry> = {
   with_children: { fr: "Avec enfants", cv: "Ku fidjos", pt: "Com crianças" },
   children_hint: { fr: "Ces informations aident à choisir le bon foyer d'accueil.", cv: "Es infus djuda skodji bon anfitrion.", pt: "Estas informações ajudam a escolher a família de acolhimento." },
   household_with_children: { fr: "Foyer avec enfants", cv: "Famiya ku fidjos", pt: "Família com crianças" },
+  transport_type: { fr: "Type de transport", cv: "Tipu di transportu", pt: "Tipo de transporte" },
+  car: { fr: "Voiture", cv: "Karku", pt: "Carro" },
+  train: { fr: "Train", cv: "Konboiu", pt: "Comboio" },
+  plane: { fr: "Avion", cv: "Avion", pt: "Avião" },
+  other_transport: { fr: "Autre", cv: "Otru", pt: "Outro" },
+  transport_hint: { fr: "Ces infos aident à organiser le transport.", cv: "Es infus djuda organiza transportu.", pt: "Estas informações ajudam a organizar o transporte." },
+  station_airport: { fr: "Gare / Aéroport", cv: "Stason / Aeroportu", pt: "Estação / Aeroporto" },
   no_notes: { fr: "Aucune note", cv: "Ninhun nota", pt: "Nenhuma nota" },
   done: { fr: "Terminé", cv: "Terminadu", pt: "Concluído" },
 

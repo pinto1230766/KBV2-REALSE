@@ -254,6 +254,7 @@ export function PlanningHub() {
       visitDate: formatDateForInput(visit.visitDate),
       date_arrivee: formatDateForInput(visit.date_arrivee),
       date_depart: formatDateForInput(visit.date_depart),
+      transportType: visit.transportType || "car",
     });
     setDetailTab("infos");
     setMessageText("");
@@ -276,6 +277,17 @@ export function PlanningHub() {
   const saveDetail = () => {
     if (!viewVisit) return;
     updateVisit(viewVisit.visitId, detailForm);
+    
+    // Sync children info back to speaker if changed
+    const speaker = getSpeakerForVisit(viewVisit);
+    if (speaker) {
+      updateSpeaker(speaker.id, {
+        ...speaker,
+        childrenCount: detailForm.childrenCount,
+        childrenAges: detailForm.childrenAges,
+      });
+    }
+    
     toast.success(t("visit_updated"));
     setViewVisit(null);
   };
@@ -534,6 +546,8 @@ export function PlanningHub() {
       "{ta_tache}": "Responsable hospitalité",
       // Channel
       "{visit_channel_label}": channelLabel || "___",
+      // Transport
+      "{type_transport}": detailForm.transportType ? t(detailForm.transportType) : "___",
       // Formulaire H-8
       "{lien_formulaire_h8}": `${window.location.origin}/documents/H-8_remboursement.pdf`,
     };
@@ -731,18 +745,79 @@ export function PlanningHub() {
                             </div>
 
                             {/* Lieu & Statut */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                              <div className="space-y-1">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                              <div className="space-y-3">
                                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("location")}</p>
                                 <select className="input-soft text-sm" value={detailForm.locationType || "kingdom_hall"} onChange={(e) => setDetailForm({ ...detailForm, locationType: e.target.value as Visit["locationType"] })} title={t("location")}>
                                   <option value="kingdom_hall">{t("in_person")}</option><option value="zoom">Zoom</option><option value="streaming">Streaming</option><option value="other">{t("other")}</option>
                                 </select>
                               </div>
-                              <div className="space-y-1">
+                              <div className="space-y-3">
                                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("status")}</p>
                                 <select className="input-soft text-sm" value={detailForm.status || "scheduled"} onChange={(e) => setDetailForm({ ...detailForm, status: e.target.value as VisitStatus })} title={t("status")}>
                                   <option value="scheduled">{t("scheduled")}</option><option value="confirmed">{t("confirmed")}</option><option value="completed">{t("completed")}</option><option value="cancelled">{t("cancelled")}</option>
                                 </select>
+                              </div>
+                            </div>
+
+                            {/* Transport Type */}
+                            <div className="space-y-3 pt-2">
+                              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">{t("transport_type")}</p>
+                              <div className="grid grid-cols-4 gap-2">
+                                {[
+                                  { id: "car", icon: Car, label: t("car") },
+                                  { id: "train", icon: Train, label: t("train") },
+                                  { id: "plane", icon: Plane, label: t("plane") },
+                                  { id: "other", icon: MoreHorizontal, label: t("other_transport") }
+                                ].map((tr) => (
+                                  <button
+                                    key={tr.id}
+                                    onClick={() => setDetailForm({ ...detailForm, transportType: tr.id as any })}
+                                    className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all ${
+                                      (detailForm.transportType || "car") === tr.id
+                                        ? "border-primary bg-primary/5 text-primary"
+                                        : "border-border text-muted-foreground hover:border-muted-foreground/30"
+                                    }`}
+                                  >
+                                    <tr.icon className="w-5 h-5" />
+                                    <span className="text-[10px] font-bold uppercase">{tr.label}</span>
+                                  </button>
+                                ))}
+                              </div>
+                              <p className="text-[10px] text-muted-foreground">{t("transport_hint")}</p>
+                            </div>
+
+                            {/* Enfants (Injected from Speaker but editable for the visit) */}
+                            <div className="space-y-4 pt-2 border-t border-border mt-4">
+                              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2">👶 {t("children")}</p>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("children_count")}</p>
+                                  <div className="flex gap-1.5">
+                                    {[0, 1, 2, 3, 4].map((n) => (
+                                      <button
+                                        key={n}
+                                        onClick={() => setDetailForm({ ...detailForm, childrenCount: n })}
+                                        className={`flex-1 py-2 rounded-xl text-xs font-black transition-all ${
+                                          (detailForm.childrenCount ?? 0) === n
+                                            ? "bg-amber-500 text-white shadow-md"
+                                            : "bg-muted text-muted-foreground"
+                                        }`}
+                                      >
+                                        {n === 4 ? "4+" : n}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="space-y-2">
+                                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("children_ages")}</p>
+                                  <input
+                                    className="input-soft text-sm"
+                                    placeholder={t("children_ages_placeholder")}
+                                    value={detailForm.childrenAges || ""}
+                                    onChange={(e) => setDetailForm({ ...detailForm, childrenAges: e.target.value })}
+                                  />
+                                </div>
                               </div>
                             </div>
                           </div>
