@@ -31,7 +31,7 @@ function buildWhatsAppMessage(
 
   if (type === "j7") {
     if (lang === "cv")
-      return `Bon dia ${prenom},\n\nN sta kontakta-u pa lembra-u di bu vizita ki sta programadu pa ${dateFormatted}.\nPor favor, konfirma-m si tudu sta dretu.\n\nFraternalmenti,\n${responsableName}`;
+      return `Bon dia ${prenom},\n\nN ta kontakta-bu pa lembra-bu di bu vizita ki sta programadu pa ${dateFormatted}.\nPor favor, konfirma-m si tudu sta dretu.\n\nFraternalmenti,\n${responsableName}`;
     if (lang === "pt")
       return `Bom dia ${prenom},\n\nEntro em contacto para relembrar a sua visita programada para ${dateFormatted}.\nPor favor, confirme se está tudo em ordem.\n\nFraternalmente,\n${responsableName}`;
     return `Bonjour ${prenom},\n\nJe vous contacte pour vous rappeler votre visite programmée le ${dateFormatted}.\nMerci de me confirmer que tout est en ordre.\n\nFraternellement,\n${responsableName}`;
@@ -39,7 +39,7 @@ function buildWhatsAppMessage(
 
   if (type === "j2") {
     if (lang === "cv")
-      return `Bon dia ${prenom},\n\nBu vizita sta pa txiga (${dateFormatted})! 🙏\nSi bu ten kualker pergunta di última ora, N sta disponível.\n\nFraternalmenti,\n${responsableName}`;
+      return `Bon dia ${prenom},\n\nBu vizita sta pa txiga (${dateFormatted})! 🙏\nSi bu ten alguma pergunta di últimu óra, N sta disponível.\n\nFraternalmenti,\n${responsableName}`;
     if (lang === "pt")
       return `Bom dia ${prenom},\n\nA sua visita está a chegar (${dateFormatted})! 🙏\nSe tiver alguma dúvida de última hora, estou disponível.\n\nFraternalmente,\n${responsableName}`;
     return `Bonjour ${prenom},\n\nVotre visite approche (${dateFormatted}) ! 🙏\nSi vous avez une question de dernière minute, je reste disponible.\n\nFraternellement,\n${responsableName}`;
@@ -47,7 +47,7 @@ function buildWhatsAppMessage(
 
   // j1_thanks
   if (lang === "cv")
-    return `Bon dia ${prenom},\n\nNha sinseru obrigadu pa bu vizita i pa diskursu ki fortifika nos tudu! 🙏✨\nFoi un grandi prazeri akolhe bu.\n\nFraternalmenti,\n${responsableName}`;
+    return `Bon dia ${prenom},\n\nNha sinseru obrigadu pa bu vizita i pa diskursu ki fortifika-nu tudu! 🙏✨\nFoi un grandi prazeri risebe bu.\n\nFraternalmenti,\n${responsableName}`;
   if (lang === "pt")
     return `Bom dia ${prenom},\n\nO nosso sincero obrigado pela sua visita e pelo discurso que fortaleceu todos nós! 🙏✨\nFoi um grande prazer recebê-lo.\n\nFraternalmente,\n${responsableName}`;
   return `Bonjour ${prenom},\n\nMerci sincèrement pour votre visite et votre discours qui nous a tous fortifiés ! 🙏✨\nCe fut un grand plaisir de vous accueillir.\n\nFraternellement,\n${responsableName}`;

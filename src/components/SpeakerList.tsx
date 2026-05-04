@@ -107,10 +107,12 @@ export function SpeakerList() {
     spousePhotoUrl: undefined as string | undefined,
     householdType: "single" as HouseholdType,
     spouseName: "",
+    childrenCount: 0,
+    childrenAges: "",
   });
 
   const resetForm = () => {
-    setForm({ nom: "", congregation: "", telephone: "", email: "", notes: "", photoUrl: undefined, spousePhotoUrl: undefined, householdType: "single", spouseName: "" });
+    setForm({ nom: "", congregation: "", telephone: "", email: "", notes: "", photoUrl: undefined, spousePhotoUrl: undefined, householdType: "single", spouseName: "", childrenCount: 0, childrenAges: "" });
     resetZodForm({
       nom: "",
       congregation: congregationName,
@@ -137,6 +139,8 @@ export function SpeakerList() {
       spousePhotoUrl: sp.spousePhotoUrl,
       householdType: sp.householdType || "single",
       spouseName: sp.spouseName || "",
+      childrenCount: sp.childrenCount ?? 0,
+      childrenAges: sp.childrenAges || "",
     });
     resetZodForm({
       nom: sp.nom,
@@ -153,7 +157,7 @@ export function SpeakerList() {
   };
 
   const openAddForm = () => {
-    setForm({ nom: "", congregation: congregationName, telephone: "", email: "", notes: "", photoUrl: undefined, spousePhotoUrl: undefined, householdType: "single", spouseName: "" });
+    setForm({ nom: "", congregation: congregationName, telephone: "", email: "", notes: "", photoUrl: undefined, spousePhotoUrl: undefined, householdType: "single", spouseName: "", childrenCount: 0, childrenAges: "" });
     resetZodForm({
       nom: "",
       congregation: congregationName,
@@ -171,11 +175,22 @@ export function SpeakerList() {
 
   const handleSave = (data?: SpeakerFormData) => {
     if (!data) return;
+    // Merge explicitly: text inputs come from react-hook-form (data),
+    // button/photo-controlled fields come from local form state.
+    const merged = {
+      ...data,
+      photoUrl: form.photoUrl,
+      spousePhotoUrl: form.spousePhotoUrl,
+      householdType: form.householdType,
+      spouseName: form.spouseName,
+      childrenCount: form.childrenCount,
+      childrenAges: form.childrenAges,
+    };
     if (editing) {
-      updateSpeaker(editing.id, { ...form, ...data });
+      updateSpeaker(editing.id, merged);
       toast.success(t("speaker_updated"));
     } else {
-      addSpeaker({ ...form, ...data, id: generateId() } as Speaker);
+      addSpeaker({ ...merged, id: generateId() } as Speaker);
       toast.success(t("speaker_added"));
     }
     resetForm();
@@ -284,6 +299,11 @@ export function SpeakerList() {
                     <p className="text-xs text-muted-foreground flex items-center justify-center gap-1.5 truncate mt-1">
                       <Home className="w-3.5 h-3.5 flex-shrink-0 text-primary/50" /> {sp.congregation}
                     </p>
+                    {(sp.childrenCount ?? 0) > 0 && (
+                      <p className="text-[10px] font-bold text-amber-600/80 flex items-center justify-center gap-1 mt-0.5">
+                        👶 {sp.childrenCount} {t("children")}
+                      </p>
+                    )}
                     {sp.telephone && (
                       <p className="text-[10px] text-muted-foreground/70 flex items-center justify-center gap-1 mt-0.5">
                         <Phone className="w-3 h-3" /> {sp.telephone}
@@ -372,6 +392,7 @@ export function SpeakerList() {
                   <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("household_type")}</p>
                   <div className="grid grid-cols-2 gap-2">
                     <button
+                      type="button"
                       onClick={() => setForm({ ...form, householdType: "single" })}
                       className={`py-3 rounded-2xl text-sm font-bold transition-all ${
                         form.householdType === "single"
@@ -382,6 +403,7 @@ export function SpeakerList() {
                       {t("brother_alone")}
                     </button>
                     <button
+                      type="button"
                       onClick={() => setForm({ ...form, householdType: "couple" })}
                       className={`py-3 rounded-2xl text-sm font-bold transition-all ${
                         form.householdType === "couple"
@@ -404,6 +426,41 @@ export function SpeakerList() {
                     </motion.div>
                   )}
                 </AnimatePresence>
+
+                {/* Enfants */}
+                <div className="space-y-3">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("children_count")}</p>
+                  <div className="flex gap-2 flex-wrap">
+                    {[0, 1, 2, 3, 4].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setForm({ ...form, childrenCount: n, childrenAges: n === 0 ? "" : form.childrenAges })}
+                        className={`w-12 h-12 rounded-2xl text-sm font-black transition-all ${
+                          form.childrenCount === n
+                            ? "bg-amber-500 text-white shadow-lg"
+                            : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        }`}
+                      >
+                        {n === 4 ? "4+" : n}
+                      </button>
+                    ))}
+                  </div>
+                  <AnimatePresence>
+                    {(form.childrenCount ?? 0) > 0 && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="space-y-1 overflow-hidden">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("children_ages")}</p>
+                        <input
+                          className="input-soft text-sm"
+                          placeholder={t("children_ages_placeholder")}
+                          value={form.childrenAges}
+                          onChange={(e) => setForm({ ...form, childrenAges: e.target.value })}
+                        />
+                        <p className="text-[10px] text-muted-foreground">{t("children_hint")}</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
 
                 {/* Notes */}
                 <div className="space-y-2">
@@ -493,6 +550,27 @@ export function SpeakerList() {
               
               {/* Nom du conjoint */}
               <input className="input-soft text-sm" placeholder={t("spouse_name")} value={form.spouseName} onChange={(e) => setForm({ ...form, spouseName: e.target.value })} />
+
+              {/* Enfants — sélecteur rapide */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("children_count")}</label>
+                <div className="flex gap-2">
+                  {[0, 1, 2, 3, 4].map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setForm({ ...form, childrenCount: n })}
+                      className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+                        form.childrenCount === n
+                          ? "bg-amber-500 text-white"
+                          : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      }`}
+                    >
+                      {n === 4 ? "4+" : n}
+                    </button>
+                  ))}
+                </div>
+              </div>
               
               {/* Notes */}
               <textarea className="input-soft text-sm min-h-[60px] resize-none" placeholder={t("notes")} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />

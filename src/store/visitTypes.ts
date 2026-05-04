@@ -91,6 +91,8 @@ export interface Speaker {
   spousePhotoUrl?: string;
   householdType?: HouseholdType;
   spouseName?: string;
+  childrenCount?: number;
+  childrenAges?: string;
   notes?: string;
   updatedAt?: string;
 }
