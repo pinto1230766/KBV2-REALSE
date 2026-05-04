@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import {
   Plus, Trash2, Check, ChevronRight, Clock, MapPin, Archive, AlertTriangle,
   X, Info, Users, MessageSquare, CreditCard, Star, Phone, Mail, Send,
-  Copy, Home, Utensils, Car, Building2, Pencil
+  Copy, Home, Utensils, Car, Building2, Pencil, Train, Plane, MoreHorizontal
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
