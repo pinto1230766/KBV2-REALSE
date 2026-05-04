@@ -256,6 +256,8 @@ export function PlanningHub() {
       date_arrivee: formatDateForInput(visit.date_arrivee),
       date_depart: formatDateForInput(visit.date_depart),
       transportType: visit.transportType || "car",
+      childrenCount: visit.childrenCount ?? getSpeakerForVisit(visit)?.childrenCount,
+      childrenAges: visit.childrenAges ?? getSpeakerForVisit(visit)?.childrenAges,
     });
     setDetailTab("infos");
     setMessageText("");
