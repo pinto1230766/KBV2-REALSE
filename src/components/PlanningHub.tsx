@@ -97,19 +97,19 @@ const messageTemplates = {
   logistique_host: {
     category: "logistique",
     fr: {
-      title: "Logistique – Repas & Transport",
-      desc: "Message regroupant les détails du repas et du transport",
-      body: `Bonjour,\n\nVoici les informations logistiques pour la visite de {prenom_orateur} {nom_orateur} :\n\n🍽️ REPAS\n{repas_planning}\n\n🚗 TRANSPORT\n{transport_planning}\n\n⚠️ Allergies : {details_allergies}\n👥 Accompagnants : {nb_accompagnants}\n\nMerci pour ton aide ! Fraternellement,\n{ton_nom}`,
+      title: "Logistique complète",
+      desc: "Message regroupant hébergement, repas et transport",
+      body: `Bonjour,\n\nVoici les informations logistiques pour la visite de {prenom_orateur} {nom_orateur} :\n\n{hebergement_planning_block}{repas_planning_block}{transport_planning_block}{transport_type_block}{details_allergies_block}{enfants_block}{accompagnants_block}\nMerci pour ton aide ! Fraternellement,\n{ton_nom}`,
     },
     cv: {
-      title: "Lojístika – Kumida & Transporti",
-      desc: "Mensajen ku detalhes di kumida i transporti",
-      body: `Bon dia,\n\nLi sta informason di lojístika pa vizita di {prenom_orateur} {nom_orateur}:\n\n🍽️ KUMIDA\n{repas_planning}\n\n🚗 TRANSPORTI\n{transport_planning}\n\n⚠️ Alerjia: {details_allergies}\n👥 Akonpanhantis: {nb_accompagnants}\n\nObrigadu pa bu juda! Fraternalmenti,\n{ton_nom}`,
+      title: "Lojístika kompletu",
+      desc: "Mensajen ku alojamentu, kumida i transporti",
+      body: `Bon dia,\n\nLi sta informason di lojístika pa vizita di {prenom_orateur} {nom_orateur}:\n\n{hebergement_planning_block}{repas_planning_block}{transport_planning_block}{transport_type_block}{details_allergies_block}{enfants_block}{accompagnants_block}\nObrigadu pa bu juda! Fraternalmenti,\n{ton_nom}`,
     },
     pt: {
-      title: "Logística – Refeição & Transporte",
-      desc: "Mensagem com detalhes da refeição e do transporte",
-      body: `Bom dia,\n\nAqui estão as informações logísticas para a visita de {prenom_orateur} {nom_orateur}:\n\n🍽️ REFEIÇÃO\n{repas_planning}\n\n🚗 TRANSPORTE\n{transport_planning}\n\n⚠️ Alergias: {details_allergies}\n👥 Acompanhantes: {nb_accompagnants}\n\nObrigado pela ajuda! Fraternalmente,\n{ton_nom}`,
+      title: "Logística completa",
+      desc: "Mensagem com alojamento, refeição e transporte",
+      body: `Bom dia,\n\nAqui estão as informações logísticas para a visita de {prenom_orateur} {nom_orateur}:\n\n{hebergement_planning_block}{repas_planning_block}{transport_planning_block}{transport_type_block}{details_allergies_block}{enfants_block}{accompagnants_block}\nObrigado pela ajuda! Fraternalmente,\n{ton_nom}`,
     },
   },
   // ─── GROUPES ───
@@ -118,17 +118,17 @@ const messageTemplates = {
     fr: {
       title: "Recherche de volontaires",
       desc: "Message pour le groupe des hôtes",
-      body: `Bonjour à tous ! 👋\n\nJe recherche des VOLONTAIRES pour recevoir notre prochain orateur :\n\n🎤 Orateur : Frère {prenom_orateur} {nom_orateur} ({congregation_orateur})\n\n📅 Arrivée : {jour_arrivee} {date_arrivee} (vers {heure_arrivee})\n📅 Réunion : {jour_visite} {date_visite} à {heure_visite}\n📅 Départ : {jour_depart} {date_depart} (vers {heure_depart})\n\nNous avons besoin de :\n• 🏠 Hébergement (logement + petit-déjeuner)\n• 🍽️ Repas (déjeuner / dîner)\n• 🚗 Transport (gare / aéroport ⇄ Salle du Royaume)\n\n⚠️ Allergies : {details_allergies}\n🧒 Enfants : {enfants_details}\n👥 Accompagnants : {nb_accompagnants}\n\nSi vous pouvez aider, merci de me répondre dès que possible.\n\nMerci de tout cœur,\n{ton_nom}`,
+      body: `Bonjour à tous ! 👋\n\nJe recherche des VOLONTAIRES pour recevoir notre prochain orateur :\n\n🎤 Orateur : Frère {prenom_orateur} {nom_orateur} ({congregation_orateur})\n\n📅 Arrivée : {jour_arrivee} {date_arrivee} (vers {heure_arrivee})\n📅 Réunion : {jour_visite} {date_visite} à {heure_visite}\n📅 Départ : {jour_depart} {date_depart} (vers {heure_depart})\n\nNous avons besoin de :\n• 🏠 Hébergement (logement + petit-déjeuner)\n• 🍽️ Repas (déjeuner / dîner)\n• 🚗 Transport (gare / aéroport ⇄ Salle du Royaume)\n\n{transport_type_block}{details_allergies_block}{enfants_block}{accompagnants_block}\nSi vous pouvez aider, merci de me répondre dès que possible.\n\nMerci de tout cœur,\n{ton_nom}`,
     },
     cv: {
       title: "Buska voluntarius",
       desc: "Mensajen pa grupo di anfitrioens",
-      body: `Bon dia a tudu! 👋\n\nN ta buska VOLUNTÁRIUS pa risebe nos prósimu orador:\n\n🎤 Orador: Irmãu {prenom_orateur} {nom_orateur} ({congregation_orateur})\n\n📅 Txegada: {jour_arrivee} {date_arrivee} (volta di {heure_arrivee})\n📅 Runion: {jour_visite} {date_visite} na {heure_visite}\n📅 Partida: {jour_depart} {date_depart} (volta di {heure_depart})\n\nNu meste di:\n• 🏠 Alojamentu (lugar pa fika + kafé di manha)\n• 🍽️ Kumida (almosu / janta)\n• 🚗 Transporti (stason / aeroportu ⇄ Salon di Reinu)\n\n⚠️ Alerjia: {details_allergies}\n🧒 Fidjos: {enfants_details}\n👥 Akonpanhantis: {nb_accompagnants}\n\nSi bu pode juda, favor responde-m u más rápidu posível.\n\nObrigadu di korason,\n{ton_nom}`,
+      body: `Bon dia a tudu! 👋\n\nN ta buska VOLUNTÁRIUS pa risebe nos prósimu orador:\n\n🎤 Orador: Irmãu {prenom_orateur} {nom_orateur} ({congregation_orateur})\n\n📅 Txegada: {jour_arrivee} {date_arrivee} (volta di {heure_arrivee})\n📅 Runion: {jour_visite} {date_visite} na {heure_visite}\n📅 Partida: {jour_depart} {date_depart} (volta di {heure_depart})\n\nNu meste di:\n• 🏠 Alojamentu (lugar pa fika + kafé di manha)\n• 🍽️ Kumida (almosu / janta)\n• 🚗 Transporti (stason / aeroportu ⇄ Salon di Reinu)\n\n{transport_type_block}{details_allergies_block}{enfants_block}{accompagnants_block}\nSi bu pode juda, favor responde-m u más rápidu posível.\n\nObrigadu di korason,\n{ton_nom}`,
     },
     pt: {
       title: "Procura de voluntários",
       desc: "Mensagem para o grupo de anfitriões",
-      body: `Bom dia a todos! 👋\n\nProcuro VOLUNTÁRIOS para receber o nosso próximo orador:\n\n🎤 Orador: Irmão {prenom_orateur} {nom_orateur} ({congregation_orateur})\n\n📅 Chegada: {jour_arrivee} {date_arrivee} (por volta de {heure_arrivee})\n📅 Reunião: {jour_visite} {date_visite} às {heure_visite}\n📅 Partida: {jour_depart} {date_depart} (por volta de {heure_depart})\n\nPrecisamos de:\n• 🏠 Alojamento\n• 🍽️ Refeições\n• 🚗 Transporte\n\n⚠️ Alergias: {details_allergies}\n🧒 Crianças: {enfants_details}\n👥 Acompanhantes: {nb_accompagnants}\n\nObrigado de coração,\n{ton_nom}`,
+      body: `Bom dia a todos! 👋\n\nProcuro VOLUNTÁRIOS para receber o nosso próximo orador:\n\n🎤 Orador: Irmão {prenom_orateur} {nom_orateur} ({congregation_orateur})\n\n📅 Chegada: {jour_arrivee} {date_arrivee} (por volta de {heure_arrivee})\n📅 Reunião: {jour_visite} {date_visite} às {heure_visite}\n📅 Partida: {jour_depart} {date_depart} (por volta de {heure_depart})\n\nPrecisamos de:\n• 🏠 Alojamento\n• 🍽️ Refeições\n• 🚗 Transporte\n\n{transport_type_block}{details_allergies_block}{enfants_block}{accompagnants_block}\nObrigado de coração,\n{ton_nom}`,
     },
   },
   preparation_group: {
@@ -136,17 +136,17 @@ const messageTemplates = {
     fr: {
       title: "Préparation – Groupe des Hôtes",
       desc: "Brief complet pour tous les volontaires",
-      body: `Bonjour la famille ! 👋\n\nVoici l'organisation pour la visite de {prenom_orateur} {nom_orateur} :\n\n📅 Dates/Heures\n• Arrivée : {jour_arrivee} {date_arrivee} (vers {heure_arrivee})\n• Réunion : {jour_visite} {date_visite} à {heure_visite}\n• Départ : {jour_depart} {date_depart} (vers {heure_depart})\n\n⚠️ Allergies : {details_allergies}\n🧒 Enfants : {enfants_details}\n\n🏠 Hébergement\n{hebergement_planning}\n\n🍽️ Repas\n{repas_planning}\n\n🚗 Transport\n{transport_planning}\n\n{accompagnants_details}\n\nMerci à chaque volontaire pour votre aide précieuse ! 🙏✨`,
+      body: `Bonjour la famille ! 👋\n\nVoici l'organisation pour la visite de {prenom_orateur} {nom_orateur} :\n\n📅 Dates/Heures\n• Arrivée : {jour_arrivee} {date_arrivee} (vers {heure_arrivee})\n• Réunion : {jour_visite} {date_visite} à {heure_visite}\n• Départ : {jour_depart} {date_depart} (vers {heure_depart})\n\n{hebergement_planning_block}{repas_planning_block}{transport_planning_block}{transport_type_block}{details_allergies_block}{enfants_block}{accompagnants_block}\nMerci à chaque volontaire pour votre aide précieuse ! 🙏✨`,
     },
     cv: {
       title: "Preparason – Grupo di Anfitriãus",
       desc: "Brief kompletu pa tudu voluntáriu",
-      body: `Bon dia famía! 👋\n\nPlanifikason pa vizita di {prenom_orateur} {nom_orateur}:\n\n📅 Datas/Oras\n• Txegada: {jour_arrivee} {date_arrivee} (volta {heure_arrivee})\n• Runion: {jour_visite} {date_visite} na {heure_visite}\n• Partida: {jour_depart} {date_depart} (volta {heure_depart})\n\n⚠️ Alerjia: {details_allergies}\n🧒 Fidjos: {enfants_details}\n\n🏠 Alojamentu\n{hebergement_planning}\n\n🍽️ Kumida\n{repas_planning}\n\n🚗 Transporti\n{transport_planning}\n\n{accompagnants_details}\n\nObrigadu pa kada voluntáriu pa bo disposti! 🙏✨`,
+      body: `Bon dia famía! 👋\n\nPlanifikason pa vizita di {prenom_orateur} {nom_orateur}:\n\n📅 Datas/Oras\n• Txegada: {jour_arrivee} {date_arrivee} (volta {heure_arrivee})\n• Runion: {jour_visite} {date_visite} na {heure_visite}\n• Partida: {jour_depart} {date_depart} (volta {heure_depart})\n\n{hebergement_planning_block}{repas_planning_block}{transport_planning_block}{transport_type_block}{details_allergies_block}{enfants_block}{accompagnants_block}\nObrigadu pa kada voluntáriu pa bo disposti! 🙏✨`,
     },
     pt: {
       title: "Preparação – Grupo de Anfitriões",
       desc: "Brief completo para todos os voluntários",
-      body: `Bom dia família! 👋\n\nAqui está a organização para a visita de {prenom_orateur} {nom_orateur}:\n\n📅 Datas/Horas\n• Chegada: {jour_arrivee} {date_arrivee} (por volta de {heure_arrivee})\n• Reunião: {jour_visite} {date_visite} às {heure_visite}\n• Partida: {jour_depart} {date_depart} (por volta de {heure_depart})\n\n⚠️ Alergias: {details_allergies}\n🧒 Crianças: {enfants_details}\n\n🏠 Alojamento\n{hebergement_planning}\n\n🍽️ Refeições\n{repas_planning}\n\n🚗 Transporte\n{transport_planning}\n\n{accompagnants_details}\n\nObrigado a cada voluntário pela ajuda preciosa! 🙏✨`,
+      body: `Bom dia família! 👋\n\nAqui está a organização para a visita de {prenom_orateur} {nom_orateur}:\n\n📅 Datas/Horas\n• Chegada: {jour_arrivee} {date_arrivee} (por volta de {heure_arrivee})\n• Reunião: {jour_visite} {date_visite} às {heure_visite}\n• Partida: {jour_depart} {date_depart} (por volta de {heure_depart})\n\n{hebergement_planning_block}{repas_planning_block}{transport_planning_block}{transport_type_block}{details_allergies_block}{enfants_block}{accompagnants_block}\nObrigado a cada voluntário pela ajuda preciosa! 🙏✨`,
     },
   },
 };
@@ -550,6 +550,15 @@ export function PlanningHub() {
       "{type_transport}": detailForm.transportType ? t(detailForm.transportType) : "___",
       // Formulaire H-8
       "{lien_formulaire_h8}": `${window.location.origin}/documents/H-8_remboursement.pdf`,
+
+      // --- BLOCS CONDITIONNELS (PROPRES) ---
+      "{details_allergies_block}": (detailsAllergies && detailsAllergies !== "Aucune" && detailsAllergies !== "Ninhun" && detailsAllergies !== "Nenhuma") ? `⚠️ Allergies : ${detailsAllergies}\n` : "",
+      "{accompagnants_block}": nbAccompagnants > 0 ? `👥 Accompagnants (${nbAccompagnants}) : ${nomsAccompagnants}\n` : "",
+      "{enfants_block}": childrenCount > 0 ? `🧒 Enfants : ${enfantsDetails}\n` : "",
+      "{transport_type_block}": (detailForm.transportType && detailForm.transportType !== "car") ? `🚗 Mode de voyage : ${t(detailForm.transportType)}\n` : "",
+      "{hebergement_planning_block}": hebergementHosts.length > 0 ? `🏠 HÉBERGEMENT\n${buildHostSection(hebergementHosts)}\n\n` : "",
+      "{repas_planning_block}": repasHosts.length > 0 ? `🍽️ REPAS\n${buildHostSection(repasHosts)}\n\n` : "",
+      "{transport_planning_block}": transportHosts.length > 0 ? `🚗 TRANSPORT\n${buildHostSection(transportHosts)}\n\n` : "",
     };
 
     let result = text;
