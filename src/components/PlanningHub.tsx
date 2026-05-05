@@ -1194,13 +1194,13 @@ export function PlanningHub() {
                               {(detailForm.locationType === "zoom" || detailForm.locationType === "streaming"
                                 ? [
                                     { step: 1, color: "bg-blue-500", label: "Étape 1 : Planification", keys: ["confirmation_speaker_online"] },
-                                    { step: 2, color: "bg-primary", label: "Étape 2 : Briefing", keys: ["preparation_speaker_online"] },
+                                    { step: 2, color: "bg-primary", label: "Étape 2 : Briefing Final", keys: ["preparation_speaker_online"] },
                                     { step: 3, color: "bg-emerald-500", label: "Étape 3 : Après-Visite", keys: ["thanks_speaker_online"] },
                                   ]
                                 : [
-                                    { step: 1, color: "bg-blue-500", label: "Étape 1 : Planification", keys: ["confirmation_speaker", "volunteers_group"] },
-                                    { step: 2, color: "bg-amber-500", label: "Étape 2 : Logistique", keys: ["logistique_host"] },
-                                    { step: 3, color: "bg-primary", label: "Étape 3 : Briefing", keys: ["preparation_speaker", "preparation_group"] },
+                                    { step: 1, color: "bg-blue-500", label: "Étape 1 : Lancement & Recherche", keys: ["confirmation_speaker", "volunteers_group"] },
+                                    { step: 2, color: "bg-amber-500", label: "Étape 2 : Confirmation des Hôtes", keys: ["logistique_host"] },
+                                    { step: 3, color: "bg-primary", label: "Étape 3 : Coordination & Rappel", keys: ["preparation_speaker", "preparation_group"] },
                                     { step: 4, color: "bg-emerald-500", label: "Étape 4 : Après-Visite", keys: ["thanks_speaker"] },
                                   ]
                               ).map((group) => (
