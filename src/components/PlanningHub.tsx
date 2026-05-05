@@ -135,17 +135,17 @@ const messageTemplates = {
     fr: {
       title: "Briefing – Hôte(s)",
       desc: "Message complet pour l'hôte assigné (hébergement, repas, transport)",
-      body: `Bonjour,\n\nVoici les informations logistiques pour la visite de {prenom_orateur} {nom_orateur} :\n\n👨‍👩‍👧‍👦 Visiteurs\n{composition_visite_block}\n{hebergement_planning_block}{repas_planning_block}{transport_planning_block}{transport_type_block}{details_allergies_block}\nMerci pour ton aide ! Fraternellement,\n{ton_nom}`,
+      body: `Bonjour,\n\nVoici les informations logistiques pour la visite de {prenom_orateur} {nom_orateur} :\n\n👨‍👩‍👧‍👦 Visiteurs\n{composition_visite_block}\n{repas_label}\n\n{hebergement_planning_block}{repas_planning_block}{transport_planning_block}{transport_type_block}{details_allergies_block}\nMerci pour ton aide ! Fraternellement,\n{ton_nom}`,
     },
     cv: {
       title: "Briefing – Anfitriãus",
       desc: "Mensajen kompletu pa anfitrion atribuidu",
-      body: `Bon dia,\n\nLi sta informason di lojístika pa vizita di {prenom_orateur} {nom_orateur}:\n\n👨‍👩‍👧‍👦 Vizitantis\n{composition_visite_block}\n{hebergement_planning_block}{repas_planning_block}{transport_planning_block}{transport_type_block}{details_allergies_block}\nObrigadu pa bu juda! Fraternalmenti,\n{ton_nom}`,
+      body: `Bon dia,\n\nLi sta informason di lojístika pa vizita di {prenom_orateur} {nom_orateur}:\n\n👨‍👩‍👧‍👦 Vizitantis\n{composition_visite_block}\n{repas_label}\n\n{hebergement_planning_block}{repas_planning_block}{transport_planning_block}{transport_type_block}{details_allergies_block}\nObrigadu pa bu juda! Fraternalmenti,\n{ton_nom}`,
     },
     pt: {
       title: "Briefing – Anfitriões",
       desc: "Mensagem completa para o anfitrião atribuído",
-      body: `Bom dia,\n\nAqui estão as informações logísticas para a visita de {prenom_orateur} {nom_orateur}:\n\n👨‍👩‍👧‍👦 Visitantes\n{composition_visite_block}\n{hebergement_planning_block}{repas_planning_block}{transport_planning_block}{transport_type_block}{details_allergies_block}\nObrigado pela ajuda! Fraternalmente,\n{ton_nom}`,
+      body: `Bom dia,\n\nAqui estão as informações logísticas para a visita de {prenom_orateur} {nom_orateur}:\n\n👨‍👩‍👧‍👦 Visitantes\n{composition_visite_block}\n{repas_label}\n\n{hebergement_planning_block}{repas_planning_block}{transport_planning_block}{transport_type_block}{details_allergies_block}\nObrigado pela ajuda! Fraternalmente,\n{ton_nom}`,
     },
   },
   // ─── GROUPES ───
@@ -154,7 +154,7 @@ const messageTemplates = {
     fr: {
       title: "Recherche de volontaires",
       desc: "Message pour le groupe des hôtes",
-      body: `Bonjour à tous ! 👋\n\nJe recherche des VOLONTAIRES pour recevoir notre prochain orateur :\n\n🎤 Orateur : Frère {prenom_orateur} {nom_orateur} ({congregation_orateur})\n\n👨‍👩‍👧‍👦 Visiteurs\n{composition_visite_block}\n📅 Arrivée : {jour_arrivee} {date_arrivee} (vers {heure_arrivee})\n📅 Réunion : {jour_visite} {date_visite} à {heure_visite}\n📅 Départ : {jour_depart} {date_depart} (vers {heure_depart})\n\nNous avons besoin de :\n{besoins_volontaires_block}\n{details_allergies_block}Si vous pouvez aider, merci de me répondre dès que possible.\n\nMerci de tout cœur,\n{ton_nom}`,
+      body: `Bonjour à tous ! 👋\n\nJe recherche des VOLONTAIRES pour recevoir notre prochain orateur :\n\n🎤 Orateur : Frère {prenom_orateur} {nom_orateur} ({congregation_orateur})\n\n👨‍👩‍👧‍👦 Visiteurs\n{composition_visite_block}\n{repas_label}\n\n📅 Arrivée : {jour_arrivee} {date_arrivee} (vers {heure_arrivee})\n📅 Réunion : {jour_visite} {date_visite} à {heure_visite}\n📅 Départ : {jour_depart} {date_depart} (vers {heure_depart})\n\nNous avons besoin de :\n{besoins_volontaires_block}\n{details_allergies_block}Si vous pouvez aider, merci de me répondre dès que possible.\n\nMerci de tout cœur,\n{ton_nom}`,
     },
     cv: {
       title: "Buska voluntarius",
@@ -378,6 +378,29 @@ export function PlanningHub() {
     if (!assignHostId) return;
     const host = allHosts.find((h) => h.id === assignHostId);
     if (!host) return;
+
+    // Conflict detection: check if host is already assigned to another visit on the same day
+    const hasConflict = visits.some(v => 
+      v.visitId !== viewVisit?.visitId && 
+      v.status !== "cancelled" &&
+      v.hostAssignments?.some(ha => ha.hostId === host.id && ha.day === assignDay)
+    );
+    
+    if (hasConflict && assignDay) {
+      const confirmMsg = templateLang === "cv" ? `⚠️ ${host.nom} dja sta atribuidu na otu vizita na dia ${formatDateFull(assignDay)}. Bu kre kontinia?` : 
+                        templateLang === "pt" ? `⚠️ ${host.nom} já está atribuído(a) a outra visita no dia ${formatDateFull(assignDay)}. Deseja continuar?` :
+                        `⚠️ ${host.nom} est déjà assigné(e) à une autre visite le ${formatDateFull(assignDay)}. Voulez-vous continuer ?`;
+      if (!window.confirm(confirmMsg)) return;
+    }
+
+    // Capacity check
+    if (host.capacity && totalPeople > host.capacity) {
+      const capacityMsg = templateLang === "cv" ? `⚠️ ${host.nom} ten kapasidadi pa ${host.capacity} pesoas, mas bu ten ${totalPeople}. Kontinia?` :
+                         templateLang === "pt" ? `⚠️ ${host.nom} tem capacidade para ${host.capacity} pessoas, mas você tem ${totalPeople}. Continuar?` :
+                         `⚠️ ${host.nom} n'a une capacité que de ${host.capacity} personnes, mais vous en avez ${totalPeople}. Continuer ?`;
+      if (!window.confirm(capacityMsg)) return;
+    }
+
     const newAssignment: HostAssignment = {
       hostId: host.id, hostName: host.nom, hostPhone: host.telephone,
       hostEmail: host.email, hostAddress: host.adresse,
@@ -492,7 +515,12 @@ export function PlanningHub() {
         const day = h.day ? formatDateFull(h.day) : "";
         const time = h.time || "";
         const address = h.hostAddress || "";
-        return `${h.hostName || ""}${day ? " – " + day : ""}${time ? " à " + time : ""}${address ? "\n📍 " + address : ""}`;
+        const mapsUrl = address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : "";
+        
+        let section = `${h.hostName || ""}${day ? " – " + day : ""}${time ? " à " + time : ""}`;
+        if (address) section += `\n📍 ${address}`;
+        if (mapsUrl) section += `\n🗺️ Google Maps : ${mapsUrl}`;
+        return section;
       }).join("\n");
     };
 
@@ -593,6 +621,8 @@ export function PlanningHub() {
       "{nb_accompagnants}": String(nbAccompagnants),
       "{noms_accompagnants}": nomsAccompagnants,
       "{nb_total_personnes}": String(totalPeople),
+      "{nb_total_repas}": String(totalPeople),
+      "{repas_label}": templateLang === "cv" ? `🍽️ ${totalPeople} pratu di kumida` : templateLang === "pt" ? `🍽️ ${totalPeople} refeições` : `🍽️ ${totalPeople} repas au total`,
       "{allergies_orateur}": allergiesSpeaker,
       "{allergies_orateur_et_accompagnants}": detailsAllergies,
       "{details_allergies}": detailsAllergies,
@@ -696,6 +726,21 @@ export function PlanningHub() {
                           visit.status === "confirmed" ? "status-confirmed" : visit.status === "completed" ? "status-completed" : visit.status === "cancelled" ? "status-cancelled" : "status-scheduled"
                         }`}>{t(visit.status)}</span>
                         <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary">{locationLabel(visit.locationType)}</span>
+                        {(() => {
+                          const assignments = visit.hostAssignments || [];
+                          const hasH = assignments.some(a => a.role === 'hebergement');
+                          const hasR = assignments.some(a => a.role === 'repas');
+                          const hasT = assignments.some(a => a.role === 'transport');
+                          const isOnline = visit.locationType === 'zoom' || visit.locationType === 'streaming';
+                          if (isOnline) return null;
+                          return (
+                            <div className="flex items-center gap-1.5 ml-1 border-l border-border/50 pl-2">
+                              <Home className={`w-3 h-3 ${hasH ? 'text-amber-500' : 'text-muted-foreground/20'}`} />
+                              <Utensils className={`w-3 h-3 ${hasR ? 'text-emerald-500' : 'text-muted-foreground/20'}`} />
+                              <Car className={`w-3 h-3 ${hasT ? 'text-blue-500' : 'text-muted-foreground/20'}`} />
+                            </div>
+                          );
+                        })()}
                       </div>
                       <div className="flex items-center justify-center gap-3 mt-2 text-[10px] text-muted-foreground">
                         <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {visit.heure_visite || "11:30"}</span>
@@ -747,9 +792,23 @@ export function PlanningHub() {
                         )}
                         <div className="flex-1 min-w-0">
                           <h2 className="text-2xl font-black text-foreground">{viewVisit.nom}</h2>
-                          {speaker?.spouseName && <p className="text-sm text-primary font-medium">& {speaker.spouseName}</p>}
-                          <p className="text-sm font-medium text-foreground mt-1">{dayLabel}</p>
-
+                          {(() => {
+                            const pastVisits = visits
+                              .filter(v => v.nom.toLowerCase() === viewVisit.nom.toLowerCase() && v.visitId !== viewVisit.visitId && new Date(v.visitDate) < new Date(viewVisit.visitDate))
+                              .sort((a, b) => new Date(b.visitDate).getTime() - new Date(a.visitDate).getTime());
+                            const lastVisit = pastVisits[0];
+                            return (
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
+                                {speaker?.spouseName && <span className="text-sm text-primary font-medium"> avec {speaker.spouseName}</span>}
+                                {lastVisit && (
+                                  <span className="text-[10px] bg-muted px-2 py-0.5 rounded-md text-muted-foreground font-bold uppercase tracking-wider">
+                                    Dernière visite : {new Date(lastVisit.visitDate).toLocaleDateString(locale, { month: 'long', year: 'numeric' })} (Discours #{lastVisit.talkNoOrType})
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })()}
+                          <p className="text-sm font-medium text-foreground mt-2">{dayLabel}</p>
                         </div>
                         <button onClick={closeDetail} className="p-2 rounded-xl hover:bg-muted transition-colors" title="Fermer"><X className="w-5 h-5 text-muted-foreground" /></button>
                       </div>
@@ -769,6 +828,27 @@ export function PlanningHub() {
                       {/* ---- INFOS TAB ---- */}
                       {detailTab === "infos" && (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
+                          {(() => {
+                            const sixMonthsAgo = new Date();
+                            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+                            const pastVisits = visits
+                              .filter(v => v.nom.toLowerCase() === viewVisit.nom.toLowerCase() && v.visitId !== viewVisit.visitId && new Date(v.visitDate) < new Date(viewVisit.visitDate))
+                              .sort((a, b) => new Date(b.visitDate).getTime() - new Date(a.visitDate).getTime());
+                            const lastVisit = pastVisits[0];
+                            const isRecent = lastVisit && new Date(lastVisit.visitDate) > sixMonthsAgo;
+                            
+                            if (isRecent) {
+                              return (
+                                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-3">
+                                  <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
+                                  <p className="text-[11px] font-bold text-amber-600 leading-tight uppercase">
+                                    Attention : Cet orateur est venu récemment ({new Date(lastVisit.visitDate).toLocaleDateString(locale, { month: 'long', year: 'numeric' })}).
+                                  </p>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
                           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">{t("visit_details")}</p>
                           <div className="flex flex-col sm:flex-row gap-4">
                             <div className="flex-[3] space-y-1">
