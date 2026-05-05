@@ -268,6 +268,35 @@ export function OnboardingWizard({ onComplete, onShowUserManual }: OnboardingWiz
       ),
       canNext: true,
     },
+    {
+      id: "success",
+      icon: Sparkles,
+      title: t("onboarding_success_title"),
+      subtitle: t("onboarding_success_subtitle"),
+      content: (
+        <div className="space-y-6 flex flex-col items-center">
+          <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center animate-bounce">
+            <Check className="w-10 h-10 text-primary" />
+          </div>
+          
+          <div className="w-full space-y-3">
+            <Button
+              variant="outline"
+              className="w-full h-14 rounded-2xl border-2 border-primary/20 hover:border-primary hover:bg-primary/5 transition-all flex items-center justify-center gap-3 group"
+              onClick={() => onShowUserManual?.()}
+            >
+              <BookOpen className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+              <span className="font-bold text-primary">{t("view_manual_btn")}</span>
+            </Button>
+            
+            <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest font-bold">
+              Ou commencez directement
+            </p>
+          </div>
+        </div>
+      ),
+      canNext: true,
+    },
   ];
 
   const currentStep = steps[step];
@@ -356,11 +385,11 @@ export function OnboardingWizard({ onComplete, onShowUserManual }: OnboardingWiz
                   {isLast ? (
                     <>
                       <Check className="w-5 h-5 shrink-0" />
-                      Commencer
+                      {t("start_app_btn")}
                     </>
                   ) : (
                     <>
-                      Suivant
+                      {selectedLanguage === "cv" ? "Próximu" : selectedLanguage === "pt" ? "Seguinte" : "Suivant"}
                       <ChevronRight className="w-5 h-5 shrink-0" />
                     </>
                   )}

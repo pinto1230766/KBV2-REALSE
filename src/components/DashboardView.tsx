@@ -8,6 +8,7 @@ import { useUIStore } from "../store/useUIStore";
 import { useTranslation } from "../hooks/useTranslation";
 import { toast } from "sonner";
 import type { Visit, Host, Speaker } from "../store/visitTypes";
+import { mergeHosts, mergeSpeakers, mergeVisits } from "../lib/dedup";
 
 export function DashboardView() {
   const visits = useVisitStore((s) => s.visits);
@@ -84,9 +85,9 @@ export function DashboardView() {
       try {
         const text = await file.text();
         const data = JSON.parse(text);
-        if (data.visits) data.visits.forEach((v: Visit) => useVisitStore.getState().addVisit(v));
-        if (data.hosts) data.hosts.forEach((h: Host) => useHostStore.getState().addHost(h));
-        if (data.speakers) data.speakers.forEach((s: Speaker) => useSpeakerStore.getState().addSpeaker(s));
+        if (data.visits) useVisitStore.getState().setVisits(mergeVisits(useVisitStore.getState().visits, data.visits));
+        if (data.hosts) useHostStore.getState().setHosts(mergeHosts(useHostStore.getState().hosts, data.hosts));
+        if (data.speakers) useSpeakerStore.getState().setSpeakers(mergeSpeakers(useSpeakerStore.getState().speakers, data.speakers));
         toast.success(t("import_success"));
       } catch {
         toast.error(t("import_error"));

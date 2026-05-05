@@ -364,6 +364,12 @@ const dictionary: Record<string, TranslationEntry> = {
   user_manual_welcome: { fr: "Bienvenue dans le guide d'utilisation de KBV FP", cv: "Ben-vindu na gid di uzus di KBV FP", pt: "Bem-vindo ao guia de uso do KBV FP" },
   user_manual_intro: { fr: "Ce guide vous explique toutes les fonctionnalités de l'application de manière simple et illustrée.", cv: "Es gid expika tudu funcionalidades di aplikason na manera simples i ilustradu.", pt: "Este guia explica todas as funcionalidades do aplicativo de forma simples e ilustrada." },
 
+  // Onboarding Success
+  onboarding_success_title: { fr: "Configuration terminée !", cv: "Konfigurason terminadu !", pt: "Configuração concluída !" },
+  onboarding_success_subtitle: { fr: "Votre application est prête. Vous pouvez commencer à l'utiliser ou consulter le guide pour en savoir plus.", cv: "Bo aplikason sta prontu. Bo pode komesa uzâ-l ou odja gid pa sabe más.", pt: "Seu aplicativo está pronto. Você pode começar a usá-lo ou consultar o guia para saber mais." },
+  view_manual_btn: { fr: "Consulter le guide complet", cv: "Odja gid kompletu", pt: "Consultar o guia completo" },
+  start_app_btn: { fr: "Commencer l'utilisation", cv: "Komesa uzâ", pt: "Começar a usar" },
+
   // Section 1: Create Speaker
   section1_title: { fr: "1. Créer un orateur", cv: "1. Kria un orador", pt: "1. Criar um orador" },
   section1_desc: { fr: "Ajoutez un nouvel orateur à votre répertoire", cv: "Ajunta un orador novu na bo repertóriu", pt: "Adicione um novo orador ao seu repertório" },
