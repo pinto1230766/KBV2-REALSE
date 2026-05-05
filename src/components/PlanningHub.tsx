@@ -24,37 +24,73 @@ const messageTemplates = {
   confirmation_speaker: {
     category: "speaker",
     fr: {
-      title: "Confirmation – Orateur",
-      desc: "Premier contact pour confirmer la visite",
+      title: "Confirmation – Orateur (Présentiel)",
+      desc: "Premier contact pour confirmer la visite sur place",
       body: `Bonjour {prenom_orateur} {nom_orateur},\n\nJe suis {ton_nom}, responsable de l'accueil au sein du Groupe Kabuverdianu de Lyon. 🙏\n\nC'est un grand plaisir de vous inviter pour une visite et un discours le {jour_semaine} {date_visite}, à {heure_visite} (Salle du Royaume de Lyon).\n\nMerci de me confirmer les points suivants :\n• ✅ Pouvez-vous venir à cette date et heure ?\n• 🏠 Avez-vous besoin d'un hébergement ?\n• 🍽️ Avez-vous des allergies alimentaires à nous signaler (vous + vos accompagnants) ?\n{question_transport_block}{question_enfants_block}\nMerci de répondre dès que possible pour notre organisation.\n\nFraternellement,\n{ton_nom}\n{mon_tel}`,
     },
     cv: {
-      title: "Konfirmaçon – Orador",
+      title: "Konfirmaçon – Orador (Prezensial)",
       desc: "Primer kontaktu pa konfirmá vizita",
       body: `Bon dia {prenom_orateur} {nom_orateur},\n\nMi é {ton_nom}, enkaregadu di resebe vizitantis na Grupu Kabuverdianu di Lyon. 🙏\n\nN ten un grandi prazer di pâpia ku bo pa konvida-u pa faze-nu un vizita i faze un diskursu na {jour_semaine} {date_visite}, na {heure_visite} (Salon di Reinu di Lyon).\n\nFavor, konfirma-m es kuzas li:\n• ✅ Bu pode ben na es data i óra?\n• 🏠 Bu meste di un lugar pa fika (alojamentu)?\n• 🍽️ Algum alerjia di kumida ki nu debe sabe (bo + bus akonpanhantis)?\n{question_transport_block}{question_enfants_block}\nFavor responde-m u más rápidu posível pa nu organiza dretu.\n\nFraternalmenti,\n{ton_nom}\n{mon_tel}`,
     },
     pt: {
-      title: "Confirmação – Orador",
+      title: "Confirmação – Orador (Presencial)",
       desc: "Primeiro contacto para confirmar a visita",
       body: `Bom dia {prenom_orateur} {nom_orateur},\n\nSou {ton_nom}, responsável pelo acolhimento no Grupo Cabo-verdiano de Lyon. 🙏\n\nÉ um grande prazer convidá-lo para uma visita e um discurso no {jour_semaine} {date_visite}, às {heure_visite} (Salão do Reino de Lyon).\n\nPor favor, confirme os seguintes pontos:\n• ✅ Pode vir nesta data e hora?\n• 🏠 Precisa de alojamento?\n• 🍽️ Tem alergias alimentares (você + acompanhantes)?\n{question_transport_block}{question_enfants_block}\nFraternalmente,\n{ton_nom}\n{mon_tel}`,
+    },
+  },
+  confirmation_speaker_online: {
+    category: "speaker",
+    fr: {
+      title: "Confirmation – Orateur (Zoom/Streaming)",
+      desc: "Premier contact pour visite en ligne",
+      body: `Bonjour {prenom_orateur} {nom_orateur},\n\nC'est un grand plaisir de vous inviter pour un discours par {visit_channel_label} le {jour_semaine} {date_visite}, à {heure_visite}.\n\nPouvez-vous nous confirmer votre disponibilité pour cette date ?\nLes liens de connexion vous seront envoyés quelques jours avant.\n\nFraternellement,\n{ton_nom}\n{mon_tel}`,
+    },
+    cv: {
+      title: "Konfirmaçon – Orador (Zoom/Streaming)",
+      desc: "Primer kontaktu pa vizita online",
+      body: `Bon dia {prenom_orateur} {nom_orateur},\n\nN ten un grandi prazer di konvida-u pa faze un diskursu pa {visit_channel_label} na {jour_semaine} {date_visite}, na {heure_visite}.\n\nBu pode konfirma-nu si bu sta disponível na es data?\nNu ta manda-u link di konexon uns dia antis.\n\nFraternalmenti,\n{ton_nom}\n{mon_tel}`,
+    },
+    pt: {
+      title: "Confirmação – Orador (Zoom/Streaming)",
+      desc: "Primeiro contacto para visita online",
+      body: `Bom dia {prenom_orateur} {nom_orateur},\n\nÉ um grande prazer convidá-lo para um discurso via {visit_channel_label} no {jour_semaine} {date_visite}, às {heure_visite}.\n\nPode confirmar a sua disponibilidade para esta data?\nOs links de ligação serão enviados alguns dias antes.\n\nFraternalmente,\n{ton_nom}\n{mon_tel}`,
     },
   },
   preparation_speaker: {
     category: "speaker",
     fr: {
-      title: "Préparation – Orateur",
+      title: "Préparation – Orateur (Présentiel)",
       desc: "Détails complets de l'organisation",
-      body: `Bonjour {prenom_orateur} {nom_orateur},\n\nMerci pour votre confirmation ! Voici le plan de votre séjour :\n\n📅 Dates et heures\n• Arrivée : {jour_arrivee} {date_arrivee} (vers {heure_arrivee})\n• Réunion : {jour_visite} {date_visite} à {heure_visite}\n• Départ : {jour_depart} {date_depart} (vers {heure_depart})\n\n🏠 Hébergement\n{hebergement_details}\n\n🍽️ Repas\n{repas_details}\n\n{speaker_transport_block}{accompagnants_details}\nSi vous avez la moindre question, je reste disponible au {mon_tel}.\n\nFraternellement,\n{ton_nom}`,
+      body: `Bonjour {prenom_orateur} {nom_orateur},\n\nMerci pour votre confirmation ! Voici le plan de votre séjour :\n\n📅 Dates et heures\n• Arrivée : {jour_arrivee} {date_arrivee} (vers {heure_arrivee})\n• Réunion : {jour_visite} {date_visite} à {heure_visite}\n• Départ : {jour_depart} {date_depart} (vers {heure_depart})\n\n{speaker_hebergement_block}{speaker_repas_block}{speaker_transport_block}{accompagnants_details}\nSi vous avez la moindre question, je reste disponible au {mon_tel}.\n\nFraternellement,\n{ton_nom}`,
     },
     cv: {
-      title: "Preparason – Orador",
+      title: "Preparason – Orador (Prezensial)",
       desc: "Detalhes kompletu di organizason",
-      body: `Bon dia {prenom_orateur} {nom_orateur},\n\nObrigadu pa bu konfirmason! Li sta o planu di bu estadia:\n\n📅 Datas i óras\n• Txegada: {jour_arrivee} {date_arrivee} (volta di {heure_arrivee})\n• Runion: {jour_visite} {date_visite} na {heure_visite}\n• Partida: {jour_depart} {date_depart} (volta di {heure_depart})\n\n🏠 Alojamentu\n{hebergement_details}\n\n🍽️ Kumida\n{repas_details}\n\n{speaker_transport_block}{accompagnants_details}\nSi bu ten kualker pergunta,\nN sta disponível na {mon_tel}.\n\nFraternalmenti,\n{ton_nom}`,
+      body: `Bon dia {prenom_orateur} {nom_orateur},\n\nObrigadu pa bu konfirmason! Li sta o planu di bu estadia:\n\n📅 Datas i óras\n• Txegada: {jour_arrivee} {date_arrivee} (volta di {heure_arrivee})\n• Runion: {jour_visite} {date_visite} na {heure_visite}\n• Partida: {jour_depart} {date_depart} (volta di {heure_depart})\n\n{speaker_hebergement_block}{speaker_repas_block}{speaker_transport_block}{accompagnants_details}\nSi bu ten kualker pergunta,\nN sta disponível na {mon_tel}.\n\nFraternalmenti,\n{ton_nom}`,
     },
     pt: {
-      title: "Preparação – Orador",
+      title: "Preparação – Orador (Presencial)",
       desc: "Detalhes completos de organização",
-      body: `Bom dia {prenom_orateur} {nom_orateur},\n\nObrigado pela sua confirmação! Aqui está o plano da sua estadia:\n\n📅 Datas e horas\n• Chegada: {jour_arrivee} {date_arrivee} (por volta de {heure_arrivee})\n• Reunião: {jour_visite} {date_visite} às {heure_visite}\n• Partida: {jour_depart} {date_depart} (por volta de {heure_depart})\n\n🏠 Alojamento\n{hebergement_details}\n\n🍽️ Refeições\n{repas_details}\n\n{speaker_transport_block}{accompagnants_details}\nFraternalmente,\n{ton_nom}`,
+      body: `Bom dia {prenom_orateur} {nom_orateur},\n\nObrigado pela sua confirmação! Aqui está o plano da sua estadia:\n\n📅 Datas e horas\n• Chegada: {jour_arrivee} {date_arrivee} (por volta de {heure_arrivee})\n• Reunião: {jour_visite} {date_visite} às {heure_visite}\n• Partida: {jour_depart} {date_depart} (por volta de {heure_depart})\n\n{speaker_hebergement_block}{speaker_repas_block}{speaker_transport_block}{accompagnants_details}\nFraternalmente,\n{ton_nom}`,
+    },
+  },
+  preparation_speaker_online: {
+    category: "speaker",
+    fr: {
+      title: "Préparation – Orateur (Zoom/Streaming)",
+      desc: "Détails pour la visite en ligne",
+      body: `Bonjour {prenom_orateur} {nom_orateur},\n\nMerci pour votre confirmation ! Voici les détails pour votre discours :\n\n📅 Date et heure\n• {jour_visite} {date_visite} à {heure_visite}\n\n💻 Connexion\n• Plateforme : {visit_channel_label}\n• Lien de connexion : (À insérer ici)\n• ID : (À insérer ici)\n• Code : (À insérer ici)\n\nMerci de vous connecter environ 15 minutes à l'avance pour tester le son et la vidéo.\n\nFraternellement,\n{ton_nom}`,
+    },
+    cv: {
+      title: "Preparason – Orador (Zoom/Streaming)",
+      desc: "Detalhes pa vizita online",
+      body: `Bon dia {prenom_orateur} {nom_orateur},\n\nObrigadu pa bu konfirmason! Li sta detalhes pa bu diskursu:\n\n📅 Data i óra\n• {jour_visite} {date_visite} na {heure_visite}\n\n💻 Konexon\n• Plataforma: {visit_channel_label}\n• Link di konexon: (Pô li)\n• ID: (Pô li)\n• Kodi: (Pô li)\n\nFavor, konecta uns 15 minutu antis pa nu testa som ku vídiu.\n\nFraternalmenti,\n{ton_nom}`,
+    },
+    pt: {
+      title: "Preparação – Orador (Zoom/Streaming)",
+      desc: "Detalhes para a visita online",
+      body: `Bom dia {prenom_orateur} {nom_orateur},\n\nObrigado pela sua confirmação! Aqui estão os detalhes para o seu discurso:\n\n📅 Data e hora\n• {jour_visite} {date_visite} às {heure_visite}\n\n💻 Ligação\n• Plataforma: {visit_channel_label}\n• Link de ligação: (Inserir aqui)\n• ID: (Inserir aqui)\n• Código: (Inserir aqui)\n\nPor favor, ligue-se cerca de 15 minutos antes para testarmos o som e vídeo.\n\nFraternalmente,\n{ton_nom}`,
     },
   },
   thanks_speaker: {
@@ -462,10 +498,17 @@ export function PlanningHub() {
 
     // Companions
     const companions = detailForm.companions || [];
-    const nbAccompagnants = companions.length;
-    const nomsAccompagnants = companions.map((c) => c.nom).join(", ") || "Aucun";
+    const speakerFromStore = getSpeakerForVisit(viewVisit);
+    
+    const nomsAccompagnantsList = companions.map((c) => c.nom);
+    if (speakerFromStore?.householdType === "couple" && speakerFromStore.spouseName) {
+      nomsAccompagnantsList.unshift(`${speakerFromStore.spouseName} (Épouse)`);
+    }
+    
+    const nbAccompagnants = nomsAccompagnantsList.length;
+    const nomsAccompagnants = nomsAccompagnantsList.join(", ") || "Aucun";
     const accompagnantsDetails = nbAccompagnants > 0
-      ? `👥 Accompagnants (${nbAccompagnants}) : ${nomsAccompagnants}`
+      ? `👥 Accompagnants (${nbAccompagnants}) : ${nomsAccompagnants}\n\n`
       : "";
 
     // Allergies
@@ -474,7 +517,6 @@ export function PlanningHub() {
     const detailsAllergies = allergiesSpouse ? `${allergiesSpeaker} / ${allergiesSpouse}` : allergiesSpeaker;
 
     // Enfants (from speaker store)
-    const speakerFromStore = getSpeakerForVisit(viewVisit);
     const childrenAges = speakerFromStore?.childrenAges || "";
     const enfantsDetails = childrenCount > 0
       ? `${childrenCount} enfant(s)${childrenAges ? ` (${childrenAges})` : ""}`
@@ -547,6 +589,7 @@ export function PlanningHub() {
       "{allergies_orateur}": allergiesSpeaker,
       "{allergies_orateur_et_accompagnants}": detailsAllergies,
       "{details_allergies}": detailsAllergies,
+      "{accompagnants_details}": accompagnantsDetails,
       // Enfants
       "{enfants_details}": enfantsDetails,
       "{nb_enfants}": String(childrenCount),
@@ -579,7 +622,9 @@ export function PlanningHub() {
         templateLang === "cv" ? "• 🍽️ Kumida (almosu / janta)" : templateLang === "pt" ? "• 🍽️ Refeições" : "• 🍽️ Repas (déjeuner / dîner)",
         (!detailForm.transportType || detailForm.transportType !== "car") ? (templateLang === "cv" ? "• 🚗 Transporti (stason / aeroportu ⇄ Salon di Reinu)" : templateLang === "pt" ? "• 🚗 Transporte" : "• 🚗 Transport (gare / aéroport ⇄ Salle du Royaume)") : null
       ].filter(Boolean).join("\n") + "\n",
-      "{speaker_transport_block}": detailForm.transportType === "car" ? (templateLang === "cv" ? "🚗 Transportu\nBu fla ma bu ta bem na bu karku.\n\n" : templateLang === "pt" ? "🚗 Transporte\nIndicou que vem com a sua própria viatura.\n\n" : "🚗 Transport\nVous avez indiqué venir avec votre propre véhicule.\n\n") : `🚗 Transport\n${buildHostSection(transportHosts)}\n\n`,
+      "{speaker_transport_block}": detailForm.transportType === "car" ? (templateLang === "cv" ? "🚗 Transportu\nBu fla ma bu ta bem na bu karku.\n\n" : templateLang === "pt" ? "🚗 Transporte\nIndicou que vem com a sua própria viatura.\n\n" : "🚗 Transport\nVous avez indiqué venir avec votre propre véhicule.\n\n") : (transportHosts.length > 0 ? `🚗 Transport\n${buildHostSection(transportHosts)}\n\n` : ""),
+      "{speaker_hebergement_block}": hebergementHosts.length > 0 ? `🏠 Hébergement\n${buildHostSection(hebergementHosts)}\n\n` : "",
+      "{speaker_repas_block}": repasHosts.length > 0 ? `🍽️ Repas\n${buildHostSection(repasHosts)}\n\n` : "",
     };
 
     let result = text;
@@ -1137,12 +1182,19 @@ export function PlanningHub() {
                             </div>
 
                             <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent">
-                              {[
-                                { step: 1, color: "bg-blue-500", label: "Étape 1 : Planification", keys: ["confirmation_speaker", "volunteers_group"] },
-                                { step: 2, color: "bg-amber-500", label: "Étape 2 : Logistique", keys: ["logistique_host"] },
-                                { step: 3, color: "bg-primary", label: "Étape 3 : Briefing", keys: ["preparation_speaker", "preparation_group"] },
-                                { step: 4, color: "bg-emerald-500", label: "Étape 4 : Après-Visite", keys: ["thanks_speaker", "thanks_speaker_online"] },
-                              ].map((group) => (
+                              {(detailForm.locationType === "zoom" || detailForm.locationType === "streaming"
+                                ? [
+                                    { step: 1, color: "bg-blue-500", label: "Étape 1 : Planification", keys: ["confirmation_speaker_online"] },
+                                    { step: 2, color: "bg-primary", label: "Étape 2 : Briefing", keys: ["preparation_speaker_online"] },
+                                    { step: 3, color: "bg-emerald-500", label: "Étape 3 : Après-Visite", keys: ["thanks_speaker_online"] },
+                                  ]
+                                : [
+                                    { step: 1, color: "bg-blue-500", label: "Étape 1 : Planification", keys: ["confirmation_speaker", "volunteers_group"] },
+                                    { step: 2, color: "bg-amber-500", label: "Étape 2 : Logistique", keys: ["logistique_host"] },
+                                    { step: 3, color: "bg-primary", label: "Étape 3 : Briefing", keys: ["preparation_speaker", "preparation_group"] },
+                                    { step: 4, color: "bg-emerald-500", label: "Étape 4 : Après-Visite", keys: ["thanks_speaker"] },
+                                  ]
+                              ).map((group) => (
                                 <div key={group.step} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
                                   <div className={`flex items-center justify-center w-10 h-10 rounded-full border-4 border-card ${group.color} text-white font-bold shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-sm z-10`}>
                                     {group.step}
