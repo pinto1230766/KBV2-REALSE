@@ -249,6 +249,18 @@ export function PlanningHub() {
     speakerPhone: "", notes: "", status: "scheduled" as VisitStatus, heure_visite: congregation?.time || "11:30",
   });
 
+  // Helper to find the last date a host was assigned
+  const getHostLastVisitDate = (hostId: string) => {
+    const assignments = visits
+      .filter(v => v.status !== "cancelled")
+      .flatMap(v => (v.hostAssignments || []).map(ha => ({ ...ha, visitDate: v.visitDate })))
+      .filter(ha => ha.hostId === hostId && new Date(ha.visitDate) < new Date());
+    
+    if (assignments.length === 0) return null;
+    const last = assignments.sort((a, b) => new Date(b.visitDate).getTime() - new Date(a.visitDate).getTime())[0];
+    return last.visitDate;
+  };
+
   const resetForm = () => {
     setForm({ nom: "", congregation: "", visitDate: "", talkNoOrType: "", talkTheme: "", locationType: "kingdom_hall", speakerPhone: "", notes: "", status: "scheduled", heure_visite: congregation?.time || "11:30" });
     setEditingVisit(null);
@@ -709,13 +721,25 @@ export function PlanningHub() {
               const d = new Date(visit.visitDate);
               const monthShort = d.toLocaleDateString(locale, { month: "short" }).toUpperCase().replace(".", "");
               const dayNum = d.getDate();
+              const isPotentialDuplicate = visits.some(v => 
+                v.visitId !== visit.visitId && 
+                v.status !== "cancelled" &&
+                v.nom.toLowerCase().trim() === visit.nom.toLowerCase().trim() &&
+                Math.abs(new Date(v.visitDate).getTime() - new Date(visit.visitDate).getTime()) < 7 * 24 * 60 * 60 * 1000
+              );
+
               return (
                 <motion.div key={visit.visitId} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ delay: i * 0.02 }}
-                  className="premium-card p-3 cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all" onClick={() => openDetail(visit)}>
+                  className={`premium-card p-3 cursor-pointer transition-all ${isPotentialDuplicate ? "ring-2 ring-amber-500/30" : "hover:ring-1 hover:ring-primary/30"}`} onClick={() => openDetail(visit)}>
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-14 rounded-xl bg-muted flex flex-col items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-14 rounded-xl bg-muted flex flex-col items-center justify-center flex-shrink-0 relative">
                       <span className="text-[8px] font-bold uppercase tracking-wider text-primary">{monthShort}</span>
                       <span className="text-lg font-black text-foreground leading-tight">{dayNum}</span>
+                      {isPotentialDuplicate && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center border-2 border-background" title="Doublon potentiel">
+                          <AlertTriangle className="w-2.5 h-2.5 text-white" />
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex-1 min-w-0 text-center">
@@ -1169,7 +1193,11 @@ export function PlanningHub() {
                                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">{t("assign_host")}</p>
                                 <select className="input-soft text-sm" value={assignHostId} onChange={(e) => setAssignHostId(e.target.value)} title={t("select_host")}>
                                   <option value="">{t("select_host")}</option>
-                                  {allHosts.map((h) => <option key={h.id} value={h.id}>{h.nom}</option>)}
+                                  {allHosts.map((h) => {
+                                    const lastDate = getHostLastVisitDate(h.id);
+                                    const formattedLast = lastDate ? ` (${t("last")}: ${new Date(lastDate).toLocaleDateString(locale, { day: 'numeric', month: 'short' })})` : "";
+                                    return <option key={h.id} value={h.id}>{h.nom}{formattedLast}</option>;
+                                  })}
                                 </select>
                                 <select className="input-soft text-sm" value={assignRole} onChange={(e) => setAssignRole(e.target.value as HostAssignment["role"])} title={t("role")}>
                                   <option value="hebergement">{t("hebergement")}</option>

@@ -27,7 +27,8 @@ export function DashboardView() {
       const d = new Date(v.visitDate);
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     });
-    return { total: visits.length, upcoming: upcoming.length, confirmed: confirmed.length, thisMonth: thisMonth.length };
+    const monthlyExpenses = thisMonth.reduce((sum, v) => sum + (v.expenses || []).reduce((s, e) => s + e.amount, 0), 0);
+    return { total: visits.length, upcoming: upcoming.length, confirmed: confirmed.length, thisMonth: thisMonth.length, monthlyExpenses };
   }, [visits]);
 
   // Handle filter selection
@@ -196,6 +197,17 @@ export function DashboardView() {
             <TrendingUp className="w-4 h-4 xs:w-5 xs:h-5 md:w-6 md:h-6 text-primary" />
           </div>
         </motion.button>
+
+        {/* Bilan Frais */}
+        <motion.div 
+          variants={staggerItem} 
+          className="rounded-2xl p-2.5 xs:p-4 md:p-5 text-left min-h-[90px] flex flex-col justify-between bg-primary text-primary-foreground shadow-lg"
+        >
+          <p className="text-[10px] xs:text-xs md:text-sm font-bold uppercase tracking-wider text-primary-foreground/80">{t("expenses")}</p>
+          <div className="flex items-center gap-2 mt-1 xs:mt-2">
+            <p className="text-xl xs:text-2xl md:text-3xl font-black">{stats.monthlyExpenses.toFixed(2)} €</p>
+          </div>
+        </motion.div>
       </div>
 
       {/* Recent Activities */}
