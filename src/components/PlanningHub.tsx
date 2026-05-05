@@ -505,10 +505,21 @@ export function PlanningHub() {
       ? `👥 Accompagnants (${nbAccompagnants}) : ${nomsAccompagnants}\n\n`
       : "";
 
+    // Allergies
+    const allergiesSpeaker = detailForm.speakerDietary || "Aucune";
+    const allergiesSpouse = detailForm.spouseDietary || "";
+    const detailsAllergies = allergiesSpouse ? `${allergiesSpeaker} / ${allergiesSpouse}` : allergiesSpeaker;
+
+    // Enfants (from speaker store)
+    const childrenAges = speaker?.childrenAges || "";
+    const enfantsDetails = childrenCount > 0
+      ? `${childrenCount} enfant(s)${childrenAges ? ` (${childrenAges})` : ""}`
+      : "Aucun";
+
     // Composition for hosts
     const visitorParts = [`• Orateur : ${prenom} ${nom}`];
-    if (speakerFromStore?.householdType === "couple" && speakerFromStore.spouseName) {
-      visitorParts.push(`• Épouse : ${speakerFromStore.spouseName}`);
+    if (speaker?.householdType === "couple" && speaker.spouseName) {
+      visitorParts.push(`• Épouse : ${speaker.spouseName}`);
     }
     if (childrenCount > 0) {
       visitorParts.push(`• Enfants : ${enfantsDetails}`);
@@ -517,17 +528,6 @@ export function PlanningHub() {
       visitorParts.push(`• Accompagnants (${nbAccompagnants}) : ${nomsAccompagnants}`);
     }
     const compositionBlock = visitorParts.join("\n") + "\n";
-
-    // Allergies
-    const allergiesSpeaker = detailForm.speakerDietary || "Aucune";
-    const allergiesSpouse = detailForm.spouseDietary || "";
-    const detailsAllergies = allergiesSpouse ? `${allergiesSpeaker} / ${allergiesSpouse}` : allergiesSpeaker;
-
-    // Enfants (from speaker store)
-    const childrenAges = speakerFromStore?.childrenAges || "";
-    const enfantsDetails = childrenCount > 0
-      ? `${childrenCount} enfant(s)${childrenAges ? ` (${childrenAges})` : ""}`
-      : "Aucun";
 
     // Channel label
     const channelLabel = detailForm.locationType === "zoom" ? "Zoom" : detailForm.locationType === "streaming" ? "Streaming" : "";
