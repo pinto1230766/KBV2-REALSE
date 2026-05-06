@@ -33,6 +33,7 @@ import { UserManualPage } from "./components/UserManualPage";
 import { KbvLogo } from "./components/KbvLogo";
 import { AppLayout } from "./components/layout/AppLayout";
 import { SearchResult } from "./components/layout/Header";
+import { deleteRemoteItem } from "./lib/syncCloud";
 
 function App() {
   const { isStandalone } = usePWA();
@@ -105,6 +106,25 @@ function App() {
       window.removeEventListener("offline", handleOffline);
     };
   }, [setIsOnline, speakers, hosts]);
+
+  // One-time cleanup of specific examples
+  useEffect(() => {
+    if (!localStorage.getItem("kbv-examples-cleaned-v3")) {
+      const spks = useSpeakerStore.getState().speakers;
+      const hsts = useHostStore.getState().hosts;
+      const vsts = useVisitStore.getState().visits;
+
+      const toDelSpk = spks.filter(s => s.nom.toLowerCase().includes("exemple") || s.nom.toLowerCase().includes("example") || s.nom.includes("Jean Dupont"));
+      const toDelHst = hsts.filter(h => h.nom.toLowerCase().includes("exemple") || h.nom.toLowerCase().includes("example") || h.nom.includes("Marie Martin"));
+      const toDelVst = vsts.filter(v => v.nom.toLowerCase().includes("exemple") || v.nom.toLowerCase().includes("example") || v.nom.includes("Jean Dupont") || toDelSpk.some(s => s.id === v.visitId));
+
+      toDelSpk.forEach(s => { useSpeakerStore.getState().deleteSpeaker(s.id); deleteRemoteItem("speakers", s.id); });
+      toDelHst.forEach(h => { useHostStore.getState().deleteHost(h.id); deleteRemoteItem("hosts", h.id); });
+      toDelVst.forEach(v => { useVisitStore.getState().deleteVisit(v.visitId); deleteRemoteItem("visits", v.visitId); });
+
+      localStorage.setItem("kbv-examples-cleaned-v3", "true");
+    }
+  }, []);
 
 
   const trimmedTerm = searchTerm.trim().toLowerCase();

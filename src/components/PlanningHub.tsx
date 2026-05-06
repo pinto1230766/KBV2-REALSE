@@ -286,6 +286,10 @@ export function PlanningHub() {
     toast.success(t("visit_deleted"));
   };
 
+  const getSpeakerForVisit = useCallback((visit: Visit) => 
+    speakers.find((s) => s.nom.toLowerCase() === visit.nom.toLowerCase()),
+  [speakers]);
+
   const openDetail = useCallback((visit: Visit) => {
     setViewVisit(visit);
     // Format dates for date inputs (yyyy-MM-dd)
@@ -314,7 +318,7 @@ export function PlanningHub() {
     setSelectedRecipient("orateur");
     setTemplateLang(language);
     setShowAssignHost(false);
-  }, [language, setViewVisit, setDetailForm, setDetailTab, setMessageText, setSelectedRecipient, setTemplateLang, setShowAssignHost]);
+  }, [language, setViewVisit, setDetailForm, setDetailTab, setMessageText, setSelectedRecipient, setTemplateLang, setShowAssignHost, getSpeakerForVisit]);
 
   // Auto-open visit when clicking from calendar (without scroll)
   useEffect(() => {
@@ -355,8 +359,6 @@ export function PlanningHub() {
     if (loc === "streaming") return "Streaming";
     return t("other");
   };
-
-  const getSpeakerForVisit = (visit: Visit) => speakers.find((s) => s.nom.toLowerCase() === visit.nom.toLowerCase());
 
   const roleIcon = (role: string) => {
     if (role === "hebergement") return <Home className="w-3.5 h-3.5" />;
@@ -405,8 +407,8 @@ export function PlanningHub() {
       if (!window.confirm(confirmMsg)) return;
     }
 
-    // Capacity check
-    if (host.capacity && totalPeople > host.capacity) {
+    // Capacity check - ONLY for hebergement as requested
+    if (assignRole === "hebergement" && host.capacity && totalPeople > host.capacity) {
       const capacityMsg = templateLang === "cv" ? `⚠️ ${host.nom} ten kapasidadi pa ${host.capacity} pesoas, mas bu ten ${totalPeople}. Kontinia?` :
                          templateLang === "pt" ? `⚠️ ${host.nom} tem capacidade para ${host.capacity} pessoas, mas você tem ${totalPeople}. Continuar?` :
                          `⚠️ ${host.nom} n'a une capacité que de ${host.capacity} personnes, mais vous en avez ${totalPeople}. Continuer ?`;
@@ -521,17 +523,21 @@ export function PlanningHub() {
     const transportHosts = hostsByRole("transport");
 
     // Build planning sections
-    const buildHostSection = (hosts: HostAssignment[]) => {
+    const buildHostSection = (hosts: HostAssignment[], showDetails: boolean = true) => {
       if (hosts.length === 0) return "Non défini";
       return hosts.map((h) => {
         const day = h.day ? formatDateFull(h.day) : "";
         const time = h.time || "";
         const address = h.hostAddress || "";
+        const phone = h.hostPhone || "";
         const mapsUrl = address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : "";
         
         let section = `${h.hostName || ""}${day ? " – " + day : ""}${time ? " à " + time : ""}`;
-        if (address) section += `\n📍 ${address}`;
-        if (mapsUrl) section += `\n🗺️ Google Maps : ${mapsUrl}`;
+        if (showDetails) {
+          if (phone) section += `\n📞 Tél : ${phone}`;
+          if (address) section += `\n📍 ${address}`;
+          if (mapsUrl) section += `\n🗺️ Google Maps : ${mapsUrl}`;
+        }
         return section;
       }).join("\n");
     };
@@ -603,15 +609,15 @@ export function PlanningHub() {
       "{heure_depart}": detailForm.heure_depart || "___",
       "{jour_visite}": formatDayOnly(viewVisit.visitDate),
       // Hébergement
-      "{hebergement_details}": buildHostSection(hebergementHosts),
-      "{hebergement_planning}": buildHostSection(hebergementHosts),
+      "{hebergement_details}": buildHostSection(hebergementHosts, true),
+      "{hebergement_planning}": buildHostSection(hebergementHosts, false),
       "{nom_hebergeur}": hebergementHosts[0]?.hostName || "___",
       "{prenom_hotesse}": hebergementHosts[0]?.hostName?.split(" ")[0] || "___",
       "{adresse_hebergeur}": hebergementHosts[0]?.hostAddress || "___",
       "{tel_hebergeur}": hebergementHosts[0]?.hostPhone || "___",
       // Repas
-      "{repas_details}": buildHostSection(repasHosts),
-      "{repas_planning}": buildHostSection(repasHosts),
+      "{repas_details}": buildHostSection(repasHosts, true),
+      "{repas_planning}": buildHostSection(repasHosts, false),
       "{nom_responsable_repas}": firstRepas?.hostName || "___",
       "{prenom_responsable_repas}": firstRepas?.hostName?.split(" ")[0] || "___",
       "{tel_responsable_repas}": firstRepas?.hostPhone || "___",
@@ -620,8 +626,8 @@ export function PlanningHub() {
       "{heure_repas}": firstRepas?.time || "___",
       "{adresse_repas}": firstRepas?.hostAddress || "___",
       // Transport
-      "{transport_details}": buildHostSection(transportHosts),
-      "{transport_planning}": buildHostSection(transportHosts),
+      "{transport_details}": buildHostSection(transportHosts, true),
+      "{transport_planning}": buildHostSection(transportHosts, false),
       "{nom_chauffeur}": firstTransport?.hostName || "___",
       "{prenom_chauffeur}": firstTransport?.hostName?.split(" ")[0] || "___",
       "{tel_chauffeur}": firstTransport?.hostPhone || "___",
@@ -661,21 +667,21 @@ export function PlanningHub() {
       "{accompagnants_block}": nbAccompagnants > 0 ? `👥 Accompagnants (${nbAccompagnants}) : ${nomsAccompagnants}\n` : "",
       "{enfants_block}": childrenCount > 0 ? `🧒 Enfants : ${enfantsDetails}\n` : "",
       "{transport_type_block}": (detailForm.transportType && detailForm.transportType !== "car") ? `🚗 Mode de voyage : ${t(detailForm.transportType)}${detailForm.transportDetails ? ` (${detailForm.transportDetails})` : ""}\n` : "",
-      "{hebergement_planning_block}": hebergementHosts.length > 0 ? `🏠 HÉBERGEMENT\n${buildHostSection(hebergementHosts)}\n\n` : "",
-      "{repas_planning_block}": repasHosts.length > 0 ? `🍽️ REPAS\n${buildHostSection(repasHosts)}\n\n` : "",
-      "{transport_planning_block}": transportHosts.length > 0 ? `🚗 TRANSPORT\n${buildHostSection(transportHosts)}\n\n` : "",
+      "{hebergement_planning_block}": hebergementHosts.length > 0 ? `🏠 HÉBERGEMENT\n${buildHostSection(hebergementHosts, false)}\n\n` : "",
+      "{repas_planning_block}": repasHosts.length > 0 ? `🍽️ REPAS\n${buildHostSection(repasHosts, false)}\n\n` : "",
+      "{transport_planning_block}": transportHosts.length > 0 ? `🚗 TRANSPORT\n${buildHostSection(transportHosts, false)}\n\n` : "",
       "{composition_visite_block}": compositionBlock,
       "{question_enfants_block}": childrenCount === 0 ? (templateLang === "cv" ? "• 🧒 Bu ta bem ku fidjos? Si sim, kantu i ki idad?\n" : templateLang === "pt" ? "• 🧒 Vem acompanhado de crianças? Se sim, quantas e que idades?\n" : "• 🧒 Êtes-vous accompagné(e) d'enfants ? Si oui, combien et quel âge ?\n") : "",
       "{question_transport_block}": !detailForm.transportType ? (templateLang === "cv" ? "• 🚗 Modi ki bu ta bem (karku, komboiu, avion)?\n" : templateLang === "pt" ? "• 🚗 Como pretende vir (carro, comboio, avião)?\n" : "• 🚗 Quel mode de transport comptez-vous utiliser (voiture, train, avion) ?\n") : "",
       "{question_accompagnants_block}": nbAccompagnants === 0 ? (templateLang === "cv" ? "• 👥 Bu ta bem ku otus pesoas?\n" : templateLang === "pt" ? "• 👥 Vem acompanhado de outras pessoas?\n" : "• 👥 Serez-vous accompagné d'autres personnes (amis, famille) ?\n") : "",
       "{besoins_volontaires_block}": [
-        templateLang === "cv" ? "• 🏠 Alojamentu (lugar pa fika + kafé di manha)" : templateLang === "pt" ? "• 🏠 Alojamento" : "• 🏠 Hébergement (logement + petit-déjeuner)",
-        templateLang === "cv" ? "• 🍽️ Kumida (almosu / janta)" : templateLang === "pt" ? "• 🍽️ Refeições" : "• 🍽️ Repas (déjeuner / dîner)",
-        (!detailForm.transportType || detailForm.transportType !== "car") ? (templateLang === "cv" ? "• 🚗 Transporti (stason / aeroportu ⇄ Salon di Reinu)" : templateLang === "pt" ? "• 🚗 Transporte" : "• 🚗 Transport (gare / aéroport ⇄ Salle du Royaume)") : null
+        hebergementHosts.length === 0 ? (templateLang === "cv" ? "• 🏠 Alojamentu (lugar pa fika + kafé di manha)" : templateLang === "pt" ? "• 🏠 Alojamento" : "• 🏠 Hébergement (logement + petit-déjeuner)") : null,
+        repasHosts.length === 0 ? (templateLang === "cv" ? "• 🍽️ Kumida (almosu / janta)" : templateLang === "pt" ? "• 🍽️ Refeições" : "• 🍽️ Repas (déjeuner / dîner)") : null,
+        (!detailForm.transportType || detailForm.transportType !== "car") && transportHosts.length === 0 ? (templateLang === "cv" ? "• 🚗 Transporti (stason / aeroportu ⇄ Salon di Reinu)" : templateLang === "pt" ? "• 🚗 Transporte" : "• 🚗 Transport (gare / aéroport ⇄ Salle du Royaume)") : null
       ].filter(Boolean).join("\n") + "\n",
-      "{speaker_transport_block}": detailForm.transportType === "car" ? (templateLang === "cv" ? "🚗 Transportu\nBu fla ma bu ta bem na bu karku.\n\n" : templateLang === "pt" ? "🚗 Transporte\nIndicou que vem com a sua própria viatura.\n\n" : "🚗 Transport\nVous avez indiqué venir avec votre propre véhicule.\n\n") : (transportHosts.length > 0 ? `🚗 Transport\n${buildHostSection(transportHosts)}\n\n` : ""),
-      "{speaker_hebergement_block}": hebergementHosts.length > 0 ? `🏠 Hébergement\n${buildHostSection(hebergementHosts)}\n\n` : "",
-      "{speaker_repas_block}": repasHosts.length > 0 ? `🍽️ Repas\n${buildHostSection(repasHosts)}\n\n` : "",
+      "{speaker_transport_block}": detailForm.transportType === "car" ? (templateLang === "cv" ? "🚗 Transportu\nBu fla ma bu ta bem na bu karku.\n\n" : templateLang === "pt" ? "🚗 Transporte\nIndicou que vem com a sua própria viatura.\n\n" : "🚗 Transport\nVous avez indiqué venir avec votre propre véhicule.\n\n") : (transportHosts.length > 0 ? `🚗 Transport\n${buildHostSection(transportHosts, true)}\n\n` : ""),
+      "{speaker_hebergement_block}": hebergementHosts.length > 0 ? `🏠 Hébergement\n${buildHostSection(hebergementHosts, true)}\n\n` : "",
+      "{speaker_repas_block}": repasHosts.length > 0 ? `🍽️ Repas\n${buildHostSection(repasHosts, true)}\n\n` : "",
     };
 
     let result = text;
@@ -721,22 +727,33 @@ export function PlanningHub() {
               const d = new Date(visit.visitDate);
               const monthShort = d.toLocaleDateString(locale, { month: "short" }).toUpperCase().replace(".", "");
               const dayNum = d.getDate();
-              const isPotentialDuplicate = visits.some(v => 
+              const sameNameNearby = visits.some(v => 
                 v.visitId !== visit.visitId && 
                 v.status !== "cancelled" &&
                 v.nom.toLowerCase().trim() === visit.nom.toLowerCase().trim() &&
                 Math.abs(new Date(v.visitDate).getTime() - new Date(visit.visitDate).getTime()) < 7 * 24 * 60 * 60 * 1000
               );
+              const conflictSameDay = visits.some(v =>
+                v.visitId !== visit.visitId &&
+                v.status !== "cancelled" &&
+                v.visitDate === visit.visitDate &&
+                v.nom.toLowerCase().trim() !== visit.nom.toLowerCase().trim()
+              );
 
               return (
                 <motion.div key={visit.visitId} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ delay: i * 0.02 }}
-                  className={`premium-card p-3 cursor-pointer transition-all ${isPotentialDuplicate ? "ring-2 ring-amber-500/30" : "hover:ring-1 hover:ring-primary/30"}`} onClick={() => openDetail(visit)}>
+                  className={`premium-card p-3 cursor-pointer transition-all ${(sameNameNearby || conflictSameDay) ? "ring-2 ring-amber-500/30" : "hover:ring-1 hover:ring-primary/30"}`} onClick={() => openDetail(visit)}>
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-14 rounded-xl bg-muted flex flex-col items-center justify-center flex-shrink-0 relative">
                       <span className="text-[8px] font-bold uppercase tracking-wider text-primary">{monthShort}</span>
                       <span className="text-lg font-black text-foreground leading-tight">{dayNum}</span>
-                      {isPotentialDuplicate && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center border-2 border-background" title="Doublon potentiel">
+                      {sameNameNearby && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center border-2 border-background" title="Doublon potentiel (même orateur à une date proche)">
+                          <AlertTriangle className="w-2.5 h-2.5 text-white" />
+                        </div>
+                      )}
+                      {conflictSameDay && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center border-2 border-background" title="Conflit : un autre orateur est déjà prévu ce jour-là">
                           <AlertTriangle className="w-2.5 h-2.5 text-white" />
                         </div>
                       )}
@@ -960,7 +977,7 @@ export function PlanningHub() {
                                 ].map((tr) => (
                                   <button
                                     key={tr.id}
-                                    onClick={() => setDetailForm({ ...detailForm, transportType: tr.id as any })}
+                                    onClick={() => setDetailForm({ ...detailForm, transportType: tr.id as Visit["transportType"] })}
                                     className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all ${
                                       (detailForm.transportType || "car") === tr.id
                                         ? "border-primary bg-primary/5 text-primary"

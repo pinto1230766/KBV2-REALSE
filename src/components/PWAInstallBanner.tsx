@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export function PWAInstallBanner() {
   const { canInstall, isInstalled, showIOSInstallGuide, updateAvailable, promptInstall, applyUpdate } = usePWA();
+  const { t } = useTranslation();
   const isOnline = useUIStore((s) => s.isOnline);
   const [dismissed, setDismissed] = useState(false);
   const [showIOSGuide, setShowIOSGuide] = useState(false);
@@ -76,7 +77,12 @@ export function PWAInstallBanner() {
             >
               Comment faire
             </button>
-            <button onClick={() => setDismissed(true)} className="text-muted-foreground hover:text-foreground p-1">
+            <button 
+              onClick={() => setDismissed(true)} 
+              className="text-muted-foreground hover:text-foreground p-1"
+              title={t("close")}
+              aria-label={t("close")}
+            >
               <X className="w-4 h-4" />
             </button>
           </motion.div>
@@ -90,7 +96,12 @@ export function PWAInstallBanner() {
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-black text-foreground">Installer sur iPhone</h3>
-              <button onClick={() => { setShowIOSGuide(false); setDismissed(true); }} className="text-muted-foreground hover:text-foreground">
+              <button 
+                onClick={() => { setShowIOSGuide(false); setDismissed(true); }} 
+                className="text-muted-foreground hover:text-foreground"
+                title={t("close")}
+                aria-label={t("close")}
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -139,7 +150,12 @@ export function PWAInstallBanner() {
       >
         Installer
       </button>
-      <button onClick={() => setDismissed(true)} className="text-muted-foreground hover:text-foreground p-1">
+      <button 
+        onClick={() => setDismissed(true)} 
+        className="text-muted-foreground hover:text-foreground p-1"
+        title={t("close")}
+        aria-label={t("close")}
+      >
         <X className="w-4 h-4" />
       </button>
     </motion.div>

@@ -1,5 +1,5 @@
 import { supabase } from "../lib/supabase";
-import type { Visit, Speaker, Host } from "../store/visitTypes";
+import type { Visit, Speaker, Host, HostAssignment, Companion } from "../store/visitTypes";
 import { useVisitStore } from "../store/useVisitStore";
 import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useHostStore } from "../store/useHostStore";
@@ -25,8 +25,8 @@ interface VisitRow {
   notes: string | null;
   feedback: string | null;
   feedback_rating: number | null;
-  host_assignments: any | null;
-  companions: any | null;
+  host_assignments: HostAssignment[] | null;
+  companions: Companion[] | null;
   date_arrivee: string | null;
   heure_arrivee: string | null;
   date_depart: string | null;
@@ -282,4 +282,14 @@ export async function syncCloud(): Promise<SyncResult> {
   
   console.log("Cloud sync finished successfully.", result);
   return result;
+}
+
+/**
+ * Delete an item from Supabase by its ID.
+ */
+export async function deleteRemoteItem(table: "visits" | "speakers" | "hosts", id: string) {
+  if (!supabase) return;
+  const idField = table === "visits" ? "visit_id" : "id";
+  const { error } = await supabase.from(table).delete().eq(idField, toUUID(id));
+  if (error) console.error(`Delete from ${table} error:`, error);
 }

@@ -1,72 +1,98 @@
-# Knowledge Base Voyager - KBV Lyon
+# 🎤 KBV Manager - Système de Coordination Logistique
 
-Application de gestion des visites et des hôtes pour la congrégation de Lyon.
+KBV Manager est une plateforme de gestion complète conçue pour simplifier la coordination des visites d'orateurs et la logistique d'accueil (hospitalité) au sein des congrégations.
 
-## Fonctionnalités
+![Version](https://img.shields.io/badge/version-2.0.0-blue)
+![Tech](https://img.shields.io/badge/tech-React--Vite--Tailwind-orange)
+![Platform](https://img.shields.io/badge/platform-PWA--Android--Windows-green)
 
-- Gestion des hôtes et des visites
-- Calendrier de planification
-- Tableau de bord avec statistiques
-- Support hors ligne (PWA)
-- Synchronisation cloud (optionnelle)
-- Multilingue (Français, Português, Kriol)
+---
 
-## Comment modifier ce code ?
+## 🌟 Fonctionnalités Clés
 
-### Utiliser votre IDE préféré
+### 📅 Gestion du Planning
+- **Calendrier Interactif** : Visualisation claire des visites programmées.
+- **Détection de Conflits** : Alertes automatiques si un hôte est surchargé ou si une visite est en doublon.
+- **Importation Google Sheets** : Synchronisation unidirectionnelle depuis une feuille de calcul pour faciliter la transition.
 
-Clonez le dépôt et travaillez localement :
+### 👤 Répertoires Intelligents
+- **Orateurs** : Suivi des thèmes de discours, historique des visites, et besoins spécifiques (régime, famille).
+- **Hôtes** : Gestion des capacités d'accueil, rôles (hébergement, repas, transport) et préférences.
 
-```sh
-# Cloner le dépôt
-git clone https://github.com/pinto1230766/knowledge-base-voyager.git
+### 💬 Communication Automatisée
+- **Templates WhatsApp** : Génération de messages personnalisés en un clic pour confirmer les visites, briefer les hôtes ou remercier les intervenants.
+- **Support Multilingue** : Interface et messages disponibles en **Français**, **Kriol (Cap-verdien)** et **Portugais**.
 
-# Aller dans le dossier du projet
-cd knowledge-base-voyager
+### ☁️ Synchronisation & Portabilité
+- **Mode Hors-ligne (PWA)** : L'application fonctionne sans internet grâce aux données locales.
+- **Sync Supabase** : Synchronisation cloud optionnelle pour partager les données entre plusieurs coordinateurs.
+- **Backup JSON** : Exportation et importation facile de la base de données complète.
 
-# Installer les dépendances
+---
+
+## 🛠️ Pile Technique
+
+- **Core** : [React](https://reactjs.org/) + [Vite](https://vitejs.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- **Style** : [Tailwind CSS](https://tailwindcss.com/) + [Shadcn/UI](https://ui.shadcn.com/)
+- **Animations** : [Framer Motion](https://www.framer.com/motion/)
+- **Gestion d'état** : [Zustand](https://github.com/pmndrs/zustand)
+- **Base de données** : [Supabase](https://supabase.com/) (Cloud) & LocalStorage (Local)
+- **Plateformes** : 
+  - **Mobile** : [Capacitor](https://capacitorjs.com/) (Android/iOS)
+  - **Desktop** : [Electron](https://www.electronjs.org/) (Windows/macOS/Linux)
+
+---
+
+## 🚀 Installation et Développement
+
+### Pré-requis
+- Node.js (v18+)
+- npm ou bun
+
+### Installation
+```bash
+# 1. Cloner le projet
+git clone https://github.com/votre-repo/kbv-manager.git
+
+# 2. Installer les dépendances
 npm install
 
-# Démarrer le serveur de développement
+# 3. Lancer le serveur de développement
 npm run dev
 ```
 
-### Modifier directement sur GitHub
+### Build pour différentes plateformes
+- **Web / PWA** : `npm run build`
+- **Windows** : `npm run build:win`
+- **Android** : `npm run build:android`
 
-- Accédez au fichier souhaité
-- Cliquez sur le bouton "Edit" (icône crayon)
-- Faites vos modifications et committez
+---
 
-## Technologies utilisées
+## 📁 Structure du Projet
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-- Zustand (gestion d'état)
-- Supabase (optionnel - synchronisation cloud)
-
-## Configuration
-
-### Variables d'environnement
-
-Pour activer la synchronisation cloud, créez un fichier `.env` avec :
-
-```bash
-VITE_SUPABASE_URL=votre_url_supabase
-VITE_SUPABASE_ANON_KEY=votre_cle_anon
+```text
+src/
+├── components/       # Composants UI (Planning, Dashboard, Modals)
+├── hooks/            # Hooks personnalisés (Translation, PWA, Reminders)
+├── lib/              # Utilitaires (Supabase, Sheet Sync, Déduplication)
+├── store/            # Gestion d'état Zustand (Visits, Speakers, Hosts)
+└── types/            # Définitions TypeScript
 ```
 
-## Déploiement
+---
 
-Ce projet peut être déployé sur n'importe quel hébergement statique (Vercel, Netlify, GitHub Pages, etc.).
+## 🔒 Sécurité et RGPD
 
-```sh
-# Build de production
-npm run build
-```
+L'application respecte la vie privée :
+- Les données sont stockées **localement** par défaut.
+- Aucune donnée n'est partagée avec des tiers, sauf via votre propre instance Supabase si configurée.
+- Possibilité de réinitialiser/supprimer toutes les données instantanément depuis les paramètres.
 
-## Licence
+---
 
-MIT
+## 📄 Licence
+
+Distribué sous la licence MIT. Voir `LICENSE` pour plus d'informations.
+
+---
+*Développé avec ❤️ pour faciliter le service de nos frères.*

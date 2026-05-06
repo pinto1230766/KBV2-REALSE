@@ -13,7 +13,7 @@ import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useTranslation } from "../hooks/useTranslation";
 import { toast } from "sonner";
 import type { Language, Visit, Speaker, Host } from "../store/visitTypes";
-import { syncCloud } from "../lib/syncCloud";
+import { syncCloud, deleteRemoteItem } from "../lib/syncCloud";
 import { parseCSV, extractSheetInfo, parseRowsToData } from "../lib/sheetUtils";
 import { getHostKey, getSpeakerKey, getVisitKey, mergeHosts, mergeSpeakers, mergeVisits } from "../lib/dedup";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
@@ -128,19 +128,68 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
 
   const importData = async (newVisits: Visit[], newSpeakers: Speaker[]) => {
     const currentVisits = useVisitStore.getState().visits;
-    const currentVisitKeys = new Set(currentVisits.map(getVisitKey));
-    const finalVisits = mergeVisits(currentVisits, newVisits);
-    useVisitStore.getState().setVisits(finalVisits);
-    const addedVisits = finalVisits.filter((v) => !currentVisitKeys.has(getVisitKey(v))).length;
-
     const currentSpeakers = useSpeakerStore.getState().speakers;
-    const currentSpeakerKeys = new Set(currentSpeakers.map(getSpeakerKey));
-    const finalSpeakers = mergeSpeakers(currentSpeakers, newSpeakers);
+
+    // Detect and remove "ghost" visits (old imports or moved visits)
+    // A visit is a ghost if:
+    // 1. It has a 'sheet-' prefix but is not in the new import
+    // 2. OR it's on a date present in the new import but the speaker/key doesn't match (handles UUIDs from Supabase)
+    const newVisitKeys = new Set(newVisits.map(getVisitKey));
+    const newVisitDates = new Set(newVisits.map(v => v.visitDate));
+    
+    const ghosts = currentVisits.filter((v) => {
+      const isSheetId = v.visitId.startsWith("sheet-");
+      const isKeyInImport = newVisitKeys.has(getVisitKey(v));
+      const isDateInImport = newVisitDates.has(v.visitDate);
+
+      // It's a ghost if it's an old sheet ID no longer present
+      if (isSheetId && !isKeyInImport) return true;
+      
+      // It's a ghost if it's on a date covered by the sheet but the speaker is different
+      // (This is the most common case for moved visits synced via Supabase)
+      if (isDateInImport && !isKeyInImport) return true;
+
+      return false;
+    });
+    
+    if (ghosts.length > 0) {
+      console.log(`Removing ${ghosts.length} ghost visits...`, ghosts.map(g => g.nom));
+      for (const ghost of ghosts) {
+        useVisitStore.getState().deleteVisit(ghost.visitId);
+        await deleteRemoteItem("visits", ghost.visitId);
+      }
+    }
+
+    // Detect and remove "ghost" speakers (similar logic)
+    const newSpeakerKeys = new Set(newSpeakers.map(getSpeakerKey));
+    const ghostSpeakers = currentSpeakers.filter((s) => {
+      const isSheetId = s.id.startsWith("sheet-");
+      const isKeyInImport = newSpeakerKeys.has(getSpeakerKey(s));
+      return isSheetId && !isKeyInImport;
+    });
+    
+    if (ghostSpeakers.length > 0) {
+      for (const gs of ghostSpeakers) {
+        useSpeakerStore.getState().deleteSpeaker(gs.id);
+        await deleteRemoteItem("speakers", gs.id);
+      }
+    }
+
+    // Re-get state after deletions
+    const updatedVisits = useVisitStore.getState().visits;
+    const updatedSpeakers = useSpeakerStore.getState().speakers;
+
+    // Merge new data
+    const finalVisits = mergeVisits(updatedVisits, newVisits);
+    useVisitStore.getState().setVisits(finalVisits);
+
+    const finalSpeakers = mergeSpeakers(updatedSpeakers, newSpeakers);
     useSpeakerStore.getState().setSpeakers(finalSpeakers);
-    const addedSpeakers = finalSpeakers.filter((s) => !currentSpeakerKeys.has(getSpeakerKey(s))).length;
 
     updateCongregation({ lastSyncAt: new Date().toISOString() });
-    toast.success(`${t("sync_success")}: +${addedVisits} visites, +${addedSpeakers} orateurs`);
+    
+    const addedVisits = finalVisits.length - updatedVisits.length;
+    toast.success(`${t("sync_success")}: ${newVisits.length} entrées synchronisées (${ghosts.length} fantômes supprimés)`);
   };
 
   const handleSaveSheetUrl = async () => {
