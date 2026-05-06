@@ -78,7 +78,8 @@ export function SettingsPage({ onShowUserManual }: { onShowUserManual?: () => vo
     } catch (err) {
       console.error("Cloud sync error:", err);
       setCloudStatus("error");
-      toast.error("Erreur de synchronisation cloud");
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error("Erreur cloud: " + msg);
       setTimeout(() => setCloudStatus("idle"), 5000);
     } finally {
       setIsCloudSyncing(false);

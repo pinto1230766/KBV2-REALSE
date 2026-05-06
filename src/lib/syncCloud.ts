@@ -219,6 +219,27 @@ export interface SyncResult {
   pulled: { visits: number; speakers: number; hosts: number };
 }
 
+/**
+ * Store a large data set to localStorage safely, clearing the key first
+ * to avoid quota exceeded errors when using Zustand persist.
+ */
+function safeStorageSet(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch (err) {
+    // Quota exceeded — remove existing keys to free space, then retry
+    console.warn(`Storage quota exceeded for "${key}", clearing some caches...`);
+    // Remove the key first, then retry
+    localStorage.removeItem(key);
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // If it still fails, we cannot do much
+      throw new Error(`Impossible d'écrire "${key}" dans le stockage local (quota dépassé). Essayez de libérer de l'espace.`);
+    }
+  }
+}
+
 export async function syncCloud(): Promise<SyncResult> {
   console.log("Starting cloud sync...");
   const result: SyncResult = {
@@ -227,6 +248,18 @@ export async function syncCloud(): Promise<SyncResult> {
   };
 
   if (!supabase) return result;
+
+  // ── 0. FREE UP STORAGE SPACE ──
+  // Remove all persisted Zustand data before loading fresh data to avoid quota exceeded
+  console.log("Clearing local storage before sync...");
+  try {
+    localStorage.removeItem("kbv-speakers");
+    localStorage.removeItem("kbv-visits");
+    localStorage.removeItem("kbv-hosts");
+    localStorage.removeItem("kbv-notifications");
+  } catch (e) {
+    console.warn("Could not clear some storage keys:", e);
+  }
 
   // ── 1. PULL & MERGE ──
   const { data: remoteVisits, error: pullVisitsError } = await supabase.from("visits").select("*");
