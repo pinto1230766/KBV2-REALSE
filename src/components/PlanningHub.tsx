@@ -487,17 +487,18 @@ export function PlanningHub() {
   const getSelectedRecipient = () => getRecipients().find((r) => r.type === selectedRecipient);
 
   // Format a date string to French full format
-  const formatDateFull = (dateStr?: string) => {
+  // Format a date string to specific locale
+  const formatDateFull = (dateStr?: string, forcedLocale?: string) => {
     if (!dateStr) return "___";
     try {
       const d = new Date(dateStr + "T00:00:00");
-      return d.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+      return d.toLocaleDateString(forcedLocale || locale, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
     } catch { return dateStr; }
   };
-  const formatDayOnly = (dateStr?: string) => {
+  const formatDayOnly = (dateStr?: string, forcedLocale?: string) => {
     if (!dateStr) return "___";
     try {
-      return new Date(dateStr + "T00:00:00").toLocaleDateString(locale, { weekday: "long" });
+      return new Date(dateStr + "T00:00:00").toLocaleDateString(forcedLocale || locale, { weekday: "long" });
     } catch { return "___"; }
   };
 
@@ -511,22 +512,37 @@ export function PlanningHub() {
   // Resolve all template variables with real data
   const resolveVariables = (text: string): string => {
     if (!viewVisit) return text;
-    const speaker = getSpeakerForVisit(viewVisit);
-    const nameParts = viewVisit.nom?.split(" ") || [];
-    const prenom = nameParts[0] || "";
-    const nom = nameParts.slice(1).join(" ") || "";
-
+    
     // Find hosts by role
     const hostsByRole = (role: string) => (detailForm.hostAssignments || []).filter((ha) => ha.role === role);
     const hebergementHosts = hostsByRole("hebergement");
     const repasHosts = hostsByRole("repas");
     const transportHosts = hostsByRole("transport");
 
+    const targetLocale = templateLang === "pt" ? "pt-PT" : templateLang === "cv" ? "pt-CV" : "fr-FR";
+
+    // Labels localisés pour les blocs
+    const L = {
+      orateur: templateLang === "cv" ? "Orador" : templateLang === "pt" ? "Orador" : "Orateur",
+      epouse: templateLang === "cv" ? "Spóza" : templateLang === "pt" ? "Esposa" : "Épouse",
+      enfants: templateLang === "cv" ? "Fidjos" : templateLang === "pt" ? "Crianças" : "Enfants",
+      accompagnants: templateLang === "cv" ? "Akonpanhantis" : templateLang === "pt" ? "Acompanhantes" : "Accompagnants",
+      allergies: templateLang === "cv" ? "Alerjias" : templateLang === "pt" ? "Alergias" : "Allergies",
+      mode_voyage: templateLang === "cv" ? "Modi ki ta bem" : templateLang === "pt" ? "Modo de viagem" : "Mode de voyage",
+      hebergement: templateLang === "cv" ? "ALOJAMENTU" : templateLang === "pt" ? "ALOJAMENTO" : "HÉBERGEMENT",
+      repas: templateLang === "cv" ? "KUMIDA" : templateLang === "pt" ? "REFEIÇÕES" : "REPAS",
+      transport: templateLang === "cv" ? "TRANSPORTI" : templateLang === "pt" ? "TRANSPORTE" : "TRANSPORT",
+      aucun: templateLang === "cv" ? "Ninhun" : templateLang === "pt" ? "Nenhuma" : "Aucune",
+      non_defini: templateLang === "cv" ? "Ka sta definidu" : templateLang === "pt" ? "Não definido" : "Non défini",
+      tel_label: templateLang === "cv" ? "Tél" : templateLang === "pt" ? "Tel" : "Tél",
+      avec: templateLang === "cv" ? "ku" : templateLang === "pt" ? "com" : "avec",
+    };
+
     // Build planning sections
     const buildHostSection = (hosts: HostAssignment[], showDetails: boolean = true) => {
-      if (hosts.length === 0) return "Non défini";
+      if (hosts.length === 0) return L.non_defini;
       return hosts.map((h) => {
-        const day = h.day ? formatDateFull(h.day) : "";
+        const day = h.day ? formatDateFull(h.day, targetLocale) : "";
         const time = h.time || "";
         const address = h.hostAddress || "";
         const phone = h.hostPhone || "";
@@ -534,7 +550,7 @@ export function PlanningHub() {
         
         let section = `${h.hostName || ""}${day ? " – " + day : ""}${time ? " à " + time : ""}`;
         if (showDetails) {
-          if (phone) section += `\n📞 Tél : ${phone}`;
+          if (phone) section += `\n📞 ${L.tel_label} : ${phone}`;
           if (address) section += `\n📍 ${address}`;
           if (mapsUrl) section += `\n🗺️ Google Maps : ${mapsUrl}`;
         }
@@ -542,36 +558,39 @@ export function PlanningHub() {
       }).join("\n");
     };
 
-    // Companions (External only)
-    const companions = detailForm.companions || [];
-    const nomsAccompagnantsList = companions.map((c) => c.nom);
-    const nbAccompagnants = nomsAccompagnantsList.length;
-    const nomsAccompagnants = nomsAccompagnantsList.join(", ") || "Aucun";
+    const nameParts = viewVisit.nom.split(" ");
+    const prenom = nameParts[0];
+    const nom = nameParts.slice(1).join(" ");
+    const speaker = speakers.find((s) => s.nom === viewVisit.nom);
+    const childrenCount = speaker?.childrenCount ?? 0;
+    const nbAccompagnants = (detailForm.companions || []).length;
+    const nomsAccompagnants = (detailForm.companions || []).map((c) => c.nom).join(", ") || L.aucun;
+    const totalPeople = 1 + (speaker?.householdType === "couple" ? 1 : 0) + childrenCount + nbAccompagnants;
     const accompagnantsDetails = nbAccompagnants > 0
-      ? `👥 Accompagnants (${nbAccompagnants}) : ${nomsAccompagnants}\n\n`
+      ? `👥 ${L.accompagnants} (${nbAccompagnants}) : ${nomsAccompagnants}\n\n`
       : "";
 
     // Allergies
-    const allergiesSpeaker = detailForm.speakerDietary || "Aucune";
+    const allergiesSpeaker = detailForm.speakerDietary || L.aucun;
     const allergiesSpouse = detailForm.spouseDietary || "";
     const detailsAllergies = allergiesSpouse ? `${allergiesSpeaker} / ${allergiesSpouse}` : allergiesSpeaker;
 
     // Enfants (from speaker store)
     const childrenAges = speaker?.childrenAges || "";
     const enfantsDetails = childrenCount > 0
-      ? `${childrenCount} enfant(s)${childrenAges ? ` (${childrenAges})` : ""}`
-      : "Aucun";
+      ? `${childrenCount} ${L.enfants.toLowerCase()}${childrenAges ? ` (${childrenAges})` : ""}`
+      : L.aucun;
 
     // Composition for hosts
-    const visitorParts = [`• Orateur : ${prenom} ${nom}`];
+    const visitorParts = [`• ${L.orateur} : ${prenom} ${nom}`];
     if (speaker?.householdType === "couple" && speaker.spouseName) {
-      visitorParts.push(`• Épouse : ${speaker.spouseName}`);
+      visitorParts.push(`• ${L.epouse} : ${speaker.spouseName}`);
     }
     if (childrenCount > 0) {
-      visitorParts.push(`• Enfants : ${enfantsDetails}`);
+      visitorParts.push(`• ${L.enfants} : ${enfantsDetails}`);
     }
     if (nbAccompagnants > 0) {
-      visitorParts.push(`• Accompagnants (${nbAccompagnants}) : ${nomsAccompagnants}`);
+      visitorParts.push(`• ${L.accompagnants} (${nbAccompagnants}) : ${nomsAccompagnants}`);
     }
     const compositionBlock = visitorParts.join("\n") + "\n";
 
@@ -591,23 +610,23 @@ export function PlanningHub() {
       "{speakerName}": viewVisit.nom || "",
       "{congregation}": viewVisit.congregation || "",
       // Visite
-      "{date_visite}": formatDateFull(viewVisit.visitDate),
-      "{jour_semaine}": formatDayOnly(viewVisit.visitDate),
+      "{date_visite}": formatDateFull(viewVisit.visitDate, targetLocale),
+      "{jour_semaine}": formatDayOnly(viewVisit.visitDate, targetLocale),
       "{heure_visite}": detailForm.heure_visite || congregation.time || "11:30",
       "{theme_discours}": detailForm.talkTheme || "",
       "{numero_discours}": detailForm.talkNoOrType || "",
       "{talkTitle}": detailForm.talkTheme || "",
-      "{visitDate}": formatDateFull(viewVisit.visitDate),
+      "{visitDate}": formatDateFull(viewVisit.visitDate, targetLocale),
       "{visitTime}": detailForm.heure_visite || "",
-      "{location}": detailForm.locationType === "kingdom_hall" ? "Salle du Royaume" : channelLabel || "Autre",
+      "{location}": detailForm.locationType === "kingdom_hall" ? (templateLang === "cv" ? "Salon di Reinu" : templateLang === "pt" ? "Salão do Reino" : "Salle du Royaume") : channelLabel || "Autre",
       // Arrivée / Départ
-      "{date_arrivee}": formatDateFull(detailForm.date_arrivee),
-      "{jour_arrivee}": formatDayOnly(detailForm.date_arrivee),
+      "{date_arrivee}": formatDateFull(detailForm.date_arrivee, targetLocale),
+      "{jour_arrivee}": formatDayOnly(detailForm.date_arrivee, targetLocale),
       "{heure_arrivee}": detailForm.heure_arrivee || "___",
-      "{date_depart}": formatDateFull(detailForm.date_depart),
-      "{jour_depart}": formatDayOnly(detailForm.date_depart),
+      "{date_depart}": formatDateFull(detailForm.date_depart, targetLocale),
+      "{jour_depart}": formatDayOnly(detailForm.date_depart, targetLocale),
       "{heure_depart}": detailForm.heure_depart || "___",
-      "{jour_visite}": formatDayOnly(viewVisit.visitDate),
+      "{jour_visite}": formatDayOnly(viewVisit.visitDate, targetLocale),
       // Hébergement
       "{hebergement_details}": buildHostSection(hebergementHosts, true),
       "{hebergement_planning}": buildHostSection(hebergementHosts, false),
@@ -621,8 +640,8 @@ export function PlanningHub() {
       "{nom_responsable_repas}": firstRepas?.hostName || "___",
       "{prenom_responsable_repas}": firstRepas?.hostName?.split(" ")[0] || "___",
       "{tel_responsable_repas}": firstRepas?.hostPhone || "___",
-      "{date_repas}": firstRepas?.day ? formatDateFull(firstRepas.day) : "___",
-      "{jour_repas}": firstRepas?.day ? formatDayOnly(firstRepas.day) : "___",
+      "{date_repas}": firstRepas?.day ? formatDateFull(firstRepas.day, targetLocale) : "___",
+      "{jour_repas}": firstRepas?.day ? formatDayOnly(firstRepas.day, targetLocale) : "___",
       "{heure_repas}": firstRepas?.time || "___",
       "{adresse_repas}": firstRepas?.hostAddress || "___",
       // Transport
@@ -631,10 +650,10 @@ export function PlanningHub() {
       "{nom_chauffeur}": firstTransport?.hostName || "___",
       "{prenom_chauffeur}": firstTransport?.hostName?.split(" ")[0] || "___",
       "{tel_chauffeur}": firstTransport?.hostPhone || "___",
-      "{date_transport}": firstTransport?.day ? formatDateFull(firstTransport.day) : "___",
+      "{date_transport}": firstTransport?.day ? formatDateFull(firstTransport.day, targetLocale) : "___",
       "{heure_transport}": firstTransport?.time || "___",
       "{lieu_depart}": "___",
-      "{lieu_arrivee}": "Salle du Royaume",
+      "{lieu_arrivee}": templateLang === "cv" ? "Salon di Reinu" : templateLang === "pt" ? "Salão do Reino" : "Salle du Royaume",
       // Accompagnants
       "{nb_accompagnants}": String(nbAccompagnants),
       "{noms_accompagnants}": nomsAccompagnants,
@@ -654,7 +673,7 @@ export function PlanningHub() {
       "{mon_tel}": congregation.responsablePhone || "___",
       "{hospitalityOverseer}": congregation.responsableName || "___",
       "{hospitalityOverseerPhone}": congregation.responsablePhone || "___",
-      "{ta_tache}": "Responsable hospitalité",
+      "{ta_tache}": templateLang === "cv" ? "Enkaregadu di resebe vizitantis" : templateLang === "pt" ? "Responsável pelo acolhimento" : "Responsable accueil",
       // Channel
       "{visit_channel_label}": channelLabel || "___",
       // Transport
@@ -663,13 +682,13 @@ export function PlanningHub() {
       "{lien_formulaire_h8}": `${window.location.origin}/documents/H-8_remboursement.pdf`,
 
       // --- BLOCS CONDITIONNELS (PROPRES) ---
-      "{details_allergies_block}": (detailsAllergies && detailsAllergies !== "Aucune" && detailsAllergies !== "Ninhun" && detailsAllergies !== "Nenhuma") ? `⚠️ Allergies : ${detailsAllergies}\n` : "",
-      "{accompagnants_block}": nbAccompagnants > 0 ? `👥 Accompagnants (${nbAccompagnants}) : ${nomsAccompagnants}\n` : "",
-      "{enfants_block}": childrenCount > 0 ? `🧒 Enfants : ${enfantsDetails}\n` : "",
-      "{transport_type_block}": (detailForm.transportType && detailForm.transportType !== "car") ? `🚗 Mode de voyage : ${t(detailForm.transportType)}${detailForm.transportDetails ? ` (${detailForm.transportDetails})` : ""}\n` : "",
-      "{hebergement_planning_block}": hebergementHosts.length > 0 ? `🏠 HÉBERGEMENT\n${buildHostSection(hebergementHosts, false)}\n\n` : "",
-      "{repas_planning_block}": repasHosts.length > 0 ? `🍽️ REPAS\n${buildHostSection(repasHosts, false)}\n\n` : "",
-      "{transport_planning_block}": transportHosts.length > 0 ? `🚗 TRANSPORT\n${buildHostSection(transportHosts, false)}\n\n` : "",
+      "{details_allergies_block}": (detailsAllergies && detailsAllergies !== L.aucun) ? `⚠️ ${L.allergies} : ${detailsAllergies}\n` : "",
+      "{accompagnants_block}": nbAccompagnants > 0 ? `👥 ${L.accompagnants} (${nbAccompagnants}) : ${nomsAccompagnants}\n` : "",
+      "{enfants_block}": childrenCount > 0 ? `🧒 ${L.enfants} : ${enfantsDetails}\n` : "",
+      "{transport_type_block}": (detailForm.transportType && detailForm.transportType !== "car") ? `🚗 ${L.mode_voyage} : ${t(detailForm.transportType)}${detailForm.transportDetails ? ` (${detailForm.transportDetails})` : ""}\n` : "",
+      "{hebergement_planning_block}": hebergementHosts.length > 0 ? `${L.hebergement}\n${buildHostSection(hebergementHosts, false)}\n\n` : "",
+      "{repas_planning_block}": repasHosts.length > 0 ? `${L.repas}\n${buildHostSection(repasHosts, false)}\n\n` : "",
+      "{transport_planning_block}": transportHosts.length > 0 ? `${L.transport}\n${buildHostSection(transportHosts, false)}\n\n` : "",
       "{composition_visite_block}": compositionBlock,
       "{question_enfants_block}": childrenCount === 0 ? (templateLang === "cv" ? "• 🧒 Bu ta bem ku fidjos? Si sim, kantu i ki idad?\n" : templateLang === "pt" ? "• 🧒 Vem acompanhado de crianças? Se sim, quantas e que idades?\n" : "• 🧒 Êtes-vous accompagné(e) d'enfants ? Si oui, combien et quel âge ?\n") : "",
       "{question_transport_block}": !detailForm.transportType ? (templateLang === "cv" ? "• 🚗 Modi ki bu ta bem (karku, komboiu, avion)?\n" : templateLang === "pt" ? "• 🚗 Como pretende vir (carro, comboio, avião)?\n" : "• 🚗 Quel mode de transport comptez-vous utiliser (voiture, train, avion) ?\n") : "",
@@ -679,9 +698,9 @@ export function PlanningHub() {
         repasHosts.length === 0 ? (templateLang === "cv" ? "• 🍽️ Kumida (almosu / janta)" : templateLang === "pt" ? "• 🍽️ Refeições" : "• 🍽️ Repas (déjeuner / dîner)") : null,
         (!detailForm.transportType || detailForm.transportType !== "car") && transportHosts.length === 0 ? (templateLang === "cv" ? "• 🚗 Transporti (stason / aeroportu ⇄ Salon di Reinu)" : templateLang === "pt" ? "• 🚗 Transporte" : "• 🚗 Transport (gare / aéroport ⇄ Salle du Royaume)") : null
       ].filter(Boolean).join("\n") + "\n",
-      "{speaker_transport_block}": detailForm.transportType === "car" ? (templateLang === "cv" ? "🚗 Transportu\nBu fla ma bu ta bem na bu karku.\n\n" : templateLang === "pt" ? "🚗 Transporte\nIndicou que vem com a sua própria viatura.\n\n" : "🚗 Transport\nVous avez indiqué venir avec votre propre véhicule.\n\n") : (transportHosts.length > 0 ? `🚗 Transport\n${buildHostSection(transportHosts, true)}\n\n` : ""),
-      "{speaker_hebergement_block}": hebergementHosts.length > 0 ? `🏠 Hébergement\n${buildHostSection(hebergementHosts, true)}\n\n` : "",
-      "{speaker_repas_block}": repasHosts.length > 0 ? `🍽️ Repas\n${buildHostSection(repasHosts, true)}\n\n` : "",
+      "{speaker_transport_block}": detailForm.transportType === "car" ? (templateLang === "cv" ? "🚗 Transportu\nBu fla ma bu ta bem na bu karku.\n\n" : templateLang === "pt" ? "🚗 Transporte\nIndicou que vem com a sua própria viatura.\n\n" : "🚗 Transport\nVous avez indiqué venir avec votre propre véhicule.\n\n") : (transportHosts.length > 0 ? `🚗 ${L.transport}\n${buildHostSection(transportHosts, true)}\n\n` : ""),
+      "{speaker_hebergement_block}": hebergementHosts.length > 0 ? `🏠 ${L.hebergement.charAt(0) + L.hebergement.slice(1).toLowerCase()}\n${buildHostSection(hebergementHosts, true)}\n\n` : "",
+      "{speaker_repas_block}": repasHosts.length > 0 ? `🍽️ ${L.repas.charAt(0) + L.repas.slice(1).toLowerCase()}\n${buildHostSection(repasHosts, true)}\n\n` : "",
     };
 
     let result = text;
