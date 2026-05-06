@@ -11,15 +11,6 @@ interface SpeakerState {
   deleteSpeaker: (id: string) => void;
 }
 
-/** Strip large binary fields (photos) before persisting to localStorage */
-function stripSpeakerPhotoUrls(speaker: Speaker): Speaker {
-  return {
-    ...speaker,
-    photoUrl: undefined,
-    spousePhotoUrl: undefined,
-  };
-}
-
 export const useSpeakerStore = create<SpeakerState>()(
   persist(
     (set) => ({
@@ -38,7 +29,11 @@ export const useSpeakerStore = create<SpeakerState>()(
     {
       name: "kbv-speakers",
       partialize: (state) => ({
-        speakers: state.speakers.map(stripSpeakerPhotoUrls),
+        speakers: state.speakers.map((sp) => ({
+          ...sp,
+          photoUrl: undefined,
+          spousePhotoUrl: undefined,
+        })),
       }),
     }
   )
