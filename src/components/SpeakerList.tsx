@@ -111,10 +111,11 @@ export function SpeakerList() {
     childrenAges: "",
     dietary: "",
     spouseDietary: "",
+    localSpeaker: false,
   });
 
   const resetForm = () => {
-    setForm({ nom: "", congregation: "", telephone: "", email: "", notes: "", photoUrl: undefined, spousePhotoUrl: undefined, householdType: "single", spouseName: "", childrenCount: 0, childrenAges: "", dietary: "", spouseDietary: "" });
+    setForm({ nom: "", congregation: "", telephone: "", email: "", notes: "", photoUrl: undefined, spousePhotoUrl: undefined, householdType: "single", spouseName: "", childrenCount: 0, childrenAges: "", dietary: "", spouseDietary: "", localSpeaker: false });
     resetZodForm({
       nom: "",
       congregation: congregationName,
@@ -147,6 +148,7 @@ export function SpeakerList() {
       childrenAges: sp.childrenAges || "",
       dietary: sp.dietary || "",
       spouseDietary: sp.spouseDietary || "",
+      localSpeaker: sp.localSpeaker ?? false,
     });
     resetZodForm({
       nom: sp.nom,
@@ -165,7 +167,7 @@ export function SpeakerList() {
   };
 
   const openAddForm = () => {
-    setForm({ nom: "", congregation: congregationName, telephone: "", email: "", notes: "", photoUrl: undefined, spousePhotoUrl: undefined, householdType: "single", spouseName: "", childrenCount: 0, childrenAges: "", dietary: "", spouseDietary: "" });
+    setForm({ nom: "", congregation: congregationName, telephone: "", email: "", notes: "", photoUrl: undefined, spousePhotoUrl: undefined, householdType: "single", spouseName: "", childrenCount: 0, childrenAges: "", dietary: "", spouseDietary: "", localSpeaker: false });
     resetZodForm({
       nom: "",
       congregation: congregationName,
@@ -197,6 +199,7 @@ export function SpeakerList() {
       childrenAges: form.childrenAges,
       dietary: form.dietary,
       spouseDietary: form.spouseDietary,
+      localSpeaker: form.localSpeaker,
     };
     if (editing) {
       updateSpeaker(editing.id, merged);
@@ -397,6 +400,22 @@ export function SpeakerList() {
                       <input className="input-soft text-sm" placeholder={t("phone")} value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} />
                     </div>
                   </div>
+                </div>
+
+                {/* Orateur local (KBV Lyon) */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-3 p-3 rounded-2xl border border-border bg-muted/30 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={form.localSpeaker ?? false}
+                      onChange={(e) => setForm({ ...form, localSpeaker: e.target.checked })}
+                      className="w-5 h-5 rounded accent-primary flex-shrink-0"
+                    />
+                    <div>
+                      <p className="text-sm font-bold text-foreground">{t("local_speaker") || "Orateur local"}</p>
+                      <p className="text-[10px] text-muted-foreground">{t("local_speaker_desc") || "Membre de la congrégation — pas besoin d'hébergement, repas ou transport"}</p>
+                    </div>
+                  </label>
                 </div>
 
                 {/* Type de foyer */}

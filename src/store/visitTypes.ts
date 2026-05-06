@@ -81,6 +81,8 @@ export interface Visit {
   childrenCount?: number;
   childrenAges?: string;
   updatedAt?: string;
+  /** If true, this speaker is from the local congregation — no hosting needed */
+  localSpeaker?: boolean;
 }
 
 export type HouseholdType = "single" | "couple";
@@ -101,6 +103,8 @@ export interface Speaker {
   spouseDietary?: string;
   notes?: string;
   updatedAt?: string;
+  /** If true, this speaker is from the local congregation — no hosting needed */
+  localSpeaker?: boolean;
 }
 
 export type Language = "fr" | "cv" | "pt";
