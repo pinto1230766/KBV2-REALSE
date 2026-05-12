@@ -49,9 +49,6 @@ ios/App/Pods/
 # Electron build
 electron/dist/
 
-# Bun lockfile (keep package-lock.json)
-bun.lock
-
 # Old disabled git repo copy
 KBV2-REALSE/
 
