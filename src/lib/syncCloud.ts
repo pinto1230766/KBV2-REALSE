@@ -197,8 +197,6 @@ function rowToSpeaker(r: SpeakerRow): Speaker {
     spouseName: r.wife_name ?? undefined,
     notes: r.notes ?? undefined,
     updatedAt: r.updated_at || undefined,
-    // localSpeaker remains local-only for now to avoid DB schema conflicts
-    localSpeaker: false,
   };
 }
 

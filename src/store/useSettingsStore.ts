@@ -83,7 +83,7 @@ export const useSettingsStore = create<SettingsState>()(
           document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#4f46e5");
         }
         if (state?.settings.language) {
-          try { document.documentElement.lang = state.settings.language === "cv" ? "kea" : state.settings.language; } catch (e) { console.warn("Failed to set document lang on rehydrate:", e); }
+          try { document.documentElement.lang = state.settings.language === "cv" ? "kea" : state.settings.language; } catch (e) { logger.warn("Failed to set document lang on rehydrate:", e); }
         }
       },
     }

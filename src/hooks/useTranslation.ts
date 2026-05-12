@@ -4,6 +4,7 @@ import type { TranslationEntry } from "./translations/types";
 import { entries as commonEntries } from "./translations/common";
 import { entries as domainEntries } from "./translations/domain";
 import { entries as helpEntries } from "./translations/help";
+import { logger } from "../lib/logger";
 
 const dictionary: Record<string, TranslationEntry> = {
   ...commonEntries,
@@ -29,7 +30,7 @@ export function useTranslation() {
   const tn = (key: PluralKey, count: number): string => {
     const locale = language === "pt" ? "pt-PT" : language === "cv" ? "pt-CV" : "fr-FR";
     let rule: Intl.LDMLPluralRule = "other";
-    try { rule = new Intl.PluralRules(locale).select(count); } catch (e) { console.warn("PluralRules failed:", e); }
+    try { rule = new Intl.PluralRules(locale).select(count); } catch (e) { logger.warn("PluralRules failed:", e); }
     if (count === 0) rule = "other";
     const variantKey = `${key}_${rule}`;
     const fallbackKey = `${key}_other`;
