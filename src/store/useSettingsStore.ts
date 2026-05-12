@@ -47,8 +47,10 @@ export const useSettingsStore = create<SettingsState>()(
       setDarkMode: (darkMode) => {
         if (darkMode) {
           document.documentElement.classList.add("dark");
+          document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#1e1b4b");
         } else {
           document.documentElement.classList.remove("dark");
+          document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#4f46e5");
         }
         set((s) => ({ settings: { ...s.settings, darkMode } }));
       },
@@ -76,6 +78,9 @@ export const useSettingsStore = create<SettingsState>()(
       onRehydrateStorage: () => (state) => {
         if (state?.settings.darkMode) {
           document.documentElement.classList.add("dark");
+          document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#1e1b4b");
+        } else {
+          document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#4f46e5");
         }
         if (state?.settings.language) {
           try { document.documentElement.lang = state.settings.language === "cv" ? "kea" : state.settings.language; } catch (e) { console.warn("Failed to set document lang on rehydrate:", e); }
