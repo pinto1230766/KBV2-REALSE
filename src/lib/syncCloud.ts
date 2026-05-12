@@ -248,17 +248,9 @@ export async function syncCloud(): Promise<SyncResult> {
 
   if (!supabase) return result;
 
-  // ── 0. FREE UP STORAGE SPACE ──
-  // Remove all persisted Zustand data before loading fresh data to avoid quota exceeded
-  logger.log("Clearing local storage before sync...");
-  try {
-    localStorage.removeItem("kbv-speakers");
-    localStorage.removeItem("kbv-visits");
-    localStorage.removeItem("kbv-hosts");
-    localStorage.removeItem("kbv-notifications");
-  } catch (e) {
-    logger.warn("Could not clear some storage keys:", e);
-  }
+  // ── 0. DATA SAFETY ──
+  // Local data is preserved and merged with remote data.
+  // We no longer clear localStorage here to prevent data loss on failed sync.
 
   // ── Helper: filtre les données d'exemple (ex: Jean Dupont, Marie Martin)
   const isExampleName = (n?: string) => {

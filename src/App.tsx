@@ -19,6 +19,7 @@ import type { AppTab } from "./store/useUIStore";
 import { useTranslation } from "./hooks/useTranslation";
 import { useReminderEngine } from "./hooks/useReminderEngine";
 import { useAutoSync } from "./hooks/useAutoSync";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AppLayout } from "./components/layout/AppLayout";
 import { SearchResult } from "./components/layout/Header";
 import { CalendarSidebar } from "./components/CalendarSidebar";
@@ -232,59 +233,61 @@ function App() {
   }
 
   return (
-    <div className="h-full w-full overflow-hidden flex flex-col">
-      {showSplash && <SplashScreen onFinished={hideSplash} />}
-      {!showSplash && showOnboarding && (
-        <Suspense fallback={<RouteFallback />}>
-          <OnboardingWizard
-            onComplete={handleOnboardingComplete}
-            onShowUserManual={() => setShowUserManual(true)}
-          />
-        </Suspense>
-      )}
-
-      {/* Main Interface Refactored */}
-      <AppLayout
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        congregationName={congregationName}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        isSearchFocused={isSearchFocused}
-        setIsSearchFocused={setIsSearchFocused}
-        searchResults={searchResults}
-        handleResultClick={handleResultClick}
-        navItems={navItems}
-        sidebar={
-          <CalendarSidebar
-            visits={visits}
-            onVisitClick={(visit) => {
-              setPendingVisit(visit.visitId);
-              setActiveTab("planning");
-            }}
-            onSyncNow={() => runSync(false)}
-          />
-        }
-      >
-        <div className="h-full w-full">
+    <ErrorBoundary>
+      <div className="h-full w-full overflow-hidden flex flex-col">
+        {showSplash && <SplashScreen onFinished={hideSplash} />}
+        {!showSplash && showOnboarding && (
           <Suspense fallback={<RouteFallback />}>
-            {activeTab === "dashboard" && <DashboardView />}
-            {activeTab === "planning" && <PlanningHub />}
-            {activeTab === "speakers" && <SpeakerList />}
-            {activeTab === "hosts" && <GlobalHostList />}
-            {activeTab === "settings" && (
-              showUserManual ? (
-                <UserManualPage onBack={() => setShowUserManual(false)} />
-              ) : (
-                <SettingsPage onShowUserManual={() => setShowUserManual(true)} />
-              )
-            )}
+            <OnboardingWizard
+              onComplete={handleOnboardingComplete}
+              onShowUserManual={() => setShowUserManual(true)}
+            />
           </Suspense>
-        </div>
-      </AppLayout>
+        )}
 
-      <Toaster position="top-right" richColors closeButton />
-    </div>
+        {/* Main Interface Refactored */}
+        <AppLayout
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          congregationName={congregationName}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          isSearchFocused={isSearchFocused}
+          setIsSearchFocused={setIsSearchFocused}
+          searchResults={searchResults}
+          handleResultClick={handleResultClick}
+          navItems={navItems}
+          sidebar={
+            <CalendarSidebar
+              visits={visits}
+              onVisitClick={(visit) => {
+                setPendingVisit(visit.visitId);
+                setActiveTab("planning");
+              }}
+              onSyncNow={() => runSync(false)}
+            />
+          }
+        >
+          <div className="h-full w-full">
+            <Suspense fallback={<RouteFallback />}>
+              {activeTab === "dashboard" && <DashboardView />}
+              {activeTab === "planning" && <PlanningHub />}
+              {activeTab === "speakers" && <SpeakerList />}
+              {activeTab === "hosts" && <GlobalHostList />}
+              {activeTab === "settings" && (
+                showUserManual ? (
+                  <UserManualPage onBack={() => setShowUserManual(false)} />
+                ) : (
+                  <SettingsPage onShowUserManual={() => setShowUserManual(true)} />
+                )
+              )}
+            </Suspense>
+          </div>
+        </AppLayout>
+
+        <Toaster position="top-right" richColors closeButton />
+      </div>
+    </ErrorBoundary>
   );
 }
 
