@@ -46,8 +46,6 @@ interface SpeakerRow {
   household_type: string | null;
   wife_name: string | null;
   notes: string | null;
-  talk_history: string | null;
-  local_speaker: boolean | null;
   updated_at: string | null;
 }
 
@@ -180,7 +178,6 @@ function speakerToRow(s: Speaker): Partial<SpeakerRow> {
     household_type: s.householdType || "single",
     wife_name: s.spouseName || null,
     notes: s.notes || null,
-    local_speaker: s.localSpeaker || false,
     updated_at: s.updatedAt || new Date().toISOString(),
   };
 }
@@ -198,7 +195,8 @@ function rowToSpeaker(r: SpeakerRow): Speaker {
     spouseName: r.wife_name ?? undefined,
     notes: r.notes ?? undefined,
     updatedAt: r.updated_at || undefined,
-    localSpeaker: r.local_speaker ?? false,
+    // localSpeaker remains local-only for now to avoid DB schema conflicts
+    localSpeaker: false,
   };
 }
 
