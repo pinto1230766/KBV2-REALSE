@@ -66,8 +66,32 @@ bun run dev
 
 ### Build pour différentes plateformes
 - **Web / PWA** : `npm run build`
-- **Windows** : `npm run build:win`
-- **Android** : `npm run build:android`
+- **Windows (Portable)** : `npm run build:win`
+- **Android (APK)** : `npm run build:android`
+
+---
+
+## ⚙️ Configuration
+
+### Variables d'Environnement (`.env`)
+Créez un fichier `.env.local` à la racine pour activer la synchronisation cloud :
+```env
+VITE_SUPABASE_URL=votre_url_supabase
+VITE_SUPABASE_ANON_KEY=votre_cle_anonyme
+```
+
+### Signature Android
+Le build Android cherche un fichier `release.keystore` à la racine du projet. 
+- Pour le développement local, il bascule sur la clé `debug` si le fichier est absent.
+- En production, utilisez les variables d'environnement `KEYSTORE_PASSWORD`, `KEY_ALIAS` et `KEY_PASSWORD`.
+
+---
+
+## 🚀 Optimisation du Bundle
+L'application utilise un découpage de code (code-splitting) agressif pour garantir des performances optimales sur mobile :
+- **Chunks Manuels** : Les librairies lourdes (Supabase, Framer, Radix) sont isolées.
+- **Lazy Loading** : Les vues principales (Dashboard, Planning, etc.) sont chargées uniquement quand nécessaire.
+- **PWA** : Mise en cache hors-ligne via Workbox.
 
 ---
 

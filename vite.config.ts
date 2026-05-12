@@ -102,5 +102,19 @@ export default defineConfig(({ mode: _mode }) => ({
   },
   build: {
     sourcemap: false,
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("@supabase")) return "vendor-supabase";
+            if (id.includes("framer-motion")) return "vendor-framer";
+            if (id.includes("@radix-ui")) return "vendor-radix";
+            if (id.includes("lucide-react")) return "vendor-lucide";
+            return "vendor";
+          }
+        },
+      },
+    },
   },
 }));

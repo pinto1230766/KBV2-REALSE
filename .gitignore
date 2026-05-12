@@ -57,3 +57,10 @@ KBV2-REALSE/
 
 # Android local properties (machine-specific SDK path)
 android/local.properties
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Keystores
+*.jks
+*.keystore

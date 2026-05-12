@@ -53,9 +53,7 @@ export function parseSheetDate(dateStr: string): string {
   return dateStr;
 }
 
-function _slugify(value: string): string {
-  return normalizeName(value).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-}
+
 
 /** Parse CSV rows into Visit and Speaker objects */
 export function parseRowsToData(rows: string[][]): { visits: Visit[]; speakers: Speaker[] } {

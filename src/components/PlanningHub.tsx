@@ -16,8 +16,6 @@ import type { Visit, VisitStatus, HostAssignment } from "../store/visitTypes";
 import { generateId } from "../lib/sheetUtils";
 import { isEventVisit } from "../lib/eventDetection";
 import {
-  locationLabel as locationLabelHelper,
-  roleIcon as roleIconHelper,
   roleColor as roleColorHelper,
   formatDateFull as formatDateFullHelper,
   formatDayOnly as formatDayOnlyHelper,
@@ -76,7 +74,6 @@ export function PlanningHub() {
   const [editingHostIdx, setEditingHostIdx] = useState<number | null>(null);
 
   const locale = language === "pt" ? "pt-PT" : language === "cv" ? "pt-CV" : "fr-FR";
-  const _now = new Date();
 
   const { upcomingVisits, archivedVisits } = useMemo(() => {
     const now = new Date();
@@ -206,8 +203,7 @@ export function PlanningHub() {
 
   const closeDetail = () => { setViewVisit(null); setDetailForm({}); };
 
-  const _locationLabel = (loc: string) => locationLabelHelper(loc, t);
-  const _roleIcon = roleIconHelper;
+
   const roleColor = roleColorHelper;
 
   // Add expense
@@ -322,7 +318,6 @@ export function PlanningHub() {
     return recipients;
   };
 
-  const _getSelectedRecipient = () => getRecipients().find((r) => r.type === selectedRecipient);
 
   // Format a date string to French full format
   // Format a date string to specific locale

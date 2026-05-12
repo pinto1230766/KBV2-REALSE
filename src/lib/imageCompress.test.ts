@@ -1,31 +1,23 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { compressImage } from "./imageCompress";
 
 // Mock HTMLImageElement with auto-firing onload when src is set
-type MockImage = {
-  width: number;
-  height: number;
-  onload: () => void;
-  onerror: (e: unknown) => void;
-  _src: string;
-  src: string;
-};
-
-const mockImage: MockImage = {
+const mockImage: any = {
   width: 1000,
   height: 1000,
   onload: () => {},
   onerror: () => {},
   _src: "",
   get src() {
-    return this._src;
+    return (this as any)._src;
   },
   set src(v: string) {
-    this._src = v;
+    (this as any)._src = v;
     // Fire onload asynchronously to mimic browser behavior
-    queueMicrotask(() => this.onload?.());
+    queueMicrotask(() => (this as any).onload?.());
   },
-} as unknown as MockImage;
+};
 
 const mockCanvas = {
   width: 0,
@@ -53,11 +45,11 @@ const mockFileReader = {
 vi.stubGlobal("Image", vi.fn(() => mockImage));
 vi.stubGlobal("document", {
   createElement: vi.fn((tagName: string) => {
-    if (tagName === "canvas") return mockCanvas;
-    return {};
+    if (tagName === "canvas") return mockCanvas as any;
+    return {} as any;
   }),
 });
-vi.stubGlobal("FileReader", vi.fn(() => mockFileReader));
+vi.stubGlobal("FileReader", vi.fn(() => mockFileReader as any));
 vi.stubGlobal("URL", {
   createObjectURL: vi.fn(() => "blob:test-url"),
   revokeObjectURL: vi.fn(),
@@ -68,7 +60,7 @@ describe("compressImage", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockCanvas.getContext.mockReturnValue({ drawImage: vi.fn() });
+    mockCanvas.getContext.mockReturnValue({ drawImage: vi.fn() } as any);
     mockCanvas.toDataURL.mockImplementation((mimeType: string) => {
       if (mimeType === "image/webp") return "data:image/webp;base64,WEBP_DATA";
       return "data:image/jpeg;base64,JPEG_DATA";
@@ -78,7 +70,7 @@ describe("compressImage", () => {
   it("should compress image to WebP and downscale", async () => {
     const result = await compressImage(mockFile, { maxDim: 500, quality: 0.7 });
 
-    expect(mockImage.src).toBe("blob:test-url");
+    expect((mockImage as any).src).toBe("blob:test-url");
     expect(mockCanvas.width).toBe(500);
     expect(mockCanvas.height).toBe(500);
     expect(mockCanvas.getContext).toHaveBeenCalledWith("2d");
@@ -97,7 +89,7 @@ describe("compressImage", () => {
   });
 
   it("should return original DataURL on compression error", async () => {
-    mockCanvas.getContext.mockReturnValueOnce(null);
+    mockCanvas.getContext.mockReturnValueOnce(null as any);
 
     const result = await compressImage(mockFile);
 

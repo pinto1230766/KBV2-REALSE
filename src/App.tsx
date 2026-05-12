@@ -10,7 +10,6 @@ import {
   Calendar,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { DashboardView } from "./components/DashboardView";
 import { useVisitStore } from "./store/useVisitStore";
 import { useHostStore } from "./store/useHostStore";
 import { useSpeakerStore } from "./store/useSpeakerStore";
@@ -26,6 +25,7 @@ import { CalendarSidebar } from "./components/CalendarSidebar";
 import { deleteRemoteItem } from "./lib/syncCloud";
 
 // Lazy-loaded heavy routes
+const DashboardView = lazy(() => import("./components/DashboardView").then(m => ({ default: m.DashboardView })));
 const InstallPage = lazy(() => import("./components/InstallPage").then(m => ({ default: m.InstallPage })));
 const PlanningHub = lazy(() => import("./components/PlanningHub").then(m => ({ default: m.PlanningHub })));
 const SpeakerList = lazy(() => import("./components/SpeakerList").then(m => ({ default: m.SpeakerList })));

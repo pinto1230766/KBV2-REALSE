@@ -119,7 +119,7 @@ function visitToRow(v: Visit): Partial<VisitRow> {
     visit_id: toUUID(v.visitId), // Convert to valid UUID for DB
     nom: v.nom,
     congregation: v.congregation,
-    visit_date: v.visitDate,
+    visit_date: v.visitDate || "",
     heure_visite: v.heure_visite || null,
     location_type: v.locationType,
     status: v.status,
@@ -220,7 +220,7 @@ function rowToHost(r: HostRow): Host {
   return {
     id: r.id,
     nom: r.nom,
-    telephone: r.telephone || undefined,
+    telephone: r.telephone || "",
     email: r.email || undefined,
     adresse: r.adresse || undefined,
     notes: r.notes || undefined,

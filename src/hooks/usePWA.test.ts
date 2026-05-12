@@ -50,12 +50,12 @@ Object.defineProperty(navigator, "serviceWorker", {
 
 describe("usePWA", () => {
   let addEventListenerSpy: ReturnType<typeof vi.spyOn>;
-  let _removeEventListenerSpy: ReturnType<typeof vi.spyOn>;
+
 
   beforeEach(() => {
     vi.clearAllMocks();
     addEventListenerSpy = vi.spyOn(window, "addEventListener");
-    _removeEventListenerSpy = vi.spyOn(window, "removeEventListener");
+
     mockNotification.permission = "default";
     mockServiceWorker.controller = null;
   });

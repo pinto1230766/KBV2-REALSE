@@ -18,7 +18,6 @@ function buildWhatsAppMessage(
   type: ReminderType,
   speakerName: string,
   visitDate: string,
-  congregation: string,
   responsableName: string,
   lang: string
 ): string {
@@ -105,7 +104,7 @@ export function useReminderEngine() {
 
         const createReminder = (type: ReminderType) => {
           if (hasNotification(visit.visitId, type)) return;
-          const msg = buildWhatsAppMessage(type, visit.nom, visit.visitDate, visit.congregation, rn, l);
+          const msg = buildWhatsAppMessage(type, visit.nom, visit.visitDate, rn, l);
           addNotification({
             id: generateId(),
             visitId: visit.visitId,
