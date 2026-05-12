@@ -8,6 +8,7 @@ import { mergeHosts, mergeSpeakers, mergeVisits } from "./dedup";
 import { isExampleName } from "./utils";
 import { logger } from "./logger";
 
+import { normalizeName } from "./dedup";
 export { normalizeName };
 
 // ─── Types for Supabase database rows ───

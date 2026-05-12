@@ -53,14 +53,13 @@ describe("Workflow Integration Test", () => {
     expect(useVisitStore.getState().visits).toHaveLength(1);
 
     // 3. Assign host to the visit
-    const updatedVisit = {
-      ...visit,
+    const updatedVisit: Partial<Visit> = {
       hostAssignments: [
         {
           hostId: host.id,
           hostName: host.nom,
           hostPhone: host.telephone,
-          role: "hebergement"
+          role: "hebergement" as const
         }
       ]
     };

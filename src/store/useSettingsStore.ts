@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { logger } from "../lib/logger";
 import type { AppSettings, Language, CongregationProfile } from "./visitTypes";
 
 interface SettingsState {
