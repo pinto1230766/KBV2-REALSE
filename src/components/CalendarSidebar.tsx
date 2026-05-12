@@ -285,6 +285,44 @@ export function CalendarSidebar({ visits, onVisitClick, onSyncNow }: CalendarSid
         })}
       </div>
 
+      {/* ─── Alertes Haute Priorité ─── */}
+      {(() => {
+        const now = new Date();
+        const later = new Date(now);
+        later.setDate(later.getDate() + 60);
+        const missingHousing = visits.filter(v => {
+          const vd = new Date(v.visitDate);
+          if (vd < now || vd > later || v.status === "cancelled") return false;
+          const isLocal = v.localSpeaker || (congregation?.name && v.congregation?.toLowerCase().trim() === congregation.name.toLowerCase().trim());
+          if (isLocal) return false;
+          return !(v.hostAssignments || []).some(ha => ha.role === 'hebergement');
+        });
+
+        if (missingHousing.length === 0) return null;
+
+        return (
+          <div className="mb-5">
+            <h4 className="text-[10px] font-black text-destructive uppercase tracking-widest mb-2 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+              Priorité Haute
+            </h4>
+            <button 
+              onClick={() => {
+                // We could filter the planning view here if we wanted, 
+                // but for now just showing the info is a good start
+                setActiveTab("planning");
+              }}
+              className="w-full p-3 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center justify-between group transition-all hover:bg-destructive/15"
+            >
+              <span className="text-xs font-bold text-destructive">
+                {missingHousing.length} {missingHousing.length > 1 ? "visites sans hébergement" : "visite sans hébergement"}
+              </span>
+              <ChevronRight className="w-4 h-4 text-destructive transition-transform group-hover:translate-x-0.5" />
+            </button>
+          </div>
+        );
+      })()}
+
       {/* ─── Programme du jour ─── */}
       <div className="mb-5">
         <h4 className="text-sm font-black text-foreground mb-0.5">{t("program_today")}</h4>

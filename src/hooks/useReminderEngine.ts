@@ -56,13 +56,35 @@ function requestPermission() {
   }
 }
 
-function sendBrowserNotification(title: string, body: string) {
-  if ("Notification" in window && Notification.permission === "granted") {
-    try {
-      new Notification(title, { body, icon: "/favicon.ico" });
-    } catch {
-      // Silent fail on environments that don't support it
+async function sendBrowserNotification(title: string, body: string) {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  
+  try {
+    // Try via ServiceWorker first (better for PWA/Android background)
+    if ('serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.ready;
+      if (registration) {
+        // Use a type cast to any only for the specific non-standard properties if needed, 
+        // but here we can just use a local interface extension
+        interface ExtendedNotificationOptions extends NotificationOptions {
+          vibrate?: number[];
+          renotify?: boolean;
+        }
+        registration.showNotification(title, {
+          body,
+          icon: "/pwa-192x192.png",
+          badge: "/favicon.ico",
+          vibrate: [200, 100, 200],
+          tag: 'kbv-reminder',
+          renotify: true
+        } as ExtendedNotificationOptions);
+        return;
+      }
     }
+    // Fallback to simple Notification (foreground only)
+    new Notification(title, { body, icon: "/pwa-192x192.png" });
+  } catch {
+    // Silent fail on restricted environments
   }
 }
 
