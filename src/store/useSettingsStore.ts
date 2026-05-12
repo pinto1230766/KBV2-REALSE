@@ -1,0 +1,85 @@
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type { AppSettings, Language, CongregationProfile } from "./visitTypes";
+
+interface SettingsState {
+  settings: AppSettings;
+  setLanguage: (lang: Language) => void;
+  setDarkMode: (dark: boolean) => void;
+  updateNotifications: (notif: Partial<AppSettings["notifications"]>) => void;
+  updateCongregation: (data: Partial<CongregationProfile>) => void;
+  setSoundEnabled: (enabled: boolean) => void;
+  setVibrationEnabled: (enabled: boolean) => void;
+}
+
+const defaultSettings: AppSettings = {
+  language: "fr",
+  darkMode: false,
+  notifications: {
+    enabled: false,
+    steps: { remindJ7: true, remindJ2: true },
+  },
+  soundEnabled: true,
+  vibrationEnabled: true,
+  congregation: {
+    name: "Lyon KBV",
+    city: "Lyon",
+    day: "Dimanche",
+    time: "11:30",
+    responsableName: "",
+    responsablePhone: "",
+    whatsappGroup: "",
+    whatsappInviteId: "",
+    googleSheetUrl: "",
+    lastSyncAt: "",
+  },
+};
+
+export const useSettingsStore = create<SettingsState>()(
+  persist(
+    (set) => ({
+      settings: defaultSettings,
+      setLanguage: (language) => {
+        try { document.documentElement.lang = language === "cv" ? "kea" : language; } catch { /* noop */ }
+        set((s) => ({ settings: { ...s.settings, language } }));
+      },
+      setDarkMode: (darkMode) => {
+        if (darkMode) {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
+        set((s) => ({ settings: { ...s.settings, darkMode } }));
+      },
+      updateNotifications: (notif) =>
+        set((s) => ({
+          settings: {
+            ...s.settings,
+            notifications: { ...s.settings.notifications, ...notif },
+          },
+        })),
+      updateCongregation: (data) =>
+        set((s) => ({
+          settings: {
+            ...s.settings,
+            congregation: { ...s.settings.congregation, ...data },
+          },
+        })),
+      setSoundEnabled: (soundEnabled) =>
+        set((s) => ({ settings: { ...s.settings, soundEnabled } })),
+      setVibrationEnabled: (vibrationEnabled) =>
+        set((s) => ({ settings: { ...s.settings, vibrationEnabled } })),
+    }),
+    {
+      name: "kbv-settings",
+      onRehydrateStorage: () => (state) => {
+        if (state?.settings.darkMode) {
+          document.documentElement.classList.add("dark");
+        }
+        if (state?.settings.language) {
+          try { document.documentElement.lang = state.settings.language === "cv" ? "kea" : state.settings.language; } catch { /* noop */ }
+        }
+      },
+    }
+  )
+);

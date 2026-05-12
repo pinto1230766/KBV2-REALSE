@@ -1,0 +1,349 @@
+import { supabase } from "../lib/supabase";
+import type { Visit, Speaker, Host, HostAssignment, Companion } from "../store/visitTypes";
+import { useVisitStore } from "../store/useVisitStore";
+import { useSpeakerStore } from "../store/useSpeakerStore";
+import { useHostStore } from "../store/useHostStore";
+import { useSettingsStore } from "../store/useSettingsStore";
+import { mergeHosts, mergeSpeakers, mergeVisits, normalizeName } from "./dedup";
+import { logger } from "./logger";
+
+export { normalizeName };
+
+// ─── Types for Supabase database rows ───
+interface VisitRow {
+  visit_id: string;
+  nom: string;
+  congregation: string;
+  visit_date: string;
+  heure_visite: string | null;
+  location_type: string;
+  status: string;
+  is_event: boolean | null;
+  event_type: string | null;
+  talk_no_or_type: string | null;
+  talk_theme: string | null;
+  speaker_phone: string | null;
+  notes: string | null;
+  feedback: string | null;
+  feedback_rating: number | null;
+  host_assignments: HostAssignment[] | null;
+  companions: Companion[] | null;
+  date_arrivee: string | null;
+  heure_arrivee: string | null;
+  date_depart: string | null;
+  heure_depart: string | null;
+  updated_at: string;
+}
+
+interface SpeakerRow {
+  id: string;
+  nom: string;
+  congregation: string;
+  telephone: string | null;
+  email: string | null;
+  photo_url: string | null;
+  wife_photo_url: string | null;
+  household_type: string | null;
+  wife_name: string | null;
+  notes: string | null;
+  talk_history: string | null;
+  local_speaker: boolean | null;
+  updated_at: string | null;
+}
+
+interface HostRow {
+  id: string;
+  nom: string;
+  telephone: string | null;
+  email: string | null;
+  adresse: string | null;
+  notes: string | null;
+  role?: string | null;
+  photo_url: string | null;
+  capacity: number | null;
+  updated_at: string | null;
+}
+
+// ─── UUID Conversion & Validation ───
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function isValidUUID(id: string): boolean {
+  return UUID_REGEX.test(id);
+}
+
+/**
+ * Converts any string to a deterministic valid UUID v4 format.
+ * This allows "sheet-xxx" IDs to be stored in Supabase UUID columns.
+ */
+/**
+ * Deterministic 128-bit hash → UUID v4-format. Uses a 4-lane FNV-1a-like
+ * mix so two distinct inputs are extremely unlikely to collide (vs. the
+ * old 32-bit hash that produced trivial collisions and risked silent
+ * row overwrites in Supabase).
+ */
+function toUUID(str: string): string {
+  if (!str) return "00000000-0000-4000-8000-000000000000";
+  if (isValidUUID(str)) return str;
+
+  // Four independent 32-bit FNV-1a lanes seeded with different primes
+  let h0 = 0x811c9dc5, h1 = 0xdeadbeef, h2 = 0x9e3779b1, h3 = 0x85ebca77;
+  for (let i = 0; i < str.length; i++) {
+    const c = str.charCodeAt(i);
+    h0 = Math.imul(h0 ^ c, 16777619);
+    h1 = Math.imul(h1 ^ c, 2246822519);
+    h2 = Math.imul(h2 ^ c, 3266489917);
+    h3 = Math.imul(h3 ^ (c + i), 374761393);
+  }
+  const hex = (n: number) => (n >>> 0).toString(16).padStart(8, "0");
+  const a = hex(h0);
+  const b = hex(h1).slice(0, 4);
+  // Force UUID v4 marker (4xxx) and variant (8/9/a/b)
+  const c = "4" + hex(h2).slice(1, 4);
+  const d = "8" + hex(h2).slice(5, 8).slice(0, 3);
+  const e = (hex(h3) + hex(h0 ^ h1)).slice(0, 12);
+  return `${a}-${b}-${c}-${d}-${e}`;
+}
+
+// ─── Safety Parse ───
+function safeJson(val: unknown) {
+  if (!val) return [];
+  if (typeof val === 'string') {
+    try { return JSON.parse(val); } catch { return []; }
+  }
+  return val;
+}
+
+// ─── Helpers: convert between app model and actual DB columns ───
+
+function visitToRow(v: Visit): Partial<VisitRow> {
+  return {
+    visit_id: toUUID(v.visitId), // Convert to valid UUID for DB
+    nom: v.nom,
+    congregation: v.congregation,
+    visit_date: v.visitDate,
+    heure_visite: v.heure_visite || null,
+    location_type: v.locationType,
+    status: v.status,
+    is_event: v.isEvent || false,
+    event_type: v.eventType || null,
+    talk_no_or_type: v.talkNoOrType,
+    talk_theme: v.talkTheme || null,
+    speaker_phone: v.speakerPhone || null,
+    notes: v.notes || null,
+    feedback: v.feedback || null,
+    feedback_rating: v.feedbackRating || null,
+    host_assignments: v.hostAssignments || [],
+    companions: v.companions || [],
+    date_arrivee: v.date_arrivee || null,
+    heure_arrivee: v.heure_arrivee || null,
+    date_depart: v.date_depart || null,
+    heure_depart: v.heure_depart || null,
+    updated_at: v.updatedAt || new Date().toISOString(),
+  };
+}
+
+function rowToVisit(r: VisitRow): Visit {
+  return {
+    visitId: r.visit_id,
+    nom: r.nom,
+    congregation: r.congregation,
+    visitDate: r.visit_date,
+    heure_visite: r.heure_visite || undefined,
+    locationType: (r.location_type || "kingdom_hall") as Visit["locationType"],
+    status: (r.status || "scheduled") as Visit["status"],
+    isEvent: r.is_event ?? undefined,
+    eventType: r.event_type as Visit["eventType"],
+    talkNoOrType: r.talk_no_or_type ?? "",
+    talkTheme: r.talk_theme ?? undefined,
+    speakerPhone: r.speaker_phone ?? undefined,
+    notes: r.notes ?? undefined,
+    feedback: r.feedback ?? undefined,
+    feedbackRating: r.feedback_rating ?? undefined,
+    hostAssignments: safeJson(r.host_assignments),
+    companions: safeJson(r.companions),
+    date_arrivee: r.date_arrivee ?? undefined,
+    heure_arrivee: r.heure_arrivee ?? undefined,
+    date_depart: r.date_depart ?? undefined,
+    heure_depart: r.heure_depart ?? undefined,
+    updatedAt: r.updated_at,
+  };
+}
+
+function speakerToRow(s: Speaker): Partial<SpeakerRow> {
+  return {
+    id: toUUID(s.id),
+    nom: s.nom,
+    congregation: s.congregation,
+    telephone: s.telephone || null,
+    email: s.email || null,
+    photo_url: s.photoUrl || null,
+    wife_photo_url: s.spousePhotoUrl || null,
+    household_type: s.householdType || "single",
+    wife_name: s.spouseName || null,
+    notes: s.notes || null,
+    local_speaker: s.localSpeaker || false,
+    updated_at: s.updatedAt || new Date().toISOString(),
+  };
+}
+
+function rowToSpeaker(r: SpeakerRow): Speaker {
+  return {
+    id: r.id,
+    nom: r.nom,
+    congregation: r.congregation,
+    telephone: r.telephone || undefined,
+    email: r.email || undefined,
+    photoUrl: r.photo_url || undefined,
+    spousePhotoUrl: r.wife_photo_url || undefined,
+    householdType: r.household_type as Speaker["householdType"],
+    spouseName: r.wife_name ?? undefined,
+    notes: r.notes ?? undefined,
+    updatedAt: r.updated_at || undefined,
+    localSpeaker: r.local_speaker ?? false,
+  };
+}
+
+function hostToRow(h: Host): Partial<HostRow> {
+  return {
+    id: toUUID(h.id),
+    nom: h.nom,
+    telephone: h.telephone || null,
+    email: h.email || null,
+    adresse: h.adresse || null,
+    notes: h.notes || null,
+    photo_url: h.photoUrl || null,
+    capacity: h.capacity || null,
+    updated_at: h.updatedAt || new Date().toISOString(),
+  };
+}
+
+function rowToHost(r: HostRow): Host {
+  return {
+    id: r.id,
+    nom: r.nom,
+    telephone: r.telephone || undefined,
+    email: r.email || undefined,
+    adresse: r.adresse || undefined,
+    notes: r.notes || undefined,
+    role: r.role as Host["role"] ?? undefined,
+    photoUrl: r.photo_url || undefined,
+    capacity: r.capacity || undefined,
+    updatedAt: r.updated_at || undefined,
+  };
+}
+
+export interface SyncResult {
+  pushed: { visits: number; speakers: number; hosts: number };
+  pulled: { visits: number; speakers: number; hosts: number };
+}
+
+
+
+
+export async function syncCloud(): Promise<SyncResult> {
+  logger.log("Starting cloud sync...");
+  const result: SyncResult = {
+    pushed: { visits: 0, speakers: 0, hosts: 0 },
+    pulled: { visits: 0, speakers: 0, hosts: 0 },
+  };
+
+  if (!supabase) return result;
+
+  // ── 0. FREE UP STORAGE SPACE ──
+  // Remove all persisted Zustand data before loading fresh data to avoid quota exceeded
+  logger.log("Clearing local storage before sync...");
+  try {
+    localStorage.removeItem("kbv-speakers");
+    localStorage.removeItem("kbv-visits");
+    localStorage.removeItem("kbv-hosts");
+    localStorage.removeItem("kbv-notifications");
+  } catch (e) {
+    logger.warn("Could not clear some storage keys:", e);
+  }
+
+  // ── Helper: filtre les données d'exemple (ex: Jean Dupont, Marie Martin)
+  const isExampleName = (n?: string) => {
+    const low = (n || "").toLowerCase();
+    return (
+      low.includes("exemple") ||
+      low.includes("example") ||
+      low.includes("jean dupont") ||
+      low.includes("jean-dupont") ||
+      low.includes("marie martin")
+    );
+  };
+
+  // ── 1. PULL & MERGE ──
+  const { data: remoteVisits, error: pullVisitsError } = await supabase.from("visits").select("*");
+  if (pullVisitsError) logger.error("Pull visits error:", pullVisitsError);
+
+  const localVisits = useVisitStore.getState().visits;
+  const remoteVisitsConverted = (remoteVisits || []).map(rowToVisit);
+  // Supprime côté distant les visites d'exemple et exclut-les du merge
+  const exampleVisits = remoteVisitsConverted.filter((v) => isExampleName(v.nom));
+  for (const v of exampleVisits) await deleteRemoteItem("visits", v.visitId);
+  const cleanRemoteVisits = remoteVisitsConverted.filter((v) => !isExampleName(v.nom));
+  const finalVisits = mergeVisits(localVisits.filter((v) => !isExampleName(v.nom)), cleanRemoteVisits);
+  useVisitStore.getState().setVisits(finalVisits);
+  result.pulled.visits = cleanRemoteVisits.length;
+
+  // B. SPEAKERS
+  const { data: remoteSpeakers, error: pullSpeakersError } = await supabase.from("speakers").select("*");
+  if (pullSpeakersError) logger.error("Pull speakers error:", pullSpeakersError);
+  const localSpeakers = useSpeakerStore.getState().speakers;
+  const remoteSpeakersConverted = (remoteSpeakers || []).map(rowToSpeaker);
+  const exampleSpeakers = remoteSpeakersConverted.filter((s) => isExampleName(s.nom));
+  for (const s of exampleSpeakers) await deleteRemoteItem("speakers", s.id);
+  const cleanRemoteSpeakers = remoteSpeakersConverted.filter((s) => !isExampleName(s.nom));
+  const finalSpeakers = mergeSpeakers(localSpeakers.filter((s) => !isExampleName(s.nom)), cleanRemoteSpeakers);
+  useSpeakerStore.getState().setSpeakers(finalSpeakers);
+  result.pulled.speakers = cleanRemoteSpeakers.length;
+
+  // C. HOSTS
+  const { data: remoteHosts, error: pullHostsError } = await supabase.from("hosts").select("*");
+  if (pullHostsError) logger.error("Pull hosts error:", pullHostsError);
+  const localHosts = useHostStore.getState().hosts;
+  const remoteHostsConverted = (remoteHosts || []).map(rowToHost);
+  const exampleHosts = remoteHostsConverted.filter((h) => isExampleName(h.nom));
+  for (const h of exampleHosts) await deleteRemoteItem("hosts", h.id);
+  const cleanRemoteHosts = remoteHostsConverted.filter((h) => !isExampleName(h.nom));
+  const finalHosts = mergeHosts(localHosts.filter((h) => !isExampleName(h.nom)), cleanRemoteHosts);
+  useHostStore.getState().setHosts(finalHosts);
+  result.pulled.hosts = cleanRemoteHosts.length;
+
+  // ── 2. PUSH ──
+  // Now we use toUUID() during conversion to ensure every entry is pushable
+  if (finalVisits.length > 0) {
+    const { error } = await supabase.from("visits").upsert(finalVisits.map(visitToRow), { onConflict: "visit_id" });
+    if (error) logger.error("Push visits error:", error);
+    else result.pushed.visits = finalVisits.length;
+  }
+  
+  if (finalSpeakers.length > 0) {
+    const { error } = await supabase.from("speakers").upsert(finalSpeakers.map(speakerToRow), { onConflict: "id" });
+    if (error) logger.error("Push speakers error:", error);
+    else result.pushed.speakers = finalSpeakers.length;
+  }
+  
+  if (finalHosts.length > 0) {
+    const { error } = await supabase.from("hosts").upsert(finalHosts.map(hostToRow), { onConflict: "id" });
+    if (error) logger.error("Push hosts error:", error);
+    else result.pushed.hosts = finalHosts.length;
+  }
+
+  useSettingsStore.getState().updateCongregation({
+    lastSyncAt: new Date().toISOString(),
+  });
+  
+  logger.log("Cloud sync finished successfully.", result);
+  return result;
+}
+
+/**
+ * Delete an item from Supabase by its ID.
+ */
+export async function deleteRemoteItem(table: "visits" | "speakers" | "hosts", id: string) {
+  if (!supabase) return;
+  const idField = table === "visits" ? "visit_id" : "id";
+  const { error } = await supabase.from(table).delete().eq(idField, toUUID(id));
+  if (error) logger.error(`Delete from ${table} error:`, error);
+}
