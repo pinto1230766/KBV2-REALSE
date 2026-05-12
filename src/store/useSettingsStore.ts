@@ -11,6 +11,7 @@ interface SettingsState {
   updateCongregation: (data: Partial<CongregationProfile>) => void;
   setSoundEnabled: (enabled: boolean) => void;
   setVibrationEnabled: (enabled: boolean) => void;
+  setSupabaseConfig: (url: string, key: string) => void;
 }
 
 const defaultSettings: AppSettings = {
@@ -72,6 +73,8 @@ export const useSettingsStore = create<SettingsState>()(
         set((s) => ({ settings: { ...s.settings, soundEnabled } })),
       setVibrationEnabled: (vibrationEnabled) =>
         set((s) => ({ settings: { ...s.settings, vibrationEnabled } })),
+      setSupabaseConfig: (supabaseUrl, supabaseKey) =>
+        set((s) => ({ settings: { ...s.settings, supabaseUrl, supabaseKey } })),
     }),
     {
       name: "kbv-settings",

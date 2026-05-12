@@ -402,6 +402,7 @@ export function PlanningHub() {
                 onOpen={openDetail}
                 onConfirm={(id) => { updateVisit(id, { status: "confirmed" }); toast.success(t("visit_confirmed")); }}
                 onAskDelete={(id) => setConfirmDeleteId(id)}
+                congregationName={congregation?.name}
               />
             ))}
           </AnimatePresence>
@@ -484,6 +485,7 @@ export function PlanningHub() {
                           locale={locale}
                           saveDetail={saveDetail}
                           t={t}
+                          congregationName={congregation?.name}
                         />
                       )}
 

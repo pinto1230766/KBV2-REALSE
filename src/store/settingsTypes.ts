@@ -28,5 +28,7 @@ export interface AppSettings {
   };
   soundEnabled: boolean;
   vibrationEnabled: boolean;
+  supabaseUrl?: string;
+  supabaseKey?: string;
   congregation: CongregationProfile;
 }

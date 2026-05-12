@@ -107,7 +107,7 @@ function toUUID(str: string): string {
 function safeJson(val: unknown) {
   if (!val) return [];
   if (typeof val === 'string') {
-    try { return JSON.parse(val); } catch { return []; }
+    try { return JSON.parse(val); } catch (e) { logger.warn("safeJson parse error:", e); return []; }
   }
   return val;
 }

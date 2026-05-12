@@ -8,8 +8,11 @@ import { createClient } from "@supabase/supabase-js";
 // VITE_SUPABASE_URL=https://your-project.supabase.co
 // VITE_SUPABASE_ANON_KEY=your-anon-key
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+import { useSettingsStore } from "../store/useSettingsStore";
+
+const settings = useSettingsStore.getState().settings;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || settings.supabaseUrl || "";
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || settings.supabaseKey || "";
 
 // Only create client if credentials are provided
 export const supabase = SUPABASE_URL && SUPABASE_ANON_KEY 

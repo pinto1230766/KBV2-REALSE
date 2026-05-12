@@ -11,12 +11,15 @@ interface InfosTabProps {
   locale: string;
   saveDetail: () => void;
   t: (k: string) => string;
+  congregationName?: string;
 }
 
 export function InfosTab({
-  viewVisit, detailForm, setDetailForm, visits, locale, saveDetail, t,
+  viewVisit, detailForm, setDetailForm, visits, locale, saveDetail, t, congregationName,
 }: InfosTabProps) {
   const isEvent = isEventVisit(viewVisit);
+  const isLocal = viewVisit.localSpeaker || 
+                 (congregationName && viewVisit.congregation?.toLowerCase().trim() === congregationName.toLowerCase().trim());
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
@@ -40,6 +43,19 @@ export function InfosTab({
         }
         return null;
       })()}
+
+      {isLocal && !isEvent && (
+        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+            <span className="text-emerald-600 font-bold text-xs">L</span>
+          </div>
+          <div>
+            <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">{t("local_speaker_no_logistics_title")}</p>
+            <p className="text-[10px] text-emerald-600/80 leading-tight mt-0.5">{t("local_speaker_no_logistics_desc")}</p>
+          </div>
+        </div>
+      )}
+
       <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">{t("visit_details")}</p>
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-[3] space-y-1">

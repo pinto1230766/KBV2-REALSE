@@ -174,10 +174,9 @@ export function useSettingsData() {
       toast.error("Veuillez saisir l'URL et la clé Supabase");
       return;
     }
-    localStorage.setItem("VITE_SUPABASE_URL", supabaseUrlInput);
-    localStorage.setItem("VITE_SUPABASE_ANON_KEY", supabaseKeyInput);
+    useSettingsStore.getState().setSupabaseConfig(supabaseUrlInput, supabaseKeyInput);
     setShowSupabaseConfig(false);
-    toast.success("Configuration Supabase sauvegardée. Rechargez la page pour appliquer les changements.");
+    toast.success("Configuration Supabase sauvegardée dans les paramètres. Rechargez la page pour appliquer les changements.");
     setTimeout(() => window.location.reload(), 1000);
   };
 

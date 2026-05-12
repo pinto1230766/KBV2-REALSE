@@ -18,11 +18,12 @@ interface VisitCardProps {
   onOpen: (v: Visit) => void;
   onConfirm: (id: string) => void;
   onAskDelete: (id: string) => void;
+  congregationName?: string;
 }
 
 export function VisitCard({
   visit, index, locale, allVisits, getSpeakerForVisit, t,
-  onOpen, onConfirm, onAskDelete,
+  onOpen, onConfirm, onAskDelete, congregationName,
 }: VisitCardProps) {
   const d = new Date(visit.visitDate);
   const monthShort = d.toLocaleDateString(locale, { month: "short" }).toUpperCase().replace(".", "");
@@ -47,7 +48,9 @@ export function VisitCard({
     const hasR = assignments.some(a => a.role === 'repas');
     const hasT = assignments.some(a => a.role === 'transport');
     const isOnline = visit.locationType === 'zoom' || visit.locationType === 'streaming';
-    const isLocal = visit.localSpeaker || getSpeakerForVisit(visit)?.localSpeaker;
+    const isLocal = visit.localSpeaker || 
+                   getSpeakerForVisit(visit)?.localSpeaker || 
+                   (congregationName && visit.congregation?.toLowerCase().trim() === congregationName.toLowerCase().trim());
     if (isEventVisit(visit)) {
       return (
         <span className="ml-1 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-violet-500/15 text-violet-600 border border-violet-500/30 flex items-center gap-1">
