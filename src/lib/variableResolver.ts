@@ -59,9 +59,9 @@ export function resolveVariables(text: string, ctx: ResolveCtx): string {
       const at = templateLang === "cv" ? " na " : templateLang === "pt" ? " às " : " à ";
       let section = `${h.hostName || ""}${day ? " – " + day : ""}${time ? at + time : ""}`;
       if (showDetails) {
-        if (phone) section += `\n📞 ${L.tel_label} : ${phone}`;
-        if (address) section += `\n📍 ${address}`;
-        if (mapsUrl) section += `\n🗺️ Google Maps : ${mapsUrl}`;
+        if (phone) section += `\n\u{1F4DE} ${L.tel_label} : ${phone}`;
+        if (address) section += `\n\u{1F4CD} ${address}`;
+        if (mapsUrl) section += `\n\u{1F5FA} Google Maps : ${mapsUrl}`;
       }
       return section;
     }).join("\n");
@@ -155,7 +155,7 @@ export function resolveVariables(text: string, ctx: ResolveCtx): string {
     "{noms_accompagnants}": nomsAccompagnants,
     "{nb_total_personnes}": String(totalPeople),
     "{nb_total_repas}": String(totalPeople),
-    "{repas_label}": templateLang === "cv" ? `🍽️ ${totalPeople} pratu di kumida` : templateLang === "pt" ? `🍽️ ${totalPeople} refeições` : `🍽️ ${totalPeople} repas au total`,
+    "{repas_label}": templateLang === "cv" ? `\u{1F37D} ${totalPeople} pratu di kumida` : templateLang === "pt" ? `\u{1F37D} ${totalPeople} refeições` : `\u{1F37D} ${totalPeople} repas au total`,
     "{allergies_orateur}": allergiesSpeaker,
     "{allergies_orateur_et_accompagnants}": detailsAllergies,
     "{details_allergies}": detailsAllergies,

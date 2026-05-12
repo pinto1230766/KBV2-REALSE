@@ -276,22 +276,22 @@ export function PlanningHub() {
   const sendWhatsApp = (phone: string, text: string) => {
     // Always copy message first
     navigator.clipboard.writeText(text);
-    if (phone === WHATSAPP_INVITE_ID || phone.length < 6) {
-      // For group: use generic share link, user picks the group natively
-      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-      const a = document.createElement("a");
-      a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer";
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      toast.success("✅ Message copié – Choisissez le groupe dans WhatsApp");
-      return;
-    }
     const cleaned = phone.replace(/\s/g, "");
-    // Use direct link with anchor click to bypass iframe restrictions
-    const url = `https://wa.me/${cleaned}?text=${encodeURIComponent(text)}`;
+    
+    // Use https://api.whatsapp.com/send which is more robust for cross-platform app triggering
+    const baseUrl = (phone === WHATSAPP_INVITE_ID || phone.length < 6) 
+      ? `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`
+      : `https://api.whatsapp.com/send?phone=${cleaned}&text=${encodeURIComponent(text)}`;
+
     const a = document.createElement("a");
-    a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer";
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    toast.success("✅ Message copié + WhatsApp ouvert");
+    a.href = baseUrl; 
+    a.target = "_blank"; 
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a); 
+    a.click(); 
+    document.body.removeChild(a);
+    
+    toast.success(phone === WHATSAPP_INVITE_ID ? "✅ Message copié – Choisissez le groupe" : "✅ Message copié + WhatsApp ouvert");
   };
 
   const copyText = (text: string) => {

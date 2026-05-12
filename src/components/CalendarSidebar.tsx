@@ -114,14 +114,19 @@ export function CalendarSidebar({ visits, onVisitClick, onSyncNow }: CalendarSid
     const phone = visit.speakerPhone?.replace(/\s/g, "") || "";
     const prenom = visit.nom.split(" ")[0];
     const dateFormatted = new Date(visit.visitDate + "T00:00:00").toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" });
-    const msg = `Bonjour ${prenom}, un petit rappel pour votre visite prévue le ${dateFormatted}. À bientôt ! 🙏`;
+    const msg = `Bonjour ${prenom}, un petit rappel pour votre visite prévue le ${dateFormatted}. À bientôt ! \u{1F64F}`;
     
     navigator.clipboard.writeText(msg);
     if (phone) {
-      const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+      // Use universal API link for better reliability
+      const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`;
       const a = document.createElement("a");
-      a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer";
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      a.href = url; 
+      a.target = "_blank"; 
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a); 
+      a.click(); 
+      document.body.removeChild(a);
     }
   };
 

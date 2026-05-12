@@ -18,7 +18,7 @@ export const messageTemplates: Record<string, TemplateEntry> = {
     fr: {
       title: "Confirmation – Orateur (Présentiel)",
       desc: "Premier contact pour confirmer la visite sur place",
-      body: `Bonjour {prenom_orateur} {nom_orateur},\n\nJe suis {ton_nom}, responsable de l'accueil au sein du Groupe Kabuverdianu de Lyon. 🙏\n\nC'est un grand plaisir de vous inviter pour une visite et un discours le {jour_semaine} {date_visite}, à {heure_visite} (Salle du Royaume de Lyon).\n\nMerci de me confirmer les points suivants :\n• ✅ Pouvez-vous venir à cette date et heure ?\n• 🏠 Avez-vous besoin d'un hébergement ?\n• 🍽️ Avez-vous des allergies alimentaires (vous + accompagnants) ?\n• 🚗 Quel mode de transport comptez-vous utiliser (voiture, train, avion) ?\n{question_enfants_block}{question_accompagnants_block}\nMerci de répondre dès que possible pour notre organisation.\n\nFraternellement,\n{ton_nom}\n{mon_tel}`,
+      body: `Bonjour {prenom_orateur} {nom_orateur},\n\nJe suis {ton_nom}, responsable de l'accueil au sein du Groupe Kabuverdianu de Lyon. \u{1F64F}\n\nC'est un grand plaisir de vous inviter pour une visite et un discours le {jour_semaine} {date_visite}, à {heure_visite} (Salle du Royaume de Lyon).\n\nMerci de me confirmer les points suivants :\n\u{2022} \u{2705} Pouvez-vous venir à cette date et heure ?\n\u{2022} \u{1F3E0} Avez-vous besoin d'un hébergement ?\n\u{2022} \u{1F37D} Avez-vous des allergies alimentaires (vous + accompagnants) ?\n\u{2022} \u{1F697} Quel mode de transport comptez-vous utiliser (voiture, train, avion) ?\n{question_enfants_block}{question_accompagnants_block}\nMerci de répondre dès que possible pour notre organisation.\n\nFraternellement,\n{ton_nom}\n{mon_tel}`,
     },
     cv: {
       title: "Konfirmaçon – Orador (Prezensial)",
@@ -58,7 +58,7 @@ export const messageTemplates: Record<string, TemplateEntry> = {
     fr: {
       title: "Confirmation – Orateur local",
       desc: "Membre KBV Lyon, pas de logistique",
-      body: `Bonjour {prenom_orateur},\n\nC'est confirmé pour ton discours le {jour_semaine} {date_visite} à {heure_visite} (Salle du Royaume de Lyon). 🙏\n\nMerci de me confirmer :\n• ✅ Tout est bon pour cette date ?\n• 📖 Le thème : {theme_discours} (n°{numero_discours})\n\nFraternellement,\n{ton_nom}\n{mon_tel}`,
+      body: `Bonjour {prenom_orateur},\n\nC'est confirmé pour ton discours le {jour_semaine} {date_visite} à {heure_visite} (Salle du Royaume de Lyon). \u{1F64F}\n\nMerci de me confirmer :\n\u{2022} \u{2705} Tout est bon pour cette date ?\n\u{2022} \u{1F4D6} Le thème : {theme_discours} (n°{numero_discours})\n\nFraternellement,\n{ton_nom}\n{mon_tel}`,
     },
     cv: {
       title: "Konfirmaçon – Orador lokal",
@@ -115,7 +115,7 @@ export const messageTemplates: Record<string, TemplateEntry> = {
     fr: {
       title: "Rappel – Orateur local",
       desc: "Court rappel quelques jours avant",
-      body: `Bonjour {prenom_orateur},\n\nPetit rappel pour ton discours :\n📅 {jour_visite} {date_visite} à {heure_visite}\n📖 Thème : {theme_discours} (n°{numero_discours})\n📍 Salle du Royaume de Lyon\n\nÀ très bientôt ! 🙏\n{ton_nom}`,
+      body: `Bonjour {prenom_orateur},\n\nPetit rappel pour ton discours :\n\u{1F4C5} {jour_visite} {date_visite} à {heure_visite}\n\u{1F4D6} Thème : {theme_discours} (n°{numero_discours})\n\u{1F4CD} Salle du Royaume de Lyon\n\nÀ très bientôt ! \u{1F64F}\n{ton_nom}`,
     },
     cv: {
       title: "Lembransa – Orador lokal",
@@ -134,7 +134,7 @@ export const messageTemplates: Record<string, TemplateEntry> = {
     fr: {
       title: "Remerciements – Orateur",
       desc: "Message après la visite",
-      body: `Bonjour Frère {prenom_orateur},\n\nJe vous remercie sincèrement pour votre présence et votre discours qui nous a tous fortifiés ! 🙏✨\nCe fut un grand plaisir de vous accueillir au sein du Groupe Kabuverdianu de Lyon.\n\nNous espérons vous revoir bientôt. Que Jéhovah continue de vous donner des forces pour le servir.\n\nSi vous avez engagé des frais de déplacement remplir et nous renvoye le formulaire 3007-f\n\nFraternellement,\n{ton_nom}`,
+      body: `Bonjour Frère {prenom_orateur},\n\nJe vous remercie sincèrement pour votre présence et votre discours qui nous a tous fortifiés ! \u{1F64F}\u{2728}\nCe fut un grand plaisir de vous accueillir au sein du Groupe Kabuverdianu de Lyon.\n\nNous espérons vous revoir bientôt. Que Jéhovah continue de vous donner des forces pour le servir.\n\nSi vous avez engagé des frais de déplacement remplir et nous renvoye le formulaire 3007-f\n\nFraternellement,\n{ton_nom}`,
     },
     cv: {
       title: "Agradecementu – Orador",
@@ -250,7 +250,7 @@ export const messageTemplates: Record<string, TemplateEntry> = {
     fr: {
       title: "Briefing – Hôte(s)",
       desc: "Message complet pour l'hôte assigné (hébergement, repas, transport)",
-      body: `Bonjour,\n\nVoici les informations logistiques pour la visite de {prenom_orateur} {nom_orateur} :\n\n👨‍👩‍👧‍👦 Visiteurs\n{composition_visite_block}\n{repas_label}\n\n{hebergement_planning_block}{repas_planning_block}{transport_planning_block}{transport_type_block}{details_allergies_block}\nMerci pour ton aide ! Fraternellement,\n{ton_nom}`,
+      body: `Bonjour,\n\nVoici les informations logistiques pour la visite de {prenom_orateur} {nom_orateur} :\n\n\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}\u{200D}\u{1F466} Visiteurs\n{composition_visite_block}\n{repas_label}\n\n{hebergement_planning_block}{repas_planning_block}{transport_planning_block}{transport_type_block}{details_allergies_block}\nMerci pour ton aide ! Fraternellement,\n{ton_nom}`,
     },
     cv: {
       title: "Briefing – Anfitriãus",
