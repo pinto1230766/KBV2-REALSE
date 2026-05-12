@@ -23,7 +23,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AppLayout } from "./components/layout/AppLayout";
 import { SearchResult } from "./components/layout/Header";
 import { CalendarSidebar } from "./components/CalendarSidebar";
-import { deleteRemoteItem } from "./lib/syncCloud";
+import { runDataCleanups } from "./lib/cleanup";
 
 // Lazy-loaded heavy routes
 const DashboardView = lazy(() => import("./components/DashboardView").then(m => ({ default: m.DashboardView })));
@@ -118,50 +118,9 @@ function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // One-shot photo path migration (Electron/PWA compatibility).
-  // Runs once on mount using getState() to avoid re-running on every
-  // speakers/hosts change (which previously could loop on large lists).
+  // One-shot migrations and cleanups
   useEffect(() => {
-    if (localStorage.getItem("kbv-photo-paths-migrated-v1")) return;
-    const patch = (url?: string) => {
-      if (!url) return undefined;
-      if (url.startsWith("/")) return "." + url;
-      if (url.startsWith("images/")) return "./" + url;
-      return undefined;
-    };
-    useSpeakerStore.getState().speakers.forEach((s) => {
-      const np = patch(s.photoUrl);
-      if (np) useSpeakerStore.getState().updateSpeaker(s.id, { photoUrl: np });
-    });
-    useHostStore.getState().hosts.forEach((h) => {
-      const np = patch(h.photoUrl);
-      if (np) useHostStore.getState().updateHost(h.id, { photoUrl: np });
-    });
-    localStorage.setItem("kbv-photo-paths-migrated-v1", "true");
-  }, []);
-
-  // One-time cleanup of specific examples
-  useEffect(() => {
-    if (!localStorage.getItem("kbv-examples-cleaned-v4")) {
-      const spks = useSpeakerStore.getState().speakers;
-      const hsts = useHostStore.getState().hosts;
-      const vsts = useVisitStore.getState().visits;
-
-      const isExampleName = (n: string) => {
-        const low = (n || "").toLowerCase();
-        return low.includes("exemple") || low.includes("example") || low.includes("jean dupont") || low.includes("jean-dupont");
-      };
-
-      const toDelSpk = spks.filter(s => isExampleName(s.nom));
-      const toDelHst = hsts.filter(h => isExampleName(h.nom) || h.nom.toLowerCase().includes("marie martin"));
-      const toDelVst = vsts.filter(v => isExampleName(v.nom));
-
-      toDelSpk.forEach(s => { useSpeakerStore.getState().deleteSpeaker(s.id); deleteRemoteItem("speakers", s.id); });
-      toDelHst.forEach(h => { useHostStore.getState().deleteHost(h.id); deleteRemoteItem("hosts", h.id); });
-      toDelVst.forEach(v => { useVisitStore.getState().deleteVisit(v.visitId); deleteRemoteItem("visits", v.visitId); });
-
-      localStorage.setItem("kbv-examples-cleaned-v4", "true");
-    }
+    runDataCleanups();
   }, []);
 
 

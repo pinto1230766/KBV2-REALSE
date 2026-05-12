@@ -40,7 +40,7 @@ export const useSettingsStore = create<SettingsState>()(
     (set) => ({
       settings: defaultSettings,
       setLanguage: (language) => {
-        try { document.documentElement.lang = language === "cv" ? "kea" : language; } catch { /* noop */ }
+        try { document.documentElement.lang = language === "cv" ? "kea" : language; } catch (e) { logger.warn("Failed to set document lang:", e); }
         set((s) => ({ settings: { ...s.settings, language } }));
       },
       setDarkMode: (darkMode) => {
@@ -77,7 +77,7 @@ export const useSettingsStore = create<SettingsState>()(
           document.documentElement.classList.add("dark");
         }
         if (state?.settings.language) {
-          try { document.documentElement.lang = state.settings.language === "cv" ? "kea" : state.settings.language; } catch { /* noop */ }
+          try { document.documentElement.lang = state.settings.language === "cv" ? "kea" : state.settings.language; } catch (e) { console.warn("Failed to set document lang on rehydrate:", e); }
         }
       },
     }

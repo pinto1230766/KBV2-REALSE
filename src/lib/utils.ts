@@ -4,3 +4,17 @@ import { twMerge } from "tailwind-merge";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+/**
+ * Checks if a name corresponds to an example/placeholder entity.
+ */
+export const isExampleName = (n?: string) => {
+  const low = (n || "").toLowerCase();
+  return (
+    low.includes("exemple") ||
+    low.includes("example") ||
+    low.includes("jean dupont") ||
+    low.includes("jean-dupont") ||
+    low.includes("marie martin")
+  );
+};

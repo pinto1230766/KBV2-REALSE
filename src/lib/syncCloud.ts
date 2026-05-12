@@ -4,7 +4,8 @@ import { useVisitStore } from "../store/useVisitStore";
 import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useHostStore } from "../store/useHostStore";
 import { useSettingsStore } from "../store/useSettingsStore";
-import { mergeHosts, mergeSpeakers, mergeVisits, normalizeName } from "./dedup";
+import { mergeHosts, mergeSpeakers, mergeVisits } from "./dedup";
+import { isExampleName } from "./utils";
 import { logger } from "./logger";
 
 export { normalizeName };
@@ -249,18 +250,6 @@ export async function syncCloud(): Promise<SyncResult> {
   // ── 0. DATA SAFETY ──
   // Local data is preserved and merged with remote data.
   // We no longer clear localStorage here to prevent data loss on failed sync.
-
-  // ── Helper: filtre les données d'exemple (ex: Jean Dupont, Marie Martin)
-  const isExampleName = (n?: string) => {
-    const low = (n || "").toLowerCase();
-    return (
-      low.includes("exemple") ||
-      low.includes("example") ||
-      low.includes("jean dupont") ||
-      low.includes("jean-dupont") ||
-      low.includes("marie martin")
-    );
-  };
 
   // ── 1. PULL & MERGE ──
   const { data: remoteVisits, error: pullVisitsError } = await supabase.from("visits").select("*");
