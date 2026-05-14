@@ -183,7 +183,7 @@ export function resolveVariables(text: string, ctx: ResolveCtx): string {
     "{details_allergies_block}": (detailsAllergies && detailsAllergies !== L.aucun) ? `⚠️ ${L.allergies} : ${detailsAllergies}\n` : "",
     "{transport_type_block}": (detailForm.transportType && detailForm.transportType !== "car") ? `🚗 ${L.mode_voyage} : ${t(detailForm.transportType)}${detailForm.transportDetails ? ` (${detailForm.transportDetails})` : ""}\n` : "",
     "{hebergement_planning_block}": hebergementHosts.length > 0 ? `${L.hebergement}\n${buildHostSection(hebergementHosts, false)}\n\n` : "",
-    "{repas_planning_block}": repasHosts.length > 0 ? `${L.repas}\n${buildHostSection(repasHosts, false)}\n📍 ${kingdomHallAddress}\n🗺️ Google Maps : ${kingdomHallMapsUrl}\n\n` : "",
+    "{repas_planning_block}": `${L.repas}\n${repasHosts.length > 0 ? buildHostSection(repasHosts, false) + "\n" : ""}📍 ${kingdomHallAddress}\n🗺️ ${kingdomHallMapsUrl}\n\n`,
     "{transport_planning_block}": transportHosts.length > 0 ? `${L.transport}\n${buildHostSection(transportHosts, false)}\n\n` : "",
     "{composition_visite_block}": compositionBlock,
     "{question_enfants_block}": childrenCount === 0 ? (templateLang === "cv" ? "• 🧒 Bu ta bem ku fidjos? Si sim, kantu i ki idad?\n" : templateLang === "pt" ? "• 🧒 Vem acompanhado de crianças? Se sim, quantas e que idades?\n" : "• 🧒 Êtes-vous accompagné(e) d'enfants ? Si oui, combien et quel âge ?\n") : "",
@@ -195,7 +195,7 @@ export function resolveVariables(text: string, ctx: ResolveCtx): string {
     ].filter(Boolean).join("\n") + "\n",
     "{speaker_transport_block}": detailForm.transportType === "car" ? (templateLang === "cv" ? "🚗 Transportu\nBu fla ma bu ta bem na bu karku.\n\n" : templateLang === "pt" ? "� Transporte\nIndicou que vem com a sua própria viatura.\n\n" : "🚗 Transport\nVous avez indiqué venir avec votre propre véhicule.\n\n") : (transportHosts.length > 0 ? `🚗 ${L.transport}\n${buildHostSection(transportHosts, true)}\n\n` : ""),
     "{speaker_hebergement_block}": hebergementHosts.length > 0 ? `🏠 ${L.hebergement.charAt(0) + L.hebergement.slice(1).toLowerCase()}\n${buildHostSection(hebergementHosts, true)}\n\n` : "",
-    "{speaker_repas_block}": repasHosts.length > 0 ? `🍽️ ${L.repas.charAt(0) + L.repas.slice(1).toLowerCase()}\n${buildHostSection(repasHosts, true)}\n📍 ${kingdomHallAddress}\n🗺️ Google Maps : ${kingdomHallMapsUrl}\n\n` : "",
+    "{speaker_repas_block}": `🍽️ ${L.repas.charAt(0) + L.repas.slice(1).toLowerCase()}\n${repasHosts.length > 0 ? buildHostSection(repasHosts, true) + "\n" : ""}📍 ${kingdomHallAddress}\n🗺️ ${kingdomHallMapsUrl}\n\n`,
   };
 
   let result = text;
