@@ -2,6 +2,7 @@
 // Extracted from SettingsPage to keep the component focused on UI.
 
 import type { Host, Speaker, Visit } from "../store/visitTypes";
+import type { CongregationProfile } from "../store/settingsTypes";
 import { useVisitStore } from "../store/useVisitStore";
 import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useHostStore } from "../store/useHostStore";
@@ -13,6 +14,7 @@ export interface BackupData {
   visits?: Visit[];
   speakers?: Speaker[];
   hosts?: Host[];
+  settings?: Record<string, unknown> | null;
   exportedAt?: string;
 }
 
@@ -32,10 +34,19 @@ function downloadJson(filename: string, data: unknown) {
   URL.revokeObjectURL(url);
 }
 
-export function exportFullBackup(visits: Visit[], hosts: Host[], speakers: Speaker[]) {
+export async function exportFullBackup(visits: Visit[], hosts: Host[], speakers: Speaker[]) {
+  // Try to grab current settings from Zustand if available
+  let currentSettings = null;
+  try {
+    const { useSettingsStore } = await import("../store/useSettingsStore");
+    currentSettings = useSettingsStore.getState().settings;
+  } catch (e) {
+    logger.warn("Could not fetch settings for backup", e);
+  }
+
   downloadJson(
     `kbv-backup-${new Date().toISOString().slice(0, 10)}.json`,
-    { visits, hosts, speakers, exportedAt: new Date().toISOString() }
+    { visits, hosts, speakers, settings: currentSettings, exportedAt: new Date().toISOString() }
   );
 }
 
@@ -77,6 +88,19 @@ export function pickAndImportBackup(): Promise<boolean> {
           useSpeakerStore
             .getState()
             .setSpeakers(mergeSpeakers(useSpeakerStore.getState().speakers, data.speakers as unknown as Speaker[]));
+        }
+        if (data.settings) {
+          try {
+            const { useSettingsStore } = await import("../store/useSettingsStore");
+            const store = useSettingsStore.getState();
+            if (data.settings.congregation) {
+              store.updateCongregation(data.settings.congregation as Partial<CongregationProfile>);
+            }
+            if (data.settings.language) store.setLanguage(data.settings.language as never);
+            if (data.settings.themeMode) store.setThemeMode(data.settings.themeMode as never);
+          } catch (err) {
+            logger.warn("Could not import settings", err);
+          }
         }
         if (dropped.visits + dropped.speakers + dropped.hosts > 0) {
           logger.warn("Backup import: dropped malformed entries", dropped);

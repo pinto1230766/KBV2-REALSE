@@ -113,6 +113,10 @@ export function GeneralSection({ t, congregation, updateCongregation, onShowUser
             <label htmlFor="cong-time" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("time")}</label>
             <input id="cong-time" className="input-soft text-sm mt-1" type="time" value={congregation.time} onChange={(e) => updateCongregation({ time: e.target.value })} />
           </div>
+          <div className="col-span-2">
+            <label htmlFor="kingdom-hall-address" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("kingdom_hall_address")}</label>
+            <input id="kingdom-hall-address" className="input-soft text-sm mt-1" value={congregation.kingdomHallAddress} onChange={(e) => updateCongregation({ kingdomHallAddress: e.target.value })} />
+          </div>
         </div>
       </div>
 

@@ -150,7 +150,13 @@ export function resolveVariables(text: string, ctx: ResolveCtx): string {
     "{date_transport}": firstTransport?.day ? formatDateFull(firstTransport.day, targetLocale) : "___",
     "{heure_transport}": firstTransport?.time || "___",
     "{lieu_depart}": "___",
-    "{lieu_arrivee}": templateLang === "cv" ? "Salon di Reinu" : templateLang === "pt" ? "Salão do Reino" : "Salle du Royaume",
+    "{lieu_arrivee}": congregation.kingdomHallAddress
+      ? (templateLang === "cv" ? "Salon di Reinu, " : templateLang === "pt" ? "Salão do Reino, " : "Salle du Royaume, ") + congregation.kingdomHallAddress
+      : (templateLang === "cv" ? "Salon di Reinu" : templateLang === "pt" ? "Salão do Reino" : "Salle du Royaume"),
+    "{kingdom_hall_address}": congregation.kingdomHallAddress
+      ? (templateLang === "cv" ? "Salon di Reinu, " : templateLang === "pt" ? "Salão do Reino, " : "Salle du Royaume, ") + congregation.kingdomHallAddress
+      : (templateLang === "cv" ? "Salon di Reinu" : templateLang === "pt" ? "Salão do Reino" : "Salle du Royaume"),
+    "{kingdom_hall_name}": templateLang === "cv" ? "Salon di Reinu" : templateLang === "pt" ? "Salão do Reino" : "Salle du Royaume",
     "{nb_accompagnants}": String(nbAccompagnants),
     "{noms_accompagnants}": nomsAccompagnants,
     "{nb_total_personnes}": String(totalPeople),

@@ -40,5 +40,16 @@ export function useTranslation() {
     return text.replace("{count}", String(count));
   };
 
-  return { t, tn, language: language as Language };
+  const formatDate = (date: string | Date, options?: Intl.DateTimeFormatOptions): string => {
+    const locale = language === "pt" ? "pt-PT" : language === "cv" ? "pt-CV" : "fr-FR";
+    const d = typeof date === "string" ? (date.includes("T") ? new Date(date) : new Date(date + "T12:00:00")) : date;
+    return new Intl.DateTimeFormat(locale, options).format(d);
+  };
+
+  const formatNumber = (num: number, options?: Intl.NumberFormatOptions): string => {
+    const locale = language === "pt" ? "pt-PT" : language === "cv" ? "pt-CV" : "fr-FR";
+    return new Intl.NumberFormat(locale, options).format(num);
+  };
+
+  return { t, tn, formatDate, formatNumber, language: language as Language };
 }

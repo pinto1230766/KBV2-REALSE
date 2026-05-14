@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, useCallback, lazy, Suspense } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Toaster } from "sonner";
 import { SplashScreen } from "./components/SplashScreen";
 import { usePWA } from "./hooks/usePWA";
@@ -98,9 +99,21 @@ function App() {
     const handleOffline = () => setIsOnline(false);
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
+
+    // System theme listener
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleThemeChange = (e: MediaQueryListEvent) => {
+      const currentMode = useSettingsStore.getState().settings.themeMode;
+      if (currentMode === "system") {
+        useSettingsStore.getState().setDarkMode(e.matches);
+      }
+    };
+    mediaQuery.addEventListener("change", handleThemeChange);
+
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
+      mediaQuery.removeEventListener("change", handleThemeChange);
     };
   }, [setIsOnline]);
 
@@ -227,20 +240,31 @@ function App() {
             />
           }
         >
-          <div className="h-full w-full">
-            <Suspense fallback={<RouteFallback />}>
-              {activeTab === "dashboard" && <DashboardView />}
-              {activeTab === "planning" && <PlanningHub />}
-              {activeTab === "speakers" && <SpeakerList />}
-              {activeTab === "hosts" && <GlobalHostList />}
-              {activeTab === "settings" && (
-                showUserManual ? (
-                  <UserManualPage onBack={() => setShowUserManual(false)} />
-                ) : (
-                  <SettingsPage onShowUserManual={() => setShowUserManual(true)} />
-                )
-              )}
-            </Suspense>
+          <div className="h-full w-full relative overflow-y-auto">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab + (showUserManual ? "-manual" : "")}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="h-full w-full"
+              >
+                <Suspense fallback={<RouteFallback />}>
+                  {activeTab === "dashboard" && <DashboardView />}
+                  {activeTab === "planning" && <PlanningHub />}
+                  {activeTab === "speakers" && <SpeakerList />}
+                  {activeTab === "hosts" && <GlobalHostList />}
+                  {activeTab === "settings" && (
+                    showUserManual ? (
+                      <UserManualPage onBack={() => setShowUserManual(false)} />
+                    ) : (
+                      <SettingsPage onShowUserManual={() => setShowUserManual(true)} />
+                    )
+                  )}
+                </Suspense>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </AppLayout>
 

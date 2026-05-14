@@ -140,6 +140,7 @@ export const entries: Record<string, TranslationEntry> = {
   city: { fr: "Ville", cv: "Sidadi", pt: "Cidade" },
   day: { fr: "Jour", cv: "Dia", pt: "Dia" },
   time: { fr: "Heure", cv: "Ora", pt: "Hora" },
+  kingdom_hall_address: { fr: "Adresse de la Salle du Royaume", cv: "Enderesu di Sala di Reinu", pt: "Endereço do Salão do Reino" },
   reception_manager: { fr: "Responsable Accueil", cv: "Responsavel Akolimentu", pt: "Responsável Acolhimento" },
   full_name: { fr: "Nom complet", cv: "Nomi kompletu", pt: "Nome completo" },
   whatsapp_group: { fr: "Groupe WhatsApp (Hôtes)", cv: "Grupu WhatsApp (Anfitriãus)", pt: "Grupo WhatsApp (Anfitriões)" },
@@ -193,4 +194,3 @@ export const entries: Record<string, TranslationEntry> = {
   upcoming_reminders: { fr: "Rappels à venir", cv: "Lembranças ki sta pa bem", pt: "Lembretes a vir" },
 
 };
-

@@ -70,6 +70,7 @@ export const backupFileSchema = z.object({
   visits: z.array(backupVisitSchema).optional(),
   speakers: z.array(backupSpeakerSchema).optional(),
   hosts: z.array(backupHostSchema).optional(),
+  settings: z.any().optional(),
   exportedAt: z.string().optional(),
 }).passthrough();
 
@@ -106,6 +107,7 @@ export function safeParseBackup(raw: unknown): {
     visits: sift(obj.visits, backupVisitSchema, "visits"),
     speakers: sift(obj.speakers, backupSpeakerSchema, "speakers"),
     hosts: sift(obj.hosts, backupHostSchema, "hosts"),
+    settings: obj.settings,
     exportedAt: typeof obj.exportedAt === "string" ? obj.exportedAt : undefined,
   };
   return { ok: true, data, dropped };

@@ -1,12 +1,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { logger } from "../lib/logger";
-import type { AppSettings, Language, CongregationProfile } from "./visitTypes";
+import type { AppSettings, Language, CongregationProfile, ThemeMode } from "./visitTypes";
 
-interface SettingsState {
+export interface SettingsState {
   settings: AppSettings;
   setLanguage: (lang: Language) => void;
-  setDarkMode: (dark: boolean) => void;
+  setThemeMode: (mode: ThemeMode) => void;
+  setDarkMode: (dark: boolean) => void; // Keep for manual override/computed state
   updateNotifications: (notif: Partial<AppSettings["notifications"]>) => void;
   updateCongregation: (data: Partial<CongregationProfile>) => void;
   setSoundEnabled: (enabled: boolean) => void;
@@ -16,6 +17,7 @@ interface SettingsState {
 
 const defaultSettings: AppSettings = {
   language: "fr",
+  themeMode: "system",
   darkMode: false,
   notifications: {
     enabled: false,
@@ -30,6 +32,7 @@ const defaultSettings: AppSettings = {
     time: "11:30",
     responsableName: "",
     responsablePhone: "",
+    kingdomHallAddress: "",
     whatsappGroup: "",
     whatsappInviteId: "",
     googleSheetUrl: "",
@@ -37,22 +40,36 @@ const defaultSettings: AppSettings = {
   },
 };
 
+const applyTheme = (isDark: boolean) => {
+  if (isDark) {
+    document.documentElement.classList.add("dark");
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#1e1b4b");
+  } else {
+    document.documentElement.classList.remove("dark");
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#4f46e5");
+  }
+};
+
 export const useSettingsStore = create<SettingsState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       settings: defaultSettings,
       setLanguage: (language) => {
         try { document.documentElement.lang = language === "cv" ? "kea" : language; } catch (e) { logger.warn("Failed to set document lang:", e); }
         set((s) => ({ settings: { ...s.settings, language } }));
       },
-      setDarkMode: (darkMode) => {
-        if (darkMode) {
-          document.documentElement.classList.add("dark");
-          document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#1e1b4b");
+      setThemeMode: (themeMode) => {
+        set((s) => ({ settings: { ...s.settings, themeMode } }));
+        // If system, check current system preference
+        if (themeMode === "system") {
+          const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          get().setDarkMode(isDark);
         } else {
-          document.documentElement.classList.remove("dark");
-          document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#4f46e5");
+          get().setDarkMode(themeMode === "dark");
         }
+      },
+      setDarkMode: (darkMode) => {
+        applyTheme(darkMode);
         set((s) => ({ settings: { ...s.settings, darkMode } }));
       },
       updateNotifications: (notif) =>
@@ -79,13 +96,19 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: "kbv-settings",
       onRehydrateStorage: () => (state) => {
-        if (state?.settings.darkMode) {
-          document.documentElement.classList.add("dark");
-          document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#1e1b4b");
+        if (!state) return;
+        
+        // Initial theme application
+        let isDark = state.settings.darkMode;
+        if (state.settings.themeMode === "system") {
+          isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
         } else {
-          document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#4f46e5");
+          isDark = state.settings.themeMode === "dark";
         }
-        if (state?.settings.language) {
+        
+        applyTheme(isDark);
+        
+        if (state.settings.language) {
           try { document.documentElement.lang = state.settings.language === "cv" ? "kea" : state.settings.language; } catch (e) { logger.warn("Failed to set document lang on rehydrate:", e); }
         }
       },

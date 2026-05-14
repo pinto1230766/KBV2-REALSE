@@ -1,22 +1,23 @@
 import { createClient } from "@supabase/supabase-js";
-
-// Supabase is disabled by default - users can enable it by:
-// 1. Creating a Supabase project at https://supabase.com
-// 2. Adding their credentials to .env file
-//
-// To enable, create a .env file with:
-// VITE_SUPABASE_URL=https://your-project.supabase.co
-// VITE_SUPABASE_ANON_KEY=your-anon-key
-
 import { useSettingsStore } from "../store/useSettingsStore";
 
-const settings = useSettingsStore.getState().settings;
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || settings.supabaseUrl || "";
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || settings.supabaseKey || "";
+let supabaseInstance: ReturnType<typeof createClient> | null = null;
 
-// Only create client if credentials are provided
-export const supabase = SUPABASE_URL && SUPABASE_ANON_KEY 
-  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  : null;
+export const getSupabase = () => {
+  if (supabaseInstance) return supabaseInstance;
 
-export const isSupabaseConfigured = () => supabase !== null;
+  const settings = useSettingsStore.getState().settings;
+  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || settings.supabaseUrl || localStorage.getItem("VITE_SUPABASE_URL") || "";
+  const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || settings.supabaseKey || localStorage.getItem("VITE_SUPABASE_ANON_KEY") || "";
+
+  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    supabaseInstance = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+  
+  return supabaseInstance;
+};
+
+export const isSupabaseConfigured = () => {
+  const settings = useSettingsStore.getState().settings;
+  return Boolean(import.meta.env.VITE_SUPABASE_URL || settings.supabaseUrl || localStorage.getItem("VITE_SUPABASE_URL"));
+};

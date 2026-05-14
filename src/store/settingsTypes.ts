@@ -10,14 +10,18 @@ export interface CongregationProfile {
   responsableName: string;
   responsablePhone: string;
   responsablePhoto?: string;
+  kingdomHallAddress: string;
   whatsappGroup: string;
   whatsappInviteId: string;
   googleSheetUrl?: string;
   lastSyncAt?: string;
 }
 
+export type ThemeMode = "light" | "dark" | "system";
+
 export interface AppSettings {
   language: Language;
+  themeMode: ThemeMode;
   darkMode: boolean;
   notifications: {
     enabled: boolean;

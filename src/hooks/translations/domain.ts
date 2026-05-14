@@ -124,5 +124,7 @@ export const entries: Record<string, TranslationEntry> = {
   comments_followup: { fr: "Commentaires / Suivi", cv: "Komentarius / Seguimentu", pt: "Comentários / Seguimento" },
   feedback_visit_placeholder: { fr: "Comment s'est passée la visite ?", cv: "Komu vizita korreu?", pt: "Como correu a visita?" },
   save_feedback: { fr: "Enregistrer le feedback", cv: "Gravâ feedback", pt: "Guardar feedback" },
+  visits_by_month: { fr: "Visites par mois", cv: "Vizitas pur mes", pt: "Visitas por mês" },
+  host_assignment_rate: { fr: "Taux d'hébergement", cv: "Taxa di alojamentu", pt: "Taxa de alojamento" },
 };
 

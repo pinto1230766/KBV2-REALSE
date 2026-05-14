@@ -1,5 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
-import { AlertTriangle, RefreshCw, HardDrive } from "lucide-react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 import * as Sentry from "@sentry/react";
 
 interface Props {
@@ -30,13 +30,6 @@ export class ErrorBoundary extends Component<Props, State> {
     window.location.reload();
   };
 
-  handleReset = () => {
-    if (confirm("Voulez-vous vraiment réinitialiser l'application ? Cela peut aider si l'erreur persiste.")) {
-      localStorage.clear();
-      window.location.href = "/";
-    }
-  };
-
   render() {
     if (this.state.hasError) {
       return (
@@ -45,13 +38,13 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-amber-50 rounded-full mb-6">
               <AlertTriangle className="w-10 h-10 text-amber-500" />
             </div>
-            
+
             <h1 className="text-2xl font-extrabold text-slate-900 mb-2">
               Une erreur est survenue
             </h1>
-            
+
             <p className="text-slate-500 mb-8 leading-relaxed">
-              L'application a rencontré un problème inattendu. Vos données sont généralement en sécurité, mais un redémarrage est nécessaire.
+              L'application a rencontré un problème inattendu. Cliquez sur "Recharger" pour tenter de reprendre.
             </p>
 
             <div className="flex flex-col gap-3">
@@ -61,14 +54,6 @@ export class ErrorBoundary extends Component<Props, State> {
               >
                 <RefreshCw className="w-5 h-5" />
                 RECHARGER L'APPLICATION
-              </button>
-
-              <button
-                onClick={this.handleReset}
-                className="flex items-center justify-center gap-2 w-full py-4 bg-white hover:bg-slate-50 text-slate-400 hover:text-slate-600 rounded-2xl font-semibold text-sm transition-all border border-transparent hover:border-slate-200"
-              >
-                <HardDrive className="w-4 h-4" />
-                RÉINITIALISER LE CACHE (SÉCURITÉ)
               </button>
             </div>
 

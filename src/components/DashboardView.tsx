@@ -22,7 +22,7 @@ export function DashboardView() {
   const speakers = useSpeakerStore(useShallow((s) => s.speakers));
   const setActiveTab = useUIStore((s) => s.setActiveTab);
   const setShowUserManual = useUIStore((s) => s.setShowUserManual);
-  const { t, language } = useTranslation();
+  const { t, language, formatDate, formatNumber } = useTranslation();
   
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'confirmed' | 'month'>('all');
 
@@ -186,7 +186,7 @@ export function DashboardView() {
   };
 
   return (
-    <motion.div variants={staggerContainer} initial="hidden" animate="show" className="py-4 md:py-6 space-y-5 md:space-y-6">
+    <motion.div variants={staggerContainer} initial="hidden" animate="show" className="py-4 md:py-6 space-y-5 md:space-y-6 overflow-y-auto h-full">
       {/* Title */}
       <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-3 px-1">
         <div>
@@ -238,7 +238,7 @@ export function DashboardView() {
         <motion.div variants={staggerItem} className="rounded-2xl p-4 md:p-5 text-left min-h-[90px] flex flex-col justify-between bg-primary text-primary-foreground shadow-lg">
           <p className="text-[10px] xs:text-xs md:text-sm font-bold uppercase tracking-wider text-primary-foreground/80">{t("expenses")}</p>
           <div className="flex items-center gap-2 mt-2">
-            <p className="text-xl xs:text-2xl md:text-3xl font-black">{stats.monthlyExpenses.toFixed(2)} €</p>
+            <p className="text-xl xs:text-2xl md:text-3xl font-black">{formatNumber(stats.monthlyExpenses, { style: 'currency', currency: 'EUR' })}</p>
             <CreditCard className="w-4 h-4 xs:w-5 xs:h-5 md:w-6 md:h-6 text-white/60" />
           </div>
         </motion.div>
@@ -327,8 +327,7 @@ export function DashboardView() {
                   const speaker = speakers.find((s) => s.nom.trim().toLowerCase() === visit.nom.trim().toLowerCase());
                   const isCouple = speaker?.householdType === "couple";
                   const d = new Date(visit.visitDate);
-                  const monthShort = d.toLocaleDateString(locale, { month: "short" }).toUpperCase().replace(".", "");
-                  
+                  const monthShort = formatDate(d, { month: "short" }).toUpperCase().replace(".", "");
                   return (
                     <motion.button key={visit.visitId} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
                       onClick={() => { useUIStore.getState().setPendingVisit(visit.visitId); setActiveTab("planning"); }}

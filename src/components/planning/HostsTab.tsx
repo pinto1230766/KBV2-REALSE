@@ -1,9 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Building2, Utensils, Phone, MessageSquare, Pencil, Check, X,
-  Users, AlertTriangle,
+  Users, AlertTriangle, MapPin,
 } from "lucide-react";
 import type { Visit, HostAssignment, Speaker, Host } from "../../store/visitTypes";
+import { useSettingsStore, type SettingsState } from "../../store/useSettingsStore";
 
 interface HostsTabProps {
   viewVisit: Visit;
@@ -46,6 +47,7 @@ export function HostsTab(props: HostsTabProps) {
     getHostLastVisitDate, sendWhatsApp, saveDetail, roleColor, t,
   } = props;
 
+  const kingdomHallAddress = useSettingsStore((s: SettingsState) => s.settings.congregation.kingdomHallAddress);
   const isLocal = viewVisit.localSpeaker || currentSpeaker?.localSpeaker;
 
   if (isLocal) {
@@ -200,6 +202,9 @@ export function HostsTab(props: HostsTabProps) {
               </div>
             )}
             {!isEditing && ha.hostAddress && <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Home className="w-3.5 h-3.5 flex-shrink-0" /> {ha.hostAddress}</p>}
+            {!isEditing && ha.origin === "kingdom_hall" && kingdomHallAddress && (
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 flex-shrink-0" /> {kingdomHallAddress}</p>
+            )}
           </div>
         );
       })}

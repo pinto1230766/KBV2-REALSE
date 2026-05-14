@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabase";
+import { getSupabase } from "../lib/supabase";
 import type { Visit, Speaker, Host, HostAssignment, Companion } from "../store/visitTypes";
 import { useVisitStore } from "../store/useVisitStore";
 import { useSpeakerStore } from "../store/useSpeakerStore";
@@ -209,7 +209,7 @@ function hostToRow(h: Host): Partial<HostRow> {
     adresse: h.adresse || null,
     notes: h.notes || null,
     photo_url: h.photoUrl || null,
-    capacity: h.capacity || null,
+    // capacity: h.capacity || null, // Removed to avoid Supabase schema mismatch
     updated_at: h.updatedAt || new Date().toISOString(),
   };
 }
@@ -224,7 +224,7 @@ function rowToHost(r: HostRow): Host {
     notes: r.notes || undefined,
     role: r.role as Host["role"] ?? undefined,
     photoUrl: r.photo_url || undefined,
-    capacity: r.capacity || undefined,
+    // capacity: r.capacity || undefined, // Removed to avoid Supabase schema mismatch
     updatedAt: r.updated_at || undefined,
   };
 }
@@ -234,11 +234,55 @@ export interface SyncResult {
   pulled: { visits: number; speakers: number; hosts: number };
 }
 
+/**
+ * Fetch all rows from a Supabase table using paginated queries to avoid
+ * statement timeouts (code 57014) on large datasets.
+ */
+async function fetchTablePaginated<T>(table: string, pageSize = 500): Promise<T[]> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
 
+  const allRows: T[] = [];
+  let from = 0;
+  let hasMore = true;
+  let consecutiveEmptyPages = 0;
 
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from(table)
+      .select("*")
+      .range(from, from + pageSize - 1)
+      .limit(pageSize);
+
+    if (error) {
+      logger.warn(`Paginated fetch ${table}[${from}–${from + pageSize - 1}] error:`, error);
+      break;
+    }
+
+    const rows = (data || []) as unknown as T[];
+    allRows.push(...rows);
+
+    if (rows.length < pageSize) {
+      hasMore = false;
+    } else {
+      from += pageSize;
+    }
+
+    // Safety: if we get 3 consecutive empty pages, stop (prevents infinite loop)
+    if (rows.length === 0) {
+      consecutiveEmptyPages++;
+      if (consecutiveEmptyPages >= 3) hasMore = false;
+    } else {
+      consecutiveEmptyPages = 0;
+    }
+  }
+
+  return allRows;
+}
 
 export async function syncCloud(): Promise<SyncResult> {
   logger.log("Starting cloud sync...");
+  const supabase = getSupabase();
   const result: SyncResult = {
     pushed: { visits: 0, speakers: 0, hosts: 0 },
     pulled: { visits: 0, speakers: 0, hosts: 0 },
@@ -250,12 +294,11 @@ export async function syncCloud(): Promise<SyncResult> {
   // Local data is preserved and merged with remote data.
   // We no longer clear localStorage here to prevent data loss on failed sync.
 
-  // ── 1. PULL & MERGE ──
-  const { data: remoteVisits, error: pullVisitsError } = await supabase.from("visits").select("*");
-  if (pullVisitsError) logger.error("Pull visits error:", pullVisitsError);
+  // ── 1. PULL & MERGE (paginated to avoid timeouts) ──
+  const remoteVisits = await fetchTablePaginated<VisitRow>("visits", 500);
 
   const localVisits = useVisitStore.getState().visits;
-  const remoteVisitsConverted = (remoteVisits || []).map(rowToVisit);
+  const remoteVisitsConverted = remoteVisits.map(rowToVisit);
   // Supprime côté distant les visites d'exemple et exclut-les du merge
   const exampleVisits = remoteVisitsConverted.filter((v) => isExampleName(v.nom));
   for (const v of exampleVisits) await deleteRemoteItem("visits", v.visitId);
@@ -265,10 +308,9 @@ export async function syncCloud(): Promise<SyncResult> {
   result.pulled.visits = cleanRemoteVisits.length;
 
   // B. SPEAKERS
-  const { data: remoteSpeakers, error: pullSpeakersError } = await supabase.from("speakers").select("*");
-  if (pullSpeakersError) logger.error("Pull speakers error:", pullSpeakersError);
+  const remoteSpeakers = await fetchTablePaginated<SpeakerRow>("speakers", 500);
   const localSpeakers = useSpeakerStore.getState().speakers;
-  const remoteSpeakersConverted = (remoteSpeakers || []).map(rowToSpeaker);
+  const remoteSpeakersConverted = remoteSpeakers.map(rowToSpeaker);
   const exampleSpeakers = remoteSpeakersConverted.filter((s) => isExampleName(s.nom));
   for (const s of exampleSpeakers) await deleteRemoteItem("speakers", s.id);
   const cleanRemoteSpeakers = remoteSpeakersConverted.filter((s) => !isExampleName(s.nom));
@@ -277,10 +319,9 @@ export async function syncCloud(): Promise<SyncResult> {
   result.pulled.speakers = cleanRemoteSpeakers.length;
 
   // C. HOSTS
-  const { data: remoteHosts, error: pullHostsError } = await supabase.from("hosts").select("*");
-  if (pullHostsError) logger.error("Pull hosts error:", pullHostsError);
+  const remoteHosts = await fetchTablePaginated<HostRow>("hosts", 500);
   const localHosts = useHostStore.getState().hosts;
-  const remoteHostsConverted = (remoteHosts || []).map(rowToHost);
+  const remoteHostsConverted = remoteHosts.map(rowToHost);
   const exampleHosts = remoteHostsConverted.filter((h) => isExampleName(h.nom));
   for (const h of exampleHosts) await deleteRemoteItem("hosts", h.id);
   const cleanRemoteHosts = remoteHostsConverted.filter((h) => !isExampleName(h.nom));
@@ -291,19 +332,22 @@ export async function syncCloud(): Promise<SyncResult> {
   // ── 2. PUSH ──
   // Now we use toUUID() during conversion to ensure every entry is pushable
   if (finalVisits.length > 0) {
-    const { error } = await supabase.from("visits").upsert(finalVisits.map(visitToRow), { onConflict: "visit_id" });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await supabase.from("visits").upsert(finalVisits.map(visitToRow) as any, { onConflict: "visit_id" });
     if (error) logger.error("Push visits error:", error);
     else result.pushed.visits = finalVisits.length;
   }
   
   if (finalSpeakers.length > 0) {
-    const { error } = await supabase.from("speakers").upsert(finalSpeakers.map(speakerToRow), { onConflict: "id" });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await supabase.from("speakers").upsert(finalSpeakers.map(speakerToRow) as any, { onConflict: "id" });
     if (error) logger.error("Push speakers error:", error);
     else result.pushed.speakers = finalSpeakers.length;
   }
   
   if (finalHosts.length > 0) {
-    const { error } = await supabase.from("hosts").upsert(finalHosts.map(hostToRow), { onConflict: "id" });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await supabase.from("hosts").upsert(finalHosts.map(hostToRow) as any, { onConflict: "id" });
     if (error) logger.error("Push hosts error:", error);
     else result.pushed.hosts = finalHosts.length;
   }
@@ -320,6 +364,7 @@ export async function syncCloud(): Promise<SyncResult> {
  * Delete an item from Supabase by its ID.
  */
 export async function deleteRemoteItem(table: "visits" | "speakers" | "hosts", id: string) {
+  const supabase = getSupabase();
   if (!supabase) return;
   const idField = table === "visits" ? "visit_id" : "id";
   const { error } = await supabase.from(table).delete().eq(idField, toUUID(id));
