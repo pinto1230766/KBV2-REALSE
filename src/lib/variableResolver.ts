@@ -64,7 +64,7 @@ export function resolveVariables(text: string, ctx: ResolveCtx): string {
         if (mapsUrl) section += `\n\u{1F5FA} Google Maps : ${mapsUrl}`;
       }
       return section;
-    }).join("\n");
+    }).join("\n\n");
   };
 
   const nameParts = viewVisit.nom.split(" ");
