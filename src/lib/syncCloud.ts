@@ -1,5 +1,6 @@
 import { getSupabase } from "../lib/supabase";
 import type { Visit, Speaker, Host, HostAssignment, Companion } from "../store/visitTypes";
+import type { CongregationProfile } from "../store/settingsTypes";
 import { useVisitStore } from "../store/useVisitStore";
 import { useSpeakerStore } from "../store/useSpeakerStore";
 import { useHostStore } from "../store/useHostStore";
@@ -12,6 +13,24 @@ import { normalizeName } from "./dedup";
 export { normalizeName };
 
 // ─── Types for Supabase database rows ───
+
+interface CongregationRow {
+  id: string;
+  name: string;
+  city: string;
+  day: string;
+  time: string;
+  responsable_name: string;
+  responsable_phone: string;
+  responsable_photo: string | null;
+  kingdom_hall_address: string;
+  whatsapp_group: string;
+  whatsapp_invite_id: string;
+  google_sheet_url: string | null;
+  last_sync_at: string | null;
+  updated_at: string | null;
+}
+
 interface VisitRow {
   visit_id: string;
   nom: string;
@@ -316,6 +335,44 @@ async function fetchTablePaginated<T>(table: string, pageSize = 250): Promise<T[
   return allRows;
 }
 
+// ─── Congregation sync helpers ───
+
+function congregationToRow(p: CongregationProfile): Partial<CongregationRow> {
+  return {
+    id: "default",
+    name: p.name,
+    city: p.city,
+    day: p.day,
+    time: p.time,
+    responsable_name: p.responsableName,
+    responsable_phone: p.responsablePhone,
+    responsable_photo: p.responsablePhoto ?? null,
+    kingdom_hall_address: p.kingdomHallAddress,
+    whatsapp_group: p.whatsappGroup,
+    whatsapp_invite_id: p.whatsappInviteId,
+    google_sheet_url: p.googleSheetUrl ?? null,
+    last_sync_at: p.lastSyncAt ?? null,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+function rowToCongregation(r: CongregationRow): CongregationProfile {
+  return {
+    name: r.name || "",
+    city: r.city || "",
+    day: r.day || "Dimanche",
+    time: r.time || "11:30",
+    responsableName: r.responsable_name || "",
+    responsablePhone: r.responsable_phone || "",
+    responsablePhoto: r.responsable_photo ?? undefined,
+    kingdomHallAddress: r.kingdom_hall_address || "",
+    whatsappGroup: r.whatsapp_group || "",
+    whatsappInviteId: r.whatsapp_invite_id || "",
+    googleSheetUrl: r.google_sheet_url ?? undefined,
+    lastSyncAt: r.last_sync_at ?? undefined,
+  };
+}
+
 export async function syncCloud(): Promise<SyncResult> {
   logger.log("Starting cloud sync...");
   const supabase = getSupabase();
@@ -330,7 +387,50 @@ export async function syncCloud(): Promise<SyncResult> {
   // Local data is preserved and merged with remote data.
   // We no longer clear localStorage here to prevent data loss on failed sync.
 
-  // ── 1. PULL & MERGE (paginated to avoid timeouts) ──
+  // ── 1. PULL & MERGE ──
+  //
+  // A. CONGREGATION PROFILE (single row, id = 'default')
+  //    Fetch the remote profile and merge it with local: remote wins if it
+  //    has a newer updated_at, otherwise local keeps its values.
+  //
+  const { data: remoteCongregation, error: congError } = await supabase
+    .from("congregation")
+    .select("*")
+    .eq("id", "default")
+    .maybeSingle();
+
+  if (congError) {
+    logger.warn("Fetch congregation error:", congError);
+  } else if (remoteCongregation) {
+    const remoteProfile = rowToCongregation(remoteCongregation as CongregationRow);
+    const localProfile = useSettingsStore.getState().settings.congregation;
+    const localTime = localProfile.lastSyncAt ? new Date(localProfile.lastSyncAt).getTime() : 0;
+    const remoteTime = remoteProfile.lastSyncAt ? new Date(remoteProfile.lastSyncAt).getTime() : 0;
+    // The one with the newer lastSyncAt wins; on equality local keeps its values
+    if (remoteTime > localTime) {
+      useSettingsStore.getState().updateCongregation(remoteProfile);
+      logger.log("Updated congregation profile from remote (newer).");
+    } else if (localTime > 0) {
+      // Local is newer → push it back to remote
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: pushErr } = await supabase
+        .from("congregation")
+        .upsert(congregationToRow(localProfile) as any, { onConflict: "id" });
+      if (pushErr) logger.warn("Push congregation error:", pushErr);
+      else logger.log("Pushed local congregation profile (newer).");
+    }
+  } else {
+    // No remote row exists — create it from local
+    const localProfile = useSettingsStore.getState().settings.congregation;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: pushErr } = await supabase
+      .from("congregation")
+      .upsert(congregationToRow(localProfile) as any, { onConflict: "id" });
+    if (pushErr) logger.warn("Push initial congregation error:", pushErr);
+    else logger.log("Pushed initial congregation profile.");
+  }
+
+  // B. VISITS
   const remoteVisits = await fetchTablePaginated<VisitRow>("visits");
 
   const localVisits = useVisitStore.getState().visits;

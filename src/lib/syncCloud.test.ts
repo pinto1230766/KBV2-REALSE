@@ -2,20 +2,33 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { syncCloud } from "./syncCloud";
 import { useVisitStore } from "../store/useVisitStore";
 
-// Builds the mock chain: .from(table).select("*").order("id", { ascending: true }).range(from, to).limit(size)
+// Builds the mock chain to support TWO query patterns:
+//   1) .select("*").order("id", {...}).range(a,b).limit(c)   → paginated list
+//   2) .select("*").eq("id", "default").maybeSingle()        → single congregation row
 function makeMockSupabase(visitsData: unknown[]) {
-  // limit() returns the final promise with data
+  // ── Terminal promises ──
+  // paginated: .limit() resolves with { data, error }
   const limitFn = vi.fn().mockResolvedValue({ data: visitsData, error: null });
-  // range() returns the continuation (limit)
+  // single: .maybeSingle() resolves with { data, error }
+  const maybeSingleFn = vi.fn().mockResolvedValue({ data: null, error: null });
+
+  // ── Chain segments ──
   const rangeFn = vi.fn(() => ({ limit: limitFn }));
-  // order() returns the continuation (range)
   const orderFn = vi.fn(() => ({ range: rangeFn }));
-  // select() returns continuation (order)
-  const selectFn = vi.fn(() => ({ order: orderFn }));
-  // from() returns an object that has select, upsert, and delete
-  const eqFn = vi.fn().mockResolvedValue({ error: null });
-  const deleteFn = vi.fn(() => ({ eq: eqFn }));
+
+  // .eq() returns an object with .maybeSingle()
+  const eqFn = vi.fn(() => ({ maybeSingle: maybeSingleFn }));
+
+  // .select() returns an object with BOTH .order (for paginated) and .eq (for single)
+  const selectFn = vi.fn(() => ({
+    order: orderFn,
+    eq: eqFn,
+  }));
+
+  // .delete() returns { eq }
+  const deleteFn = vi.fn(() => ({ eq: vi.fn().mockResolvedValue({ error: null }) }));
   const upsertFn = vi.fn().mockResolvedValue({ error: null });
+
   const fromReturnObj = {
     select: selectFn,
     upsert: upsertFn,
