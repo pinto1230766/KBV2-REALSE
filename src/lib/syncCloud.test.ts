@@ -2,30 +2,45 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { syncCloud } from "./syncCloud";
 import { useVisitStore } from "../store/useVisitStore";
 
+// Builds the mock chain: .from(table).select("*").order("id", { ascending: true }).range(from, to).limit(size)
+function makeMockSupabase(visitsData: unknown[]) {
+  // limit() returns the final promise with data
+  const limitFn = vi.fn().mockResolvedValue({ data: visitsData, error: null });
+  // range() returns the continuation (limit)
+  const rangeFn = vi.fn(() => ({ limit: limitFn }));
+  // order() returns the continuation (range)
+  const orderFn = vi.fn(() => ({ range: rangeFn }));
+  // select() returns continuation (order)
+  const selectFn = vi.fn(() => ({ order: orderFn }));
+  // from() returns an object that has select, upsert, and delete
+  const eqFn = vi.fn().mockResolvedValue({ error: null });
+  const deleteFn = vi.fn(() => ({ eq: eqFn }));
+  const upsertFn = vi.fn().mockResolvedValue({ error: null });
+  const fromReturnObj = {
+    select: selectFn,
+    upsert: upsertFn,
+    delete: deleteFn,
+  };
+  const fromFn = vi.fn(() => fromReturnObj);
+
+  return { from: fromFn };
+}
+
+const mockSupabase = makeMockSupabase([
+  {
+    visit_id: "remote-1",
+    nom: "Orateur Distant",
+    congregation: "Lyon Nord",
+    visit_date: "2024-05-20",
+    location_type: "kingdom_hall",
+    status: "scheduled",
+    updated_at: new Date().toISOString(),
+  },
+]);
+
 // Mock de Supabase pour éviter les appels réseau
 vi.mock("./supabase", () => ({
-  supabase: {
-    from: vi.fn((table) => ({
-      select: vi.fn().mockResolvedValue({ 
-        data: table === "visits" ? [
-          { 
-            visit_id: "remote-1", 
-            nom: "Orateur Distant", 
-            congregation: "Lyon Nord", 
-            visit_date: "2024-05-20", 
-            location_type: "kingdom_hall",
-            status: "scheduled",
-            updated_at: new Date().toISOString() 
-          }
-        ] : [], 
-        error: null 
-      }),
-      upsert: vi.fn().mockResolvedValue({ error: null }),
-      delete: vi.fn(() => ({
-        eq: vi.fn().mockResolvedValue({ error: null })
-      }))
-    })),
-  },
+  getSupabase: vi.fn(() => mockSupabase),
   isSupabaseConfigured: vi.fn(() => true),
 }));
 

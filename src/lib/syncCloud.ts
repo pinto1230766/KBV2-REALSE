@@ -237,8 +237,13 @@ export interface SyncResult {
 /**
  * Fetch all rows from a Supabase table using paginated queries to avoid
  * statement timeouts (code 57014) on large datasets.
+ *
+ * Uses ordered keyset-pagination (via the `order()` clause on the table's
+ * primary key) so that PostgreSQL can leverage an index at large offsets
+ * instead of scanning the whole table on every page.  Also reduces page
+ * size and retries with a smaller page on timeout errors.
  */
-async function fetchTablePaginated<T>(table: string, pageSize = 500): Promise<T[]> {
+async function fetchTablePaginated<T>(table: string, pageSize = 250): Promise<T[]> {
   const supabase = getSupabase();
   if (!supabase) return [];
 
@@ -246,26 +251,57 @@ async function fetchTablePaginated<T>(table: string, pageSize = 500): Promise<T[
   let from = 0;
   let hasMore = true;
   let consecutiveEmptyPages = 0;
+  let currentPageSize = pageSize;
 
   while (hasMore) {
-    const { data, error } = await supabase
+    let query = supabase
       .from(table)
       .select("*")
-      .range(from, from + pageSize - 1)
-      .limit(pageSize);
+      .order("id", { ascending: true })
+      .range(from, from + currentPageSize - 1)
+      .limit(currentPageSize);
+
+    const { data, error } = await query;
+
+    // On statement timeout (57014): halve page size and retry once
+    if (error && error.code === "57014" && currentPageSize >= 100) {
+      logger.warn(
+        `Timeout fetching ${table}[${from}–${from + currentPageSize - 1}], ` +
+        `retrying with page size ${currentPageSize >> 1}`
+      );
+      currentPageSize = currentPageSize >> 1;
+      query = supabase
+        .from(table)
+        .select("*")
+        .order("id", { ascending: true })
+        .range(from, from + currentPageSize - 1)
+        .limit(currentPageSize);
+      const retryResult = await query;
+      if (retryResult.error) {
+        logger.warn(
+          `Paginated fetch ${table}[${from}–${from + currentPageSize - 1}] error after retry:`,
+          retryResult.error
+        );
+        break;
+      }
+      const retryRows = (retryResult.data || []) as unknown as T[];
+      allRows.push(...retryRows);
+      from += currentPageSize;
+      continue;
+    }
 
     if (error) {
-      logger.warn(`Paginated fetch ${table}[${from}–${from + pageSize - 1}] error:`, error);
+      logger.warn(`Paginated fetch ${table}[${from}–${from + currentPageSize - 1}] error:`, error);
       break;
     }
 
     const rows = (data || []) as unknown as T[];
     allRows.push(...rows);
 
-    if (rows.length < pageSize) {
+    if (rows.length < currentPageSize) {
       hasMore = false;
     } else {
-      from += pageSize;
+      from += currentPageSize;
     }
 
     // Safety: if we get 3 consecutive empty pages, stop (prevents infinite loop)
@@ -295,7 +331,7 @@ export async function syncCloud(): Promise<SyncResult> {
   // We no longer clear localStorage here to prevent data loss on failed sync.
 
   // ── 1. PULL & MERGE (paginated to avoid timeouts) ──
-  const remoteVisits = await fetchTablePaginated<VisitRow>("visits", 500);
+  const remoteVisits = await fetchTablePaginated<VisitRow>("visits");
 
   const localVisits = useVisitStore.getState().visits;
   const remoteVisitsConverted = remoteVisits.map(rowToVisit);
@@ -308,7 +344,7 @@ export async function syncCloud(): Promise<SyncResult> {
   result.pulled.visits = cleanRemoteVisits.length;
 
   // B. SPEAKERS
-  const remoteSpeakers = await fetchTablePaginated<SpeakerRow>("speakers", 500);
+  const remoteSpeakers = await fetchTablePaginated<SpeakerRow>("speakers");
   const localSpeakers = useSpeakerStore.getState().speakers;
   const remoteSpeakersConverted = remoteSpeakers.map(rowToSpeaker);
   const exampleSpeakers = remoteSpeakersConverted.filter((s) => isExampleName(s.nom));
@@ -319,7 +355,7 @@ export async function syncCloud(): Promise<SyncResult> {
   result.pulled.speakers = cleanRemoteSpeakers.length;
 
   // C. HOSTS
-  const remoteHosts = await fetchTablePaginated<HostRow>("hosts", 500);
+  const remoteHosts = await fetchTablePaginated<HostRow>("hosts");
   const localHosts = useHostStore.getState().hosts;
   const remoteHostsConverted = remoteHosts.map(rowToHost);
   const exampleHosts = remoteHostsConverted.filter((h) => isExampleName(h.nom));
