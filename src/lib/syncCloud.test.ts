@@ -9,20 +9,32 @@ import { useVisitStore } from "../store/useVisitStore";
 //   4) .select("*").gt("deleted_at", since)                       → tombstones
 function makeMockSupabase(visitsData: unknown[]) {
   // ── Terminal promises ──
+  // limitFn returns the final resolved data for paginated queries
   const limitFn = vi.fn().mockResolvedValue({ data: visitsData, error: null });
   const maybeSingleFn = vi.fn().mockResolvedValue({ data: null, error: null });
-  // tombstones query: .select("*").gt(...) resolves directly to { data, error }
-  const tombstoneFn = vi.fn().mockResolvedValue({ data: [], error: null });
+  // For tombstones .gt() is the terminal call — it must be thenable
+  const tombstonePromise = Promise.resolve({ data: [], error: null });
 
   // ── Chain segments ──
   const rangeFn = vi.fn(() => ({ limit: limitFn }));
-  const gtFn = vi.fn(() => ({ range: rangeFn, limit: limitFn }));
+  // .gt() returns an object with .order() (for incremental) AND .then() (for tombstones)
+  const gtObj = {
+    order: vi.fn(() => ({ range: rangeFn, limit: limitFn })),
+    range: rangeFn,
+    then: tombstonePromise.then.bind(tombstonePromise),
+    catch: tombstonePromise.catch.bind(tombstonePromise),
+  };
+  const gtFn = vi.fn(() => gtObj);
   const orderFn = vi.fn(() => ({ range: rangeFn, gt: gtFn, limit: limitFn }));
-
   const eqFn = vi.fn(() => ({ maybeSingle: maybeSingleFn }));
 
-  // select returns a "chameleon" object that can continue in any direction
-  const selectReturnObj = { order: orderFn, eq: eqFn, gt: tombstoneFn };
+  // select returns a chameleon object supporting all chains
+  const selectReturnObj = {
+    order: orderFn,
+    eq: eqFn,
+    gt: gtFn,
+    range: rangeFn,
+  };
   const selectFn = vi.fn(() => selectReturnObj);
 
   const deleteFn = vi.fn(() => ({ eq: vi.fn().mockResolvedValue({ error: null }) }));

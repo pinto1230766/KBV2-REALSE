@@ -304,16 +304,21 @@ async function fetchChangesSince<T>(
   let hasMore = true;
   let currentPageSize = pageSize;
 
-  // Build base query with ordering
-  let baseQuery = supabase
-    .from(table)
-    .select("*")
-    .order("id", { ascending: true });
+  // Build base query
+  // NOTE: we do NOT add .order("id") here because on large tables without
+  // an index, ORDER BY forces a full-table sort even at offset 0, causing
+  // timeout 57014. The pagination via .range().limit() is sufficient; the
+  // dedup/merge logic handles ordering client-side.
+  // For incremental syncs we use .gt("updated_at", since) which benefits
+  // from the index created by the SQL migration.
+  let q = supabase.from(table).select("*");
 
-  // Add incremental filter if we have a lastSyncAt
   if (since) {
-    baseQuery = baseQuery.gt("updated_at", since);
+    q = q.gt("updated_at", since);
   }
+  // For incremental syncs, order is important to avoid missing rows;
+  // for the first full sync, omit ORDER BY to avoid full-table sort.
+  const baseQuery = since ? q.order("id", { ascending: true }) : q;
 
   while (hasMore) {
     const q = baseQuery
@@ -416,10 +421,15 @@ export async function syncCloud(): Promise<SyncResult> {
 
   const pullSince = lastSyncAt || undefined;
 
+  // Use smaller page size (100) for the initial full pull to avoid timeouts
+  // on tables that still lack indexes. After the SQL migration (indexes on id
+  // and updated_at), the page size can be raised back to 250.
+  const INITIAL_PAGE_SIZE = pullSince ? 250 : 100;
+
   const [visitsResult, speakersResult, hostsResult] = await Promise.all([
-    fetchChangesSince<VisitRow>("visits", pullSince),
-    fetchChangesSince<SpeakerRow>("speakers", pullSince),
-    fetchChangesSince<HostRow>("hosts", pullSince),
+    fetchChangesSince<VisitRow>("visits", pullSince, INITIAL_PAGE_SIZE),
+    fetchChangesSince<SpeakerRow>("speakers", pullSince, INITIAL_PAGE_SIZE),
+    fetchChangesSince<HostRow>("hosts", pullSince, INITIAL_PAGE_SIZE),
   ]);
 
   const remoteVisits = visitsResult.rows;
