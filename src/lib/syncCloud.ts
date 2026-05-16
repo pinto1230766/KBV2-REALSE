@@ -83,27 +83,22 @@ interface HostRow {
   updated_at: string | null;
 }
 
+interface TombstoneRow {
+  id: string;
+  table_name: string;
+  deleted_at: string;
+}
+
 // ─── UUID Conversion & Validation ───
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function isValidUUID(id: string): boolean {
   return UUID_REGEX.test(id);
 }
 
-/**
- * Converts any string to a deterministic valid UUID v4 format.
- * This allows "sheet-xxx" IDs to be stored in Supabase UUID columns.
- */
-/**
- * Deterministic 128-bit hash → UUID v4-format. Uses a 4-lane FNV-1a-like
- * mix so two distinct inputs are extremely unlikely to collide (vs. the
- * old 32-bit hash that produced trivial collisions and risked silent
- * row overwrites in Supabase).
- */
 function toUUID(str: string): string {
   if (!str) return "00000000-0000-4000-8000-000000000000";
   if (isValidUUID(str)) return str;
 
-  // Four independent 32-bit FNV-1a lanes seeded with different primes
   let h0 = 0x811c9dc5, h1 = 0xdeadbeef, h2 = 0x9e3779b1, h3 = 0x85ebca77;
   for (let i = 0; i < str.length; i++) {
     const c = str.charCodeAt(i);
@@ -115,7 +110,6 @@ function toUUID(str: string): string {
   const hex = (n: number) => (n >>> 0).toString(16).padStart(8, "0");
   const a = hex(h0);
   const b = hex(h1).slice(0, 4);
-  // Force UUID v4 marker (4xxx) and variant (8/9/a/b)
   const c = "4" + hex(h2).slice(1, 4);
   const d = "8" + hex(h2).slice(5, 8).slice(0, 3);
   const e = (hex(h3) + hex(h0 ^ h1)).slice(0, 12);
@@ -135,7 +129,7 @@ function safeJson(val: unknown) {
 
 function visitToRow(v: Visit): Partial<VisitRow> {
   return {
-    visit_id: toUUID(v.visitId), // Convert to valid UUID for DB
+    visit_id: toUUID(v.visitId),
     nom: v.nom,
     congregation: v.congregation,
     visit_date: v.visitDate || "",
@@ -228,7 +222,6 @@ function hostToRow(h: Host): Partial<HostRow> {
     adresse: h.adresse || null,
     notes: h.notes || null,
     photo_url: h.photoUrl || null,
-    // capacity: h.capacity || null, // Removed to avoid Supabase schema mismatch
     updated_at: h.updatedAt || new Date().toISOString(),
   };
 }
@@ -243,7 +236,6 @@ function rowToHost(r: HostRow): Host {
     notes: r.notes || undefined,
     role: r.role as Host["role"] ?? undefined,
     photoUrl: r.photo_url || undefined,
-    // capacity: r.capacity || undefined, // Removed to avoid Supabase schema mismatch
     updatedAt: r.updated_at || undefined,
   };
 }
@@ -251,88 +243,8 @@ function rowToHost(r: HostRow): Host {
 export interface SyncResult {
   pushed: { visits: number; speakers: number; hosts: number };
   pulled: { visits: number; speakers: number; hosts: number };
-}
-
-/**
- * Fetch all rows from a Supabase table using paginated queries to avoid
- * statement timeouts (code 57014) on large datasets.
- *
- * Uses ordered keyset-pagination (via the `order()` clause on the table's
- * primary key) so that PostgreSQL can leverage an index at large offsets
- * instead of scanning the whole table on every page.  Also reduces page
- * size and retries with a smaller page on timeout errors.
- */
-async function fetchTablePaginated<T>(table: string, pageSize = 250): Promise<T[]> {
-  const supabase = getSupabase();
-  if (!supabase) return [];
-
-  const allRows: T[] = [];
-  let from = 0;
-  let hasMore = true;
-  let consecutiveEmptyPages = 0;
-  let currentPageSize = pageSize;
-
-  while (hasMore) {
-    let query = supabase
-      .from(table)
-      .select("*")
-      .order("id", { ascending: true })
-      .range(from, from + currentPageSize - 1)
-      .limit(currentPageSize);
-
-    const { data, error } = await query;
-
-    // On statement timeout (57014): halve page size and retry once
-    if (error && error.code === "57014" && currentPageSize >= 100) {
-      logger.warn(
-        `Timeout fetching ${table}[${from}–${from + currentPageSize - 1}], ` +
-        `retrying with page size ${currentPageSize >> 1}`
-      );
-      currentPageSize = currentPageSize >> 1;
-      query = supabase
-        .from(table)
-        .select("*")
-        .order("id", { ascending: true })
-        .range(from, from + currentPageSize - 1)
-        .limit(currentPageSize);
-      const retryResult = await query;
-      if (retryResult.error) {
-        logger.warn(
-          `Paginated fetch ${table}[${from}–${from + currentPageSize - 1}] error after retry:`,
-          retryResult.error
-        );
-        break;
-      }
-      const retryRows = (retryResult.data || []) as unknown as T[];
-      allRows.push(...retryRows);
-      from += currentPageSize;
-      continue;
-    }
-
-    if (error) {
-      logger.warn(`Paginated fetch ${table}[${from}–${from + currentPageSize - 1}] error:`, error);
-      break;
-    }
-
-    const rows = (data || []) as unknown as T[];
-    allRows.push(...rows);
-
-    if (rows.length < currentPageSize) {
-      hasMore = false;
-    } else {
-      from += currentPageSize;
-    }
-
-    // Safety: if we get 3 consecutive empty pages, stop (prevents infinite loop)
-    if (rows.length === 0) {
-      consecutiveEmptyPages++;
-      if (consecutiveEmptyPages >= 3) hasMore = false;
-    } else {
-      consecutiveEmptyPages = 0;
-    }
-  }
-
-  return allRows;
+  deleted: { visits: number; speakers: number; hosts: number };
+  bytesEstimate: number;
 }
 
 // ─── Congregation sync helpers ───
@@ -373,26 +285,104 @@ function rowToCongregation(r: CongregationRow): CongregationProfile {
   };
 }
 
-export async function syncCloud(): Promise<SyncResult> {
-  logger.log("Starting cloud sync...");
+/**
+ * Fetch rows modified since a given ISO date from a table.
+ * If `since` is undefined, fetches ALL rows (first sync).
+ * Uses ordered keyset-pagination with `.order("id")` for index performance
+ * and retries with smaller pages on statement timeout (57014).
+ */
+async function fetchChangesSince<T>(
+  table: string,
+  since?: string,
+  pageSize = 250
+): Promise<{ rows: T[]; bytes: number }> {
   const supabase = getSupabase();
-  const result: SyncResult = {
+  if (!supabase) return { rows: [], bytes: 0 };
+
+  const rows: T[] = [];
+  let from = 0;
+  let hasMore = true;
+  let currentPageSize = pageSize;
+
+  // Build base query with ordering
+  let baseQuery = supabase
+    .from(table)
+    .select("*")
+    .order("id", { ascending: true });
+
+  // Add incremental filter if we have a lastSyncAt
+  if (since) {
+    baseQuery = baseQuery.gt("updated_at", since);
+  }
+
+  while (hasMore) {
+    const q = baseQuery
+      .range(from, from + currentPageSize - 1)
+      .limit(currentPageSize);
+
+    const { data, error } = await q;
+
+    if (error && error.code === "57014" && currentPageSize >= 100) {
+      logger.warn(
+        `Timeout fetching ${table}[${from}–${from + currentPageSize - 1}], ` +
+        `retrying with page size ${currentPageSize >> 1}`
+      );
+      currentPageSize = currentPageSize >> 1;
+      const retry = await baseQuery
+        .range(from, from + currentPageSize - 1)
+        .limit(currentPageSize);
+      if (retry.error) {
+        logger.warn(`Fetch ${table} error after retry:`, retry.error);
+        break;
+      }
+      const retryRows = (retry.data || []) as unknown as T[];
+      rows.push(...retryRows);
+      from += currentPageSize;
+      continue;
+    }
+
+    if (error) {
+      logger.warn(`Fetch ${table}[${from}–${from + currentPageSize - 1}] error:`, error);
+      break;
+    }
+
+    const batch = (data || []) as unknown as T[];
+    rows.push(...batch);
+
+    if (batch.length < currentPageSize) {
+      hasMore = false;
+    } else {
+      from += currentPageSize;
+    }
+  }
+
+  const bytes = JSON.stringify(rows).length;
+  return { rows, bytes };
+}
+
+/**
+ * Check if an ISO date string is a valid date and returns its timestamp.
+ */
+function parseTime(d?: string): number {
+  if (!d) return 0;
+  const t = new Date(d).getTime();
+  return Number.isNaN(t) ? 0 : t;
+}
+
+export async function syncCloud(): Promise<SyncResult> {
+  const supabase = getSupabase();
+  const empty: SyncResult = {
     pushed: { visits: 0, speakers: 0, hosts: 0 },
     pulled: { visits: 0, speakers: 0, hosts: 0 },
+    deleted: { visits: 0, speakers: 0, hosts: 0 },
+    bytesEstimate: 0,
   };
+  if (!supabase) return empty;
 
-  if (!supabase) return result;
+  const lastSyncAt = useSettingsStore.getState().settings.congregation.lastSyncAt;
+  const nowISO = new Date().toISOString();
 
-  // ── 0. DATA SAFETY ──
-  // Local data is preserved and merged with remote data.
-  // We no longer clear localStorage here to prevent data loss on failed sync.
-
-  // ── 1. PULL & MERGE ──
-  //
-  // A. CONGREGATION PROFILE (single row, id = 'default')
-  //    Fetch the remote profile and merge it with local: remote wins if it
-  //    has a newer updated_at, otherwise local keeps its values.
-  //
+  // ── 0. SYNC CONGREGATION PROFILE (single row) ──
   const { data: remoteCongregation, error: congError } = await supabase
     .from("congregation")
     .select("*")
@@ -404,105 +394,192 @@ export async function syncCloud(): Promise<SyncResult> {
   } else if (remoteCongregation) {
     const remoteProfile = rowToCongregation(remoteCongregation as CongregationRow);
     const localProfile = useSettingsStore.getState().settings.congregation;
-    const localTime = localProfile.lastSyncAt ? new Date(localProfile.lastSyncAt).getTime() : 0;
-    const remoteTime = remoteProfile.lastSyncAt ? new Date(remoteProfile.lastSyncAt).getTime() : 0;
-    // The one with the newer lastSyncAt wins; on equality local keeps its values
+    const localTime = parseTime(localProfile.lastSyncAt);
+    const remoteTime = parseTime(remoteProfile.lastSyncAt);
     if (remoteTime > localTime) {
       useSettingsStore.getState().updateCongregation(remoteProfile);
-      logger.log("Updated congregation profile from remote (newer).");
+      logger.log("Synced congregation profile from remote (newer).");
     } else if (localTime > 0) {
-      // Local is newer → push it back to remote
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: pushErr } = await supabase
-        .from("congregation")
-        .upsert(congregationToRow(localProfile) as any, { onConflict: "id" });
-      if (pushErr) logger.warn("Push congregation error:", pushErr);
-      else logger.log("Pushed local congregation profile (newer).");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await supabase.from("congregation").upsert(congregationToRow(localProfile) as any, { onConflict: "id" });
     }
   } else {
-    // No remote row exists — create it from local
     const localProfile = useSettingsStore.getState().settings.congregation;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: pushErr } = await supabase
-      .from("congregation")
-      .upsert(congregationToRow(localProfile) as any, { onConflict: "id" });
-    if (pushErr) logger.warn("Push initial congregation error:", pushErr);
-    else logger.log("Pushed initial congregation profile.");
+    await supabase.from("congregation").upsert(congregationToRow(localProfile) as any, { onConflict: "id" });
   }
 
-  // B. VISITS
-  const remoteVisits = await fetchTablePaginated<VisitRow>("visits");
+  // ── 1. PULL INCREMENTAL ──
+  // Only fetch rows updated AFTER the last sync (or all if first sync).
+
+  logger.log(`Sync incrémentale depuis: ${lastSyncAt || "début (full pull)"}`);
+
+  const pullSince = lastSyncAt || undefined;
+
+  const [visitsResult, speakersResult, hostsResult] = await Promise.all([
+    fetchChangesSince<VisitRow>("visits", pullSince),
+    fetchChangesSince<SpeakerRow>("speakers", pullSince),
+    fetchChangesSince<HostRow>("hosts", pullSince),
+  ]);
+
+  const remoteVisits = visitsResult.rows;
+  const remoteSpeakers = speakersResult.rows;
+  const remoteHosts = hostsResult.rows;
+  let totalBytes = visitsResult.bytes + speakersResult.bytes + hostsResult.bytes;
+
+  // ── 2. APPLY TOMBSTONES (remote deletes) ──
+  const deleted = { visits: 0, speakers: 0, hosts: 0 };
+
+  const { data: tombstones } = await supabase
+    .from("tombstones")
+    .select("*")
+    .gt("deleted_at", pullSince || "1970-01-01");
+
+  if (tombstones) {
+    for (const t of tombstones as TombstoneRow[]) {
+      if (t.table_name === "visits") {
+        useVisitStore.getState().deleteVisit(t.id);
+        deleted.visits++;
+      } else if (t.table_name === "speakers") {
+        useSpeakerStore.getState().deleteSpeaker(t.id);
+        deleted.speakers++;
+      } else if (t.table_name === "hosts") {
+        useHostStore.getState().deleteHost(t.id);
+        deleted.hosts++;
+      }
+    }
+    totalBytes += JSON.stringify(tombstones).length;
+  }
+
+  // ── 3. MERGE ──
+  //
+  // Before merging, filter out example data from the remote pull,
+  // delete them from Supabase, and also clean any leftover examples locally.
+
+  if (remoteVisits.length > 0) {
+    const converted = remoteVisits.map(rowToVisit);
+    const exampleVisits = converted.filter((v) => isExampleName(v.nom));
+    for (const v of exampleVisits) deleteRemoteItem("visits", v.visitId).catch(() => {});
+    const cleanRemoteVisits = converted.filter((v) => !isExampleName(v.nom));
+    const merged = mergeVisits(
+      useVisitStore.getState().visits.filter((v) => !isExampleName(v.nom)),
+      cleanRemoteVisits
+    );
+    useVisitStore.getState().setVisits(merged);
+  }
+
+  if (remoteSpeakers.length > 0) {
+    const converted = remoteSpeakers.map(rowToSpeaker);
+    const exampleSpeakers = converted.filter((s) => isExampleName(s.nom));
+    for (const s of exampleSpeakers) deleteRemoteItem("speakers", s.id).catch(() => {});
+    const cleanRemoteSpeakers = converted.filter((s) => !isExampleName(s.nom));
+    const merged = mergeSpeakers(
+      useSpeakerStore.getState().speakers.filter((s) => !isExampleName(s.nom)),
+      cleanRemoteSpeakers
+    );
+    useSpeakerStore.getState().setSpeakers(merged);
+  }
+
+  if (remoteHosts.length > 0) {
+    const converted = remoteHosts.map(rowToHost);
+    const exampleHosts = converted.filter((h) => isExampleName(h.nom));
+    for (const h of exampleHosts) deleteRemoteItem("hosts", h.id).catch(() => {});
+    const cleanRemoteHosts = converted.filter((h) => !isExampleName(h.nom));
+    const merged = mergeHosts(
+      useHostStore.getState().hosts.filter((h) => !isExampleName(h.nom)),
+      cleanRemoteHosts
+    );
+    useHostStore.getState().setHosts(merged);
+  }
+
+  // ── 4. PUSH INCREMENTAL ──
+  // Only push items that were modified locally since the last sync.
 
   const localVisits = useVisitStore.getState().visits;
-  const remoteVisitsConverted = remoteVisits.map(rowToVisit);
-  // Supprime côté distant les visites d'exemple et exclut-les du merge
-  const exampleVisits = remoteVisitsConverted.filter((v) => isExampleName(v.nom));
-  for (const v of exampleVisits) await deleteRemoteItem("visits", v.visitId);
-  const cleanRemoteVisits = remoteVisitsConverted.filter((v) => !isExampleName(v.nom));
-  const finalVisits = mergeVisits(localVisits.filter((v) => !isExampleName(v.nom)), cleanRemoteVisits);
-  useVisitStore.getState().setVisits(finalVisits);
-  result.pulled.visits = cleanRemoteVisits.length;
-
-  // B. SPEAKERS
-  const remoteSpeakers = await fetchTablePaginated<SpeakerRow>("speakers");
   const localSpeakers = useSpeakerStore.getState().speakers;
-  const remoteSpeakersConverted = remoteSpeakers.map(rowToSpeaker);
-  const exampleSpeakers = remoteSpeakersConverted.filter((s) => isExampleName(s.nom));
-  for (const s of exampleSpeakers) await deleteRemoteItem("speakers", s.id);
-  const cleanRemoteSpeakers = remoteSpeakersConverted.filter((s) => !isExampleName(s.nom));
-  const finalSpeakers = mergeSpeakers(localSpeakers.filter((s) => !isExampleName(s.nom)), cleanRemoteSpeakers);
-  useSpeakerStore.getState().setSpeakers(finalSpeakers);
-  result.pulled.speakers = cleanRemoteSpeakers.length;
-
-  // C. HOSTS
-  const remoteHosts = await fetchTablePaginated<HostRow>("hosts");
   const localHosts = useHostStore.getState().hosts;
-  const remoteHostsConverted = remoteHosts.map(rowToHost);
-  const exampleHosts = remoteHostsConverted.filter((h) => isExampleName(h.nom));
-  for (const h of exampleHosts) await deleteRemoteItem("hosts", h.id);
-  const cleanRemoteHosts = remoteHostsConverted.filter((h) => !isExampleName(h.nom));
-  const finalHosts = mergeHosts(localHosts.filter((h) => !isExampleName(h.nom)), cleanRemoteHosts);
-  useHostStore.getState().setHosts(finalHosts);
-  result.pulled.hosts = cleanRemoteHosts.length;
 
-  // ── 2. PUSH ──
-  // Now we use toUUID() during conversion to ensure every entry is pushable
-  if (finalVisits.length > 0) {
+  const changedVisits = localVisits.filter(
+    (v) => !isExampleName(v.nom) && parseTime(v.updatedAt) > parseTime(lastSyncAt)
+  );
+  const changedSpeakers = localSpeakers.filter(
+    (s) => !isExampleName(s.nom) && parseTime(s.updatedAt) > parseTime(lastSyncAt)
+  );
+  const changedHosts = localHosts.filter(
+    (h) => !isExampleName(h.nom) && parseTime(h.updatedAt) > parseTime(lastSyncAt)
+  );
+
+  if (changedVisits.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await supabase.from("visits").upsert(finalVisits.map(visitToRow) as any, { onConflict: "visit_id" });
+    const { error } = await supabase.from("visits").upsert(changedVisits.map(visitToRow) as any, { onConflict: "visit_id" });
     if (error) logger.error("Push visits error:", error);
-    else result.pushed.visits = finalVisits.length;
   }
-  
-  if (finalSpeakers.length > 0) {
+  if (changedSpeakers.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await supabase.from("speakers").upsert(finalSpeakers.map(speakerToRow) as any, { onConflict: "id" });
+    const { error } = await supabase.from("speakers").upsert(changedSpeakers.map(speakerToRow) as any, { onConflict: "id" });
     if (error) logger.error("Push speakers error:", error);
-    else result.pushed.speakers = finalSpeakers.length;
   }
-  
-  if (finalHosts.length > 0) {
+  if (changedHosts.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await supabase.from("hosts").upsert(finalHosts.map(hostToRow) as any, { onConflict: "id" });
+    const { error } = await supabase.from("hosts").upsert(changedHosts.map(hostToRow) as any, { onConflict: "id" });
     if (error) logger.error("Push hosts error:", error);
-    else result.pushed.hosts = finalHosts.length;
   }
 
-  useSettingsStore.getState().updateCongregation({
-    lastSyncAt: new Date().toISOString(),
-  });
-  
-  logger.log("Cloud sync finished successfully.", result);
+  totalBytes += JSON.stringify(changedVisits).length;
+  totalBytes += JSON.stringify(changedSpeakers).length;
+  totalBytes += JSON.stringify(changedHosts).length;
+
+  // ── 5. FINALIZE ──
+  useSettingsStore.getState().updateCongregation({ lastSyncAt: nowISO });
+
+  const result: SyncResult = {
+    pushed: {
+      visits: changedVisits.length,
+      speakers: changedSpeakers.length,
+      hosts: changedHosts.length,
+    },
+    pulled: {
+      visits: remoteVisits.length,
+      speakers: remoteSpeakers.length,
+      hosts: remoteHosts.length,
+    },
+    deleted,
+    bytesEstimate: totalBytes,
+  };
+
+  const mb = (totalBytes / 1024 / 1024).toFixed(3);
+  logger.log(
+    `✅ Sync terminée. Volume: ${mb} Mo ` +
+    `↓${remoteVisits.length + remoteSpeakers.length + remoteHosts.length} ` +
+    `↑${changedVisits.length + changedSpeakers.length + changedHosts.length} ` +
+    `🗑 ${deleted.visits + deleted.speakers + deleted.hosts}`,
+    result
+  );
+
   return result;
 }
 
 /**
- * Delete an item from Supabase by its ID.
+ * Delete an item AND record a tombstone so other devices see the deletion.
  */
 export async function deleteRemoteItem(table: "visits" | "speakers" | "hosts", id: string) {
   const supabase = getSupabase();
   if (!supabase) return;
+
   const idField = table === "visits" ? "visit_id" : "id";
-  const { error } = await supabase.from(table).delete().eq(idField, toUUID(id));
-  if (error) logger.error(`Delete from ${table} error:`, error);
+  const uuidId = toUUID(id);
+
+  // Delete from the main table
+  const { error } = await supabase.from(table).delete().eq(idField, uuidId);
+  if (error) {
+    logger.error(`Delete from ${table} error:`, error);
+    return;
+  }
+
+  // Record tombstone so other devices pick up the deletion
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await supabase.from("tombstones").upsert(
+    { id: uuidId, table_name: table, deleted_at: new Date().toISOString() } as any,
+    { onConflict: "id" }
+  );
 }

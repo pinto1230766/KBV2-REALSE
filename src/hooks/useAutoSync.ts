@@ -117,16 +117,10 @@ export function useAutoSync() {
   }, []);
 
   useEffect(() => {
-    // Sync on mount (silent)
-    const timeout = setTimeout(() => runSync(true), 3000);
-
-    // Sync every 15 min
-    const interval = setInterval(() => runSync(true), 15 * 60 * 1000);
-
-    return () => {
-      clearTimeout(timeout);
-      clearInterval(interval);
-    };
+    // Sync once on mount (silent) — no more periodic polling to reduce egress.
+    // Manual sync triggered via the ↻ button in the sidebar.
+    const timeout = setTimeout(() => runSync(true), 5000);
+    return () => clearTimeout(timeout);
   }, [runSync]);
 
   return { runSync };

@@ -2,30 +2,29 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { syncCloud } from "./syncCloud";
 import { useVisitStore } from "../store/useVisitStore";
 
-// Builds the mock chain to support TWO query patterns:
-//   1) .select("*").order("id", {...}).range(a,b).limit(c)   → paginated list
-//   2) .select("*").eq("id", "default").maybeSingle()        → single congregation row
+// Builds the mock chain to support three query patterns:
+//   1) .select("*").order("id", {...}).range(a,b).limit(c)        → paginated list
+//   2) .select("*").order("id", {...}).gt("updated_at", since).range(a,b).limit(c) → incremental
+//   3) .select("*").eq("id", "default").maybeSingle()             → single congregation row
+//   4) .select("*").gt("deleted_at", since)                       → tombstones
 function makeMockSupabase(visitsData: unknown[]) {
   // ── Terminal promises ──
-  // paginated: .limit() resolves with { data, error }
   const limitFn = vi.fn().mockResolvedValue({ data: visitsData, error: null });
-  // single: .maybeSingle() resolves with { data, error }
   const maybeSingleFn = vi.fn().mockResolvedValue({ data: null, error: null });
+  // tombstones query: .select("*").gt(...) resolves directly to { data, error }
+  const tombstoneFn = vi.fn().mockResolvedValue({ data: [], error: null });
 
   // ── Chain segments ──
   const rangeFn = vi.fn(() => ({ limit: limitFn }));
-  const orderFn = vi.fn(() => ({ range: rangeFn }));
+  const gtFn = vi.fn(() => ({ range: rangeFn, limit: limitFn }));
+  const orderFn = vi.fn(() => ({ range: rangeFn, gt: gtFn, limit: limitFn }));
 
-  // .eq() returns an object with .maybeSingle()
   const eqFn = vi.fn(() => ({ maybeSingle: maybeSingleFn }));
 
-  // .select() returns an object with BOTH .order (for paginated) and .eq (for single)
-  const selectFn = vi.fn(() => ({
-    order: orderFn,
-    eq: eqFn,
-  }));
+  // select returns a "chameleon" object that can continue in any direction
+  const selectReturnObj = { order: orderFn, eq: eqFn, gt: tombstoneFn };
+  const selectFn = vi.fn(() => selectReturnObj);
 
-  // .delete() returns { eq }
   const deleteFn = vi.fn(() => ({ eq: vi.fn().mockResolvedValue({ error: null }) }));
   const upsertFn = vi.fn().mockResolvedValue({ error: null });
 
@@ -81,6 +80,7 @@ describe("syncCloud", () => {
       locationType: "kingdom_hall",
       status: "scheduled",
       talkNoOrType: "",
+      updatedAt: new Date(Date.now() - 86400000).toISOString(), // yesterday — will be > any sync
     }]);
 
     await syncCloud();
