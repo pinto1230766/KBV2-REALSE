@@ -188,8 +188,10 @@ function speakerToRow(s: Speaker): Partial<SpeakerRow> {
     congregation: s.congregation,
     telephone: s.telephone || null,
     email: s.email || null,
-    photo_url: s.photoUrl || null,
-    wife_photo_url: s.spousePhotoUrl || null,
+    // Les photos Base64 restent locales (IndexedDB) — pas de sync cloud
+    // pour éviter de saturer l'egress Supabase (chaque photo = 100-500 KB).
+    photo_url: null,
+    wife_photo_url: null,
     household_type: s.householdType || "single",
     wife_name: s.spouseName || null,
     notes: s.notes || null,
@@ -221,7 +223,8 @@ function hostToRow(h: Host): Partial<HostRow> {
     email: h.email || null,
     adresse: h.adresse || null,
     notes: h.notes || null,
-    photo_url: h.photoUrl || null,
+    // Les photos Base64 restent locales — pas de sync cloud
+    photo_url: null,
     updated_at: h.updatedAt || new Date().toISOString(),
   };
 }
