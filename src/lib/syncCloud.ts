@@ -591,9 +591,9 @@ export async function deleteRemoteItem(table: "visits" | "speakers" | "hosts", i
     return;
   }
 
-  // Record tombstone so other devices pick up the deletion
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+// Record tombstone so other devices pick up the deletion
   await supabase.from("tombstones").upsert(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     { id: uuidId, table_name: table, deleted_at: new Date().toISOString() } as any,
     { onConflict: "id" }
   );
