@@ -261,7 +261,9 @@ function congregationToRow(p: CongregationProfile): Partial<CongregationRow> {
     time: p.time,
     responsable_name: p.responsableName,
     responsable_phone: p.responsablePhone,
-    responsable_photo: p.responsablePhoto ?? null,
+    // Photo admin = Base64 stockée localement uniquement (IndexedDB)
+    // L'uploader sur Supabase causerait un 400 Bad Request car payload trop lourd
+    responsable_photo: null,
     kingdom_hall_address: p.kingdomHallAddress,
     whatsapp_group: p.whatsappGroup,
     whatsapp_invite_id: p.whatsappInviteId,
